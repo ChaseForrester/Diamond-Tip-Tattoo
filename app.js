@@ -62,6 +62,18 @@ const defaultFaqs = [
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Intro Loader Dismissal
+    const loader = document.getElementById('introLoader');
+    if (loader) {
+        setTimeout(() => {
+            loader.classList.add('fade-out');
+            document.body.classList.add('page-ready');
+            setTimeout(() => {
+                loader.style.display = 'none';
+            }, 800);
+        }, 2500);
+    }
+
     // Scroll effects
     const navbar = document.querySelector('.navbar');
     window.addEventListener('scroll', () => {
