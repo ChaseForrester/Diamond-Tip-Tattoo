@@ -74,6 +74,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 2500);
     }
 
+    // Mobile Hamburger Menu Toggle
+    const menuToggle = document.getElementById('menuToggleBtn');
+    const navLinks = document.getElementById('navbarLinks');
+    if (menuToggle && navLinks) {
+        menuToggle.onclick = () => {
+            menuToggle.classList.toggle('open');
+            navLinks.classList.toggle('open');
+        };
+
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                menuToggle.classList.remove('open');
+                navLinks.classList.remove('open');
+            });
+        });
+    }
+
     // Scroll effects
     const navbar = document.querySelector('.navbar');
     window.addEventListener('scroll', () => {
