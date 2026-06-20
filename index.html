@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diamond Tip Tattoo</title>
+    <title id="seoTitle">Diamond Tip Tattoo</title>
+    <meta name="description" id="seoDesc" content="Private tattoo atelier for custom work of uncompromising quality. Fine art on skin, crafted to last a lifetime in Dapto.">
+    <meta name="keywords" id="seoKeywords" content="tattoo, Dapto, fine line, realism, custom design, Adrian V, Luna M">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
 </head>
@@ -11,12 +13,14 @@
 
 <nav class="navbar">
     <div class="logo">DIAMOND TIP</div>
-    <ul class="nav-links">
+    <ul class="nav-links" id="navbarLinks">
         <li><a href="#home">Home</a></li>
         <li><a href="#specialties">Specialties</a></li>
         <li><a href="#artists">Artists</a></li>
         <li><a href="#portfolio">Portfolio</a></li>
         <li><a href="#process">Process</a></li>
+        <li><a href="#blog">Blog</a></li>
+        <li><a href="#shop">Shop</a></li>
         <li><a href="#faq">FAQ</a></li>
     </ul>
         <div style="display: flex; gap: 1rem; align-items: center;">
@@ -240,7 +244,7 @@
             </div>
             <textarea id="bookingIdea" placeholder="Tell us about your idea (size, placement, details)..." rows="4" required></textarea>
             
-            <div class="upload-container" style="border: 1px dashed var(--border); padding: 1.5rem; text-align: center; margin-top: 1rem; cursor: pointer; transition: border-color 0.3s; background: rgba(255,255,255,0.01);">
+            <div id="dropZone" class="upload-container" style="border: 1px dashed var(--border); padding: 1.5rem; text-align: center; margin-top: 1rem; cursor: pointer; transition: border-color 0.3s; background: rgba(255,255,255,0.01);">
                 <label for="bookingFiles" style="cursor: pointer; display: block;">
                     <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">📁</span>
                     <p style="margin: 0.25rem 0;">Drag & drop or <strong style="color: var(--accent);">browse files</strong></p>
@@ -294,6 +298,26 @@
                 <button id="nextReview" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 1.2rem; border-color: var(--border);">&rarr;</button>
             </div>
         </div>
+    </div>
+</section>
+
+<section id="blog" class="section fade-in">
+    <div class="section-header center">
+        <p class="subtitle">TATTOO ARTICLES & NEWS</p>
+        <h2>The Atelier Blog</h2>
+    </div>
+    <div id="blogGrid" class="blog-grid">
+        <!-- Dynamic Blog Posts -->
+    </div>
+</section>
+
+<section id="shop" class="section dark-bg fade-in">
+    <div class="section-header center">
+        <p class="subtitle">TATTOO AFTERCARE & MERCH</p>
+        <h2>Atelier Shop</h2>
+    </div>
+    <div id="shopGrid" class="shop-grid">
+        <!-- Dynamic Products -->
     </div>
 </section>
 
@@ -427,10 +451,21 @@
         <div class="portal-layout" style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem; align-items: start;">
             <!-- Sidebar Navigation -->
             <div class="portal-sidebar box" style="padding: 1.5rem; border: 1px solid var(--border); background: rgba(255,255,255,0.01);">
-                <ul class="portal-nav" style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; padding: 0;">
-                    <li id="navMyBookings" class="active" style="border-left: 2px solid var(--accent); padding-left: 0.75rem;"><a href="#" id="linkMyBookings" style="color: var(--text); text-decoration: none; font-size: 0.95rem; font-weight: 500; letter-spacing: 1px;">MY BOOKINGS</a></li>
-                    <li id="navCalendarCRM" style="display: none; border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" id="linkCalendarCRM" style="color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; font-weight: 500; letter-spacing: 1px;">CALENDAR CRM</a></li>
-                    <li id="navCMS" style="display: none; border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" id="linkCMS" style="color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; font-weight: 500; letter-spacing: 1px;">MANAGE SITE CONTENT</a></li>
+                <!-- Client Navigation -->
+                <ul id="clientPortalNav" class="portal-nav" style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; padding: 0;">
+                    <li id="navMyBookings" class="active" style="border-left: 2px solid var(--accent); padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('my-bookings'); return false;" style="color: var(--text-primary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">MY BOOKINGS</a></li>
+                    <li id="navMyNotes" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('my-notes'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">MY SKIN NOTES</a></li>
+                    <li id="navBuyGiftCards" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('buy-giftcards'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">GIFT CARDS</a></li>
+                    <li id="navBrowseShop" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('browse-shop'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">STORE</a></li>
+                </ul>
+                <!-- Admin Navigation -->
+                <ul id="adminPortalNav" class="portal-nav" style="list-style: none; display: none; flex-direction: column; gap: 0.75rem; padding: 0; margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                    <li style="font-size: 0.75rem; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem; font-weight: bold;">Studio Admin</li>
+                    <li id="navCalendarCRM" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('calendar-crm'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">CALENDAR CRM</a></li>
+                    <li id="navClientDatabase" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('client-database'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">CLIENT DATABASE</a></li>
+                    <li id="navChatCRM" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('chat-crm'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">CHAT CRM</a></li>
+                    <li id="navCMS" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('cms'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">MANAGE SITE CONTENT</a></li>
+                    <li id="navSEO" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('seo'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">SEO & METATAGS</a></li>
                 </ul>
             </div>
             
@@ -439,11 +474,74 @@
                 <!-- Client: My Bookings Tab -->
                 <div id="tabMyBookings" class="portal-tab-content active" style="display: block;">
                      <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
-                         <h3 style="margin-bottom: 1.5rem; font-family: var(--font-display); letter-spacing: 1px;">Your Booking Requests</h3>
-                         <div id="clientBookingsList" class="bookings-list-container" style="display: flex; flex-direction: column; gap: 1rem;">
-                             <p style="color: var(--text-secondary);">No bookings found.</p>
-                         </div>
+                          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                              <h3 style="font-family: var(--font-display); letter-spacing: 1px;">Your Booking Requests</h3>
+                              <a href="#book" onclick="exitPortal(); return true;" class="btn btn-solid" style="padding: 0.5rem 1rem; font-size: 0.8rem;">NEW REQUEST</a>
+                          </div>
+                          <div id="clientBookingsList" class="bookings-list-container" style="display: flex; flex-direction: column; gap: 1rem;">
+                              <p style="color: var(--text-secondary);">No bookings found.</p>
+                          </div>
                      </div>
+                </div>
+
+                <!-- Client: My Skin Notes Tab -->
+                <div id="tabMyNotes" class="portal-tab-content" style="display: none;">
+                    <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
+                        <h3 style="margin-bottom: 0.5rem; font-family: var(--font-display); letter-spacing: 1px;">My Skin Notes</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Keep track of your skin type, allergies, tattoo ideas, or notes about healing. Your artists can view these to prepare for your next ink session.</p>
+                        <textarea id="clientSkinNotesInput" placeholder="Write any skin notes, ink allergies, or design thoughts here..." rows="8" style="width: 100%; padding: 1rem; border: 1px solid var(--border); background: #222; color: #fff; border-radius: 0; resize: vertical; outline: none; margin-bottom: 1rem; font-family: var(--font-body);"></textarea>
+                        <button id="saveSkinNotesBtn" class="btn btn-solid">SAVE NOTES</button>
+                        <div id="skinNotesFeedback" style="display: inline-block; margin-left: 1rem; font-size: 0.9rem; color: #00c873;"></div>
+                    </div>
+                </div>
+
+                <!-- Client: Gift Cards Tab -->
+                <div id="tabBuyGiftCards" class="portal-tab-content" style="display: none;">
+                    <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 2rem; align-items: start;">
+                        <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
+                            <h3 style="margin-bottom: 1rem; font-family: var(--font-display); letter-spacing: 1px;">Purchase Gift Card</h3>
+                            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Select an amount to purchase a digital gift card for yourself or a friend.</p>
+                            <form id="giftcardForm">
+                                <div style="margin-bottom: 1rem;">
+                                    <label style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Select Amount:</strong></label>
+                                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                                        <button type="button" class="btn btn-outline gc-amount-btn" data-value="50" style="flex: 1; padding: 0.5rem 0;">$50</button>
+                                        <button type="button" class="btn btn-outline gc-amount-btn" data-value="100" style="flex: 1; padding: 0.5rem 0;">$100</button>
+                                        <button type="button" class="btn btn-outline gc-amount-btn" data-value="200" style="flex: 1; padding: 0.5rem 0;">$200</button>
+                                        <button type="button" class="btn btn-outline gc-amount-btn" data-value="custom" style="flex: 1; padding: 0.5rem 0;">Custom</button>
+                                    </div>
+                                    <input type="number" id="gcCustomAmount" placeholder="Enter Custom Amount" min="10" max="1000" style="display: none; width: 100%; margin-top: 0.5rem; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff;">
+                                </div>
+                                <div style="margin-bottom: 1rem;">
+                                    <label for="gcRecipientEmail" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Recipient Email:</strong></label>
+                                    <input type="email" id="gcRecipientEmail" placeholder="Your email (or a friend's email)" required style="width: 100%; margin-top: 0.25rem; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff;">
+                                </div>
+                                <div style="margin-bottom: 1.5rem;">
+                                    <label for="gcMessage" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Gift Message (Optional):</strong></label>
+                                    <textarea id="gcMessage" placeholder="Happy Birthday! Can't wait to see your new ink!" rows="3" style="width: 100%; margin-top: 0.25rem; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; resize: vertical;"></textarea>
+                                </div>
+                                <button type="submit" id="gcPurchaseBtn" class="btn btn-solid" style="width: 100%;">PURCHASE (SIMULATED PAY)</button>
+                            </form>
+                        </div>
+                        <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
+                            <h3 style="margin-bottom: 1rem; font-family: var(--font-display); letter-spacing: 1px;">My Gift Cards</h3>
+                            <div id="giftcardsList" class="giftcard-grid">
+                                <!-- Dynamically loaded purchased gift cards -->
+                                <p style="color: var(--text-secondary);">You haven't purchased any gift cards yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Client: Shop Browsing Tab -->
+                <div id="tabBrowseShop" class="portal-tab-content" style="display: none;">
+                    <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
+                        <h3 style="margin-bottom: 0.5rem; font-family: var(--font-display); letter-spacing: 1px;">Atelier Shop</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Browse our premium tattoo aftercare products. Purchase items directly (simulated) and pick them up at the studio.</p>
+                        <div id="portalShopGrid" class="shop-grid">
+                            <!-- Dynamically populated from Firestore products -->
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Admin: Calendar CRM Tab -->
@@ -509,6 +607,52 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Admin: Client Database Tab -->
+                <div id="tabClientDatabase" class="portal-tab-content" style="display: none;">
+                    <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 2rem; align-items: start;">
+                        <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
+                            <div style="margin-bottom: 1.5rem;">
+                                <h3 style="font-family: var(--font-display); margin-bottom: 0.5rem;">Client Database</h3>
+                                <input type="text" id="clientSearchInput" placeholder="Search by name or email..." style="width: 100%; padding: 0.5rem 1rem; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: #fff; font-family: var(--font-body); font-size: 0.9rem; outline: none;">
+                            </div>
+                            <div id="clientDbList" class="client-db-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                        <div class="box" style="padding: 2rem; border: 1px solid var(--border); min-height: 400px; display: flex; flex-direction: column;">
+                            <h3 id="selectedClientLabel" style="font-family: var(--font-display); font-size: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 1rem;">Client Details</h3>
+                            <div id="selectedClientContent" style="flex: 1; display: flex; flex-direction: column; gap: 1rem;">
+                                <p style="color: var(--text-secondary);">Select a client to view details, booking history, and update skin/admin notes.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin: Chat CRM Tab -->
+                <div id="tabChatCRM" class="portal-tab-content" style="display: none;">
+                    <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
+                        <h3 style="margin-bottom: 1.5rem; font-family: var(--font-display); letter-spacing: 1px;">Live Chat CRM</h3>
+                        <div class="chat-crm-layout">
+                            <div id="chatCrmThreads" class="chat-crm-threads">
+                                <!-- Dynamically loaded chat threads -->
+                                <p style="color: var(--text-secondary); font-size: 0.85rem;">No active chat threads.</p>
+                            </div>
+                            <div id="chatCrmWindow" style="display: flex; flex-direction: column; border: 1px solid var(--border); height: 480px; background: rgba(0,0,0,0.2); flex: 1;">
+                                <div id="chatCrmHeader" style="background: #111; padding: 1rem; border-bottom: 1px solid var(--border); color: #fff; font-size: 0.9rem; font-weight: bold;">
+                                    Select a thread to start chatting
+                                </div>
+                                <div id="chatCrmMessages" class="chat-messages" style="flex: 1;">
+                                    <!-- Message list -->
+                                </div>
+                                <div id="chatCrmInputArea" class="chat-input-area" style="display: none;">
+                                    <input type="text" id="chatCrmMessageInput" placeholder="Type a reply...">
+                                    <button id="chatCrmSendBtn">REPLY</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Admin: CMS Tab -->
                 <div id="tabCMS" class="portal-tab-content" style="display: none;">
@@ -538,6 +682,67 @@
                             <!-- Populated dynamically -->
                         </div>
                     </div>
+
+                    <!-- Blog Manager -->
+                    <div class="box" style="padding: 2rem; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h3 style="font-family: var(--font-display);">Manage Blog Posts</h3>
+                            <button id="cmsAddBlogBtn" class="btn btn-solid" style="padding: 0.5rem 1rem; font-size: 0.85rem;">+ Add Blog Post</button>
+                        </div>
+                        <div id="cmsBlogList" class="cms-faq-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Shop Product Manager -->
+                    <div class="box" style="padding: 2rem; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h3 style="font-family: var(--font-display);">Manage Shop Products</h3>
+                            <button id="cmsAddProductBtn" class="btn btn-solid" style="padding: 0.5rem 1rem; font-size: 0.85rem;">+ Add Product</button>
+                        </div>
+                        <div id="cmsProductList" class="cms-faq-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin: SEO Settings Tab -->
+                <div id="tabSEO" class="portal-tab-content" style="display: none;">
+                    <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
+                        <h3 style="margin-bottom: 0.5rem; font-family: var(--font-display); letter-spacing: 1px;">SEO & Page Settings</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Configure SEO metadata (Title, Description, Keywords) for search engine indexing and site URLs.</p>
+                        <form id="seoForm">
+                            <div style="margin-bottom: 1.25rem;">
+                                <label for="seoPageSelect" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Select Page View:</strong></label>
+                                <select id="seoPageSelect" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); background: #222; color: #fff; border-radius: 0; margin-top: 0.25rem; outline: none; font-family: var(--font-body);">
+                                    <option value="home">Home Page (#home)</option>
+                                    <option value="specialties">Specialties (#specialties)</option>
+                                    <option value="artists">Artists (#artists)</option>
+                                    <option value="portfolio">Portfolio (#portfolio)</option>
+                                    <option value="blog">Blog (#blog)</option>
+                                    <option value="shop">Shop (#shop)</option>
+                                    <option value="faq">FAQ (#faq)</option>
+                                    <option value="portal">Client Portal (#portal)</option>
+                                </select>
+                            </div>
+                            <div style="margin-bottom: 1.25rem;">
+                                <label for="seoTitleInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Meta Title:</strong></label>
+                                <input type="text" id="seoTitleInput" required style="width: 100%; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; border-radius: 0; margin-top: 0.25rem; font-family: var(--font-body); outline: none;">
+                            </div>
+                            <div style="margin-bottom: 1.25rem;">
+                                <label for="seoDescInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Meta Description:</strong></label>
+                                <textarea id="seoDescInput" required rows="3" style="width: 100%; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; border-radius: 0; margin-top: 0.25rem; resize: vertical; font-family: var(--font-body); outline: none;"></textarea>
+                            </div>
+                            <div style="margin-bottom: 1.5rem;">
+                                <label for="seoKeywordsInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Meta Keywords:</strong></label>
+                                <input type="text" id="seoKeywordsInput" style="width: 100%; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; border-radius: 0; margin-top: 0.25rem; font-family: var(--font-body); outline: none;" placeholder="tattoo, Dapto, fine line, realism">
+                            </div>
+                            <button type="submit" id="saveSeoBtn" class="btn btn-solid">SAVE SEO SETTINGS</button>
+                            <div id="seoFeedback" style="display: inline-block; margin-left: 1rem; font-size: 0.9rem; color: #00c873;"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>v>
                 </div>
             </div>
         </div>
@@ -621,6 +826,98 @@
                     <button id="deleteFaqBtn" class="btn btn-outline" style="border-color: #ff4d4d; color: #ff4d4d; display: none;" onclick="deleteFaqItem()">DELETE</button>
                     <button id="saveFaqItemBtn" class="btn btn-solid">SAVE</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blog Edit Modal -->
+    <div id="blogModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 200; padding: 1rem;">
+        <div class="modal-content box" style="max-width: 600px; width: 100%; border: 1px solid var(--border); padding: 2rem; background: var(--bg); position: relative;">
+            <span class="close-modal" id="closeBlogModalBtn" style="position: absolute; top: 1rem; right: 1.5rem; font-size: 2rem; cursor: pointer; color: var(--text-secondary);">&times;</span>
+            <h2 id="blogModalTitle" style="font-family: var(--font-display); letter-spacing: 1px; margin-bottom: 0.5rem;">Add/Edit Blog Post</h2>
+            <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+                <input type="hidden" id="blogIdInput">
+                <div>
+                     <label for="blogTitleInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Post Title:</strong></label>
+                     <input type="text" id="blogTitleInput" required style="width: 100%; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; outline: none; font-family: var(--font-body);">
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <div style="flex: 1;">
+                         <label for="blogAuthorInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Author:</strong></label>
+                         <input type="text" id="blogAuthorInput" value="Adrian V." required style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); background: #222; color: #fff; outline: none; font-family: var(--font-body);">
+                    </div>
+                    <div style="flex: 1;">
+                         <label for="blogImageInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Image URL (or default):</strong></label>
+                         <input type="text" id="blogImageInput" placeholder="assets/tattoo_workspace_1781911831357.png" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); background: #222; color: #fff; outline: none; font-family: var(--font-body);">
+                    </div>
+                </div>
+                <div>
+                     <label for="blogContentInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Content:</strong></label>
+                     <textarea id="blogContentInput" required rows="6" style="width: 100%; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; resize: vertical; font-family: var(--font-body); font-size: 0.9rem; outline: none;"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 0.5rem;">
+                    <button id="deleteBlogBtn" class="btn btn-outline" style="border-color: #ff4d4d; color: #ff4d4d; display: none;">DELETE</button>
+                    <button id="saveBlogItemBtn" class="btn btn-solid">SAVE POST</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Edit Modal -->
+    <div id="productModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 200; padding: 1rem;">
+        <div class="modal-content box" style="max-width: 500px; width: 100%; border: 1px solid var(--border); padding: 2rem; background: var(--bg); position: relative;">
+            <span class="close-modal" id="closeProductModalBtn" style="position: absolute; top: 1rem; right: 1.5rem; font-size: 2rem; cursor: pointer; color: var(--text-secondary);">&times;</span>
+            <h2 id="productModalTitle" style="font-family: var(--font-display); letter-spacing: 1px; margin-bottom: 0.5rem;">Add/Edit Product</h2>
+            <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+                <input type="hidden" id="productIdInput">
+                <div>
+                     <label for="productNameInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Product Name:</strong></label>
+                     <input type="text" id="productNameInput" required style="width: 100%; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; outline: none; font-family: var(--font-body);">
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <div style="flex: 1;">
+                         <label for="productPriceInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Price ($):</strong></label>
+                         <input type="number" id="productPriceInput" step="0.01" min="0" required style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); background: #222; color: #fff; outline: none; font-family: var(--font-body);">
+                    </div>
+                    <div style="flex: 1;">
+                         <label for="productImageInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Image URL (or default):</strong></label>
+                         <input type="text" id="productImageInput" placeholder="assets/tattoo_front_desk_1781911857115.png" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); background: #222; color: #fff; outline: none; font-family: var(--font-body);">
+                    </div>
+                </div>
+                <div>
+                     <label for="productDescInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Description:</strong></label>
+                     <textarea id="productDescInput" required rows="3" style="width: 100%; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; resize: vertical; font-family: var(--font-body); font-size: 0.9rem; outline: none;"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 0.5rem;">
+                    <button id="deleteProductBtn" class="btn btn-outline" style="border-color: #ff4d4d; color: #ff4d4d; display: none;">DELETE</button>
+                    <button id="saveProductItemBtn" class="btn btn-solid">SAVE PRODUCT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Live Chat Widget -->
+    <div id="chatWidget" class="chat-widget-container">
+        <button id="chatToggleBtn" class="chat-toggle-btn">💬</button>
+        <div id="chatWindow" class="chat-window">
+            <div class="chat-header">
+                <h4>Live Chat</h4>
+                <span id="chatCloseBtn" class="chat-close">&times;</span>
+            </div>
+            <!-- Client Pre-Auth details if not logged in -->
+            <div id="chatPreAuth" class="chat-pre-auth" style="display: none;">
+                <p style="color: var(--text-secondary);">Enter your details to chat with our artists in real-time:</p>
+                <input type="text" id="chatGuestName" placeholder="Your Name" required style="width: 100%; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; font-family: var(--font-body); margin-bottom: 0.5rem;">
+                <input type="email" id="chatGuestEmail" placeholder="Your Email" required style="width: 100%; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; font-family: var(--font-body); margin-bottom: 0.5rem;">
+                <button id="chatStartBtn" class="btn btn-solid" style="width: 100%;">START CHAT</button>
+            </div>
+            <!-- Chat messages view -->
+            <div id="chatMessages" class="chat-messages" style="display: none;">
+                <!-- Message thread goes here -->
+            </div>
+            <div id="chatInputArea" class="chat-input-area" style="display: none;">
+                <input type="text" id="chatMessageInput" placeholder="Type a message...">
+                <button id="chatSendBtn">SEND</button>
             </div>
         </div>
     </div>

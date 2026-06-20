@@ -84,7 +84,13 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll('.fade-in, .slide-up').forEach((el) => observer.observe(el));
 
     // Dynamic Content Initial Loading
-    loadDynamicContent();
+    loadDynamicContent().then(() => {
+        if (typeof fetchCMSDataCache === 'function') {
+            fetchCMSDataCache().then(() => {
+                if (typeof handleRouting === 'function') handleRouting();
+            });
+        }
+    });
 
     // Review Slider
     const slides = document.querySelectorAll('.review-slide');
@@ -240,6 +246,45 @@ document.addEventListener("DOMContentLoaded", () => {
             exitPortal();
         });
     };
+
+    // Client Skin Notes Save
+    const saveSkinNotesBtn = document.getElementById('saveSkinNotesBtn');
+    if (saveSkinNotesBtn) {
+        saveSkinNotesBtn.onclick = saveSkinNotes;
+    }
+
+    // CMS Modal Close Buttons
+    const closeBlogModalBtn = document.getElementById('closeBlogModalBtn');
+    if (closeBlogModalBtn) closeBlogModalBtn.onclick = closeBlogModal;
+    const closeProductModalBtn = document.getElementById('closeProductModalBtn');
+    if (closeProductModalBtn) closeProductModalBtn.onclick = closeProductModal;
+
+    // CMS Save/Delete Actions
+    const saveBlogItemBtn = document.getElementById('saveBlogItemBtn');
+    if (saveBlogItemBtn) saveBlogItemBtn.onclick = saveBlogItem;
+    const saveProductItemBtn = document.getElementById('saveProductItemBtn');
+    if (saveProductItemBtn) saveProductItemBtn.onclick = saveProductItem;
+
+    const deleteBlogBtn = document.getElementById('deleteBlogBtn');
+    if (deleteBlogBtn) deleteBlogBtn.onclick = deleteBlogItem;
+    const deleteProductBtn = document.getElementById('deleteProductBtn');
+    if (deleteProductBtn) deleteProductBtn.onclick = deleteProductItem;
+
+    // SEO Settings Actions
+    const seoForm = document.getElementById('seoForm');
+    if (seoForm) seoForm.onsubmit = saveSeoItem;
+    const seoPageSelect = document.getElementById('seoPageSelect');
+    if (seoPageSelect) seoPageSelect.onchange = loadSeoSettings;
+
+    // Chat CRM reply bindings
+    const chatCrmSendBtn = document.getElementById('chatCrmSendBtn');
+    const chatCrmInput = document.getElementById('chatCrmMessageInput');
+    if (chatCrmSendBtn && chatCrmInput) {
+        chatCrmSendBtn.onclick = sendAdminReply;
+        chatCrmInput.onkeypress = (e) => {
+            if (e.key === 'Enter') sendAdminReply();
+        };
+    }
 
     // Public File Upload Handling
     const fileInput = document.getElementById('bookingFiles');
@@ -554,11 +599,9 @@ onAuthStateChanged(auth, async (user) => {
                 'hello@diamondtiptattoo.com'
             ];
             if (adminDoc.exists() || adminEmails.includes(user.email.toLowerCase())) {
-                
                 isAdmin = true;
                 document.getElementById('adminBadge').style.display = 'inline-block';
-                document.getElementById('navCalendarCRM').style.display = 'block';
-                document.getElementById('navCMS').style.display = 'block';
+                document.getElementById('adminPortalNav').style.display = 'block';
                 document.getElementById('portalTitle').textContent = 'Studio CRM & Manager';
                 
                 // Seed database if this is an admin and database is empty
@@ -566,11 +609,11 @@ onAuthStateChanged(auth, async (user) => {
 
                 // Load CRM & CMS Data
                 listenToAllBookings();
+                fetchCMSDataCache();
             } else {
                 isAdmin = false;
                 document.getElementById('adminBadge').style.display = 'none';
-                document.getElementById('navCalendarCRM').style.display = 'none';
-                document.getElementById('navCMS').style.display = 'none';
+                document.getElementById('adminPortalNav').style.display = 'none';
                 document.getElementById('portalTitle').textContent = 'Client Portal';
                 
                 loadClientBookings();
@@ -578,8 +621,17 @@ onAuthStateChanged(auth, async (user) => {
         } catch (err) {
             console.error("Authorization check failed: ", err);
             // Fallback to normal client
+            isAdmin = false;
+            document.getElementById('adminBadge').style.display = 'none';
+            document.getElementById('adminPortalNav').style.display = 'none';
+            document.getElementById('portalTitle').textContent = 'Client Portal';
             loadClientBookings();
         }
+
+        setupGiftCardForm();
+        loadClientGiftCards();
+        loadClientSkinNotes();
+        setupLiveChat();
     } else {
         currentUser = null;
         isAdmin = false;
@@ -587,7 +639,13 @@ onAuthStateChanged(auth, async (user) => {
         logoutBtn.style.display = 'none';
         portalBtn.style.display = 'none';
         document.getElementById('adminBadge').style.display = 'none';
+        document.getElementById('adminPortalNav').style.display = 'none';
+        setupLiveChat();
     }
+
+    loadBlogWebsite();
+    loadShopWebsite();
+    handleRouting();
 });
 
 // Portal View Manager
@@ -598,11 +656,20 @@ function enterPortal() {
     document.getElementById('artists').style.display = 'none';
     document.getElementById('portfolio').style.display = 'none';
     document.getElementById('process').style.display = 'none';
-    document.getElementById('book').style.display = 'none';
+    const blogEl = document.getElementById('blog');
+    if (blogEl) blogEl.style.display = 'none';
+    const shopEl = document.getElementById('shop');
+    if (shopEl) shopEl.style.display = 'none';
     document.getElementById('info').style.display = 'none';
     document.querySelector('footer').style.display = 'none';
     document.querySelector('.features-bar').style.display = 'none';
     document.querySelector('.sterilization-bar').style.display = 'none';
+
+    // Hide navbar elements
+    const navLinks = document.getElementById('navbarLinks');
+    if (navLinks) navLinks.style.display = 'none';
+    const bookNavBtn = document.getElementById('bookNavBtn');
+    if (bookNavBtn) bookNavBtn.style.display = 'none';
 
     // Show Portal
     document.getElementById('portalSection').style.display = 'block';
@@ -618,34 +685,43 @@ function exitPortal() {
     document.getElementById('artists').style.display = 'block';
     document.getElementById('portfolio').style.display = 'block';
     document.getElementById('process').style.display = 'block';
-    document.getElementById('book').style.display = 'block';
+    const blogEl = document.getElementById('blog');
+    if (blogEl) blogEl.style.display = 'block';
+    const shopEl = document.getElementById('shop');
+    if (shopEl) shopEl.style.display = 'block';
     document.getElementById('info').style.display = 'grid';
     document.querySelector('footer').style.display = 'block';
     document.querySelector('.features-bar').style.display = 'flex';
     document.querySelector('.sterilization-bar').style.display = 'flex';
+
+    // Show navbar elements
+    const navLinks = document.getElementById('navbarLinks');
+    if (navLinks) navLinks.style.display = 'flex';
+    const bookNavBtn = document.getElementById('bookNavBtn');
+    if (bookNavBtn) bookNavBtn.style.display = 'block';
 
     // Hide Portal
     document.getElementById('portalSection').style.display = 'none';
 }
 
 window.switchPortalTab = function(tabId) {
-    // Reset active nav and tab displays
-    document.getElementById('navMyBookings').className = '';
-    document.getElementById('navCalendarCRM').className = '';
-    document.getElementById('navCMS').className = '';
-    
-    document.getElementById('navMyBookings').querySelector('a').style.color = 'var(--text-secondary)';
-    document.getElementById('navCalendarCRM').querySelector('a').style.color = 'var(--text-secondary)';
-    document.getElementById('navCMS').querySelector('a').style.color = 'var(--text-secondary)';
+    const navItems = document.querySelectorAll('.portal-nav li');
+    navItems.forEach(item => {
+        item.className = '';
+        item.style.borderLeft = '2px solid transparent';
+        const a = item.querySelector('a');
+        if (a) a.style.color = 'var(--text-secondary)';
+    });
 
-    document.getElementById('tabMyBookings').style.display = 'none';
-    document.getElementById('tabCalendarCRM').style.display = 'none';
-    document.getElementById('tabCMS').style.display = 'none';
+    const tabs = document.querySelectorAll('.portal-tab-content');
+    tabs.forEach(tab => tab.style.display = 'none');
+
+    let activeNavLi = null;
+    let activeTabDiv = null;
 
     if (tabId === 'my-bookings') {
-        document.getElementById('navMyBookings').className = 'active';
-        document.getElementById('navMyBookings').querySelector('a').style.color = 'var(--text)';
-        document.getElementById('tabMyBookings').style.display = 'block';
+        activeNavLi = document.getElementById('navMyBookings');
+        activeTabDiv = document.getElementById('tabMyBookings');
         if (currentUser) {
             if (isAdmin) {
                 loadAllBookingsListForAdminSelf();
@@ -653,18 +729,52 @@ window.switchPortalTab = function(tabId) {
                 loadClientBookings();
             }
         }
+    } else if (tabId === 'my-notes') {
+        activeNavLi = document.getElementById('navMyNotes');
+        activeTabDiv = document.getElementById('tabMyNotes');
+        loadClientSkinNotes();
+    } else if (tabId === 'buy-giftcards') {
+        activeNavLi = document.getElementById('navBuyGiftCards');
+        activeTabDiv = document.getElementById('tabBuyGiftCards');
+        loadClientGiftCards();
+    } else if (tabId === 'browse-shop') {
+        activeNavLi = document.getElementById('navBrowseShop');
+        activeTabDiv = document.getElementById('tabBrowseShop');
+        loadClientShopProducts();
     } else if (tabId === 'calendar-crm') {
-        document.getElementById('navCalendarCRM').className = 'active';
-        document.getElementById('navCalendarCRM').querySelector('a').style.color = 'var(--text)';
-        document.getElementById('tabCalendarCRM').style.display = 'block';
+        activeNavLi = document.getElementById('navCalendarCRM');
+        activeTabDiv = document.getElementById('tabCalendarCRM');
         renderCRMCalendar();
         renderCRMTable();
+    } else if (tabId === 'client-database') {
+        activeNavLi = document.getElementById('navClientDatabase');
+        activeTabDiv = document.getElementById('tabClientDatabase');
+        loadClientDatabase();
+    } else if (tabId === 'chat-crm') {
+        activeNavLi = document.getElementById('navChatCRM');
+        activeTabDiv = document.getElementById('tabChatCRM');
+        loadChatCrm();
     } else if (tabId === 'cms') {
-        document.getElementById('navCMS').className = 'active';
-        document.getElementById('navCMS').querySelector('a').style.color = 'var(--text)';
-        document.getElementById('tabCMS').style.display = 'block';
+        activeNavLi = document.getElementById('navCMS');
+        activeTabDiv = document.getElementById('tabCMS');
         renderCMSPortfolio();
         renderCMSFaqs();
+        renderCMSBlogs();
+        renderCMSProducts();
+    } else if (tabId === 'seo') {
+        activeNavLi = document.getElementById('navSEO');
+        activeTabDiv = document.getElementById('tabSEO');
+        loadSeoSettings();
+    }
+
+    if (activeNavLi) {
+        activeNavLi.className = 'active';
+        activeNavLi.style.borderLeft = '2px solid var(--accent)';
+        const a = activeNavLi.querySelector('a');
+        if (a) a.style.color = 'var(--text-primary)';
+    }
+    if (activeTabDiv) {
+        activeTabDiv.style.display = 'block';
     }
 }
 
@@ -694,6 +804,61 @@ async function seedDatabaseIfNeeded() {
             await setDoc(doc(db, "admins", "stormyforrester@gmail.com"), { role: "super_admin" });
             await setDoc(doc(db, "admins", "chaseforrester@gmail.com"), { role: "super_admin" });
             await setDoc(doc(db, "admins", "hello@diamondtiptattoo.com"), { role: "super_admin" });
+
+            // Seed Default Blogs
+            const defaultBlogs = [
+                {
+                    title: "Aftercare: How to Heal Your Tattoo Perfectly",
+                    author: "Adrian V.",
+                    image: "assets/tattoo_workspace_1781911831357.png",
+                    content: "Taking care of your new tattoo is just as important as the tattooing process itself. Keep it clean, use premium vegan aftercare cream, avoid long soaking in water, and protect it from direct sunlight. Your skin notes are valuable here!",
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    title: "Tattoo Placements: Finding the Perfect Spot",
+                    author: "Luna M.",
+                    image: "assets/tattoo_artist_1781911870037.png",
+                    content: "Tattoo placement can make or break a design. Fine line work looks gorgeous on wrists and collarbones, whereas large realism designs require larger canvases like sleeves or chests. Let's consult and design something custom.",
+                    createdAt: new Date().toISOString()
+                }
+            ];
+            for (const b of defaultBlogs) {
+                await setDoc(doc(db, "blogs", `blog_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`), b);
+            }
+
+            // Seed Default Products
+            const defaultProducts = [
+                {
+                    name: "Premium Ink Balm",
+                    price: 19.99,
+                    image: "assets/tattoo_front_desk_1781911857115.png",
+                    description: "All-natural, vegan tattoo aftercare balm to soothe, hydrate, and preserve color vibrance."
+                },
+                {
+                    name: "Gentle Soap Cleanser",
+                    price: 14.50,
+                    image: "assets/tattoo_workspace_1781911831357.png",
+                    description: "Fragrance-free foaming soap, specially formulated for washing fresh tattoos safely."
+                }
+            ];
+            for (const p of defaultProducts) {
+                await setDoc(doc(db, "products", `product_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`), p);
+            }
+
+            // Seed Default SEO
+            const defaultSeo = {
+                home: {
+                    title: "Diamond Tip Tattoo | Private Tattoo Atelier Dapto",
+                    description: "Private tattoo atelier for custom work of uncompromising quality. Fine art on skin, crafted to last a lifetime in Dapto.",
+                    keywords: "tattoo, Dapto, fine line, realism, custom design"
+                },
+                portal: {
+                    title: "Client Portal | Diamond Tip Tattoo",
+                    description: "Manage bookings, skin notes, live chat and buy gift cards.",
+                    keywords: "crm, bookings, client notes, gift cards"
+                }
+            };
+            await setDoc(doc(db, "content", "seo"), defaultSeo);
 
             console.log("Seeding completed successfully.");
             loadDynamicContent();
@@ -781,6 +946,9 @@ async function loadDynamicContent() {
             });
         }
 
+        // Trigger blog and shop website loading
+        loadBlogWebsite();
+        loadShopWebsite();
     } catch (err) {
         console.error("Error loading dynamic content: ", err);
     }
@@ -1303,5 +1471,1001 @@ window.deleteFaqItem = async function() {
     } catch (err) {
         console.error("Failed to delete FAQ: ", err);
         alert("Failed to delete FAQ: " + err.message);
+    }
+}
+
+// ==========================================
+// NEW CRM & CLIENT PORTAL EXPANDED FEATURES
+// ==========================================
+
+// Hash Routing & SEO Meta Dynamic Updates
+window.dbSeo = {};
+
+window.handleRouting = function() {
+    const hash = window.location.hash || '#home';
+    updateSEOMeta(hash);
+
+    if (hash === '#portal') {
+        if (!currentUser) {
+            window.location.hash = '#home';
+            document.getElementById('loginModal').style.display = 'flex';
+        } else {
+            enterPortal();
+        }
+    } else if (hash.startsWith('#portal/')) {
+        if (!currentUser) {
+            window.location.hash = '#home';
+            document.getElementById('loginModal').style.display = 'flex';
+        } else {
+            enterPortal();
+            const tab = hash.split('/')[1];
+            switchPortalTab(tab);
+        }
+    } else {
+        exitPortal();
+        const element = document.querySelector(hash);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+}
+window.addEventListener('hashchange', window.handleRouting);
+
+async function updateSEOMeta(hash) {
+    const pageKey = hash.replace('#', '').split('/')[0] || 'home';
+    let titleText = "Diamond Tip Tattoo | Private Tattoo Atelier Dapto";
+    let descText = "Private tattoo atelier for custom work of uncompromising quality. Fine art on skin, crafted to last a lifetime in Dapto.";
+    let keywordsText = "tattoo, Dapto, fine line, realism, custom design";
+
+    if (window.dbSeo[pageKey]) {
+        titleText = window.dbSeo[pageKey].title || titleText;
+        descText = window.dbSeo[pageKey].description || descText;
+        keywordsText = window.dbSeo[pageKey].keywords || keywordsText;
+    } else {
+        try {
+            const seoDoc = await getDoc(doc(db, "content", "seo"));
+            if (seoDoc.exists()) {
+                window.dbSeo = seoDoc.data();
+                if (window.dbSeo[pageKey]) {
+                    titleText = window.dbSeo[pageKey].title || titleText;
+                    descText = window.dbSeo[pageKey].description || descText;
+                    keywordsText = window.dbSeo[pageKey].keywords || keywordsText;
+                }
+            }
+        } catch (e) {
+            console.error("Error loading SEO meta: ", e);
+        }
+    }
+
+    document.title = titleText;
+    const titleEl = document.getElementById('seoTitle');
+    if (titleEl) titleEl.textContent = titleText;
+    const descMeta = document.getElementById('seoDesc');
+    if (descMeta) descMeta.setAttribute('content', descText);
+    const keywordsMeta = document.getElementById('seoKeywords');
+    if (keywordsMeta) keywordsMeta.setAttribute('content', keywordsText);
+}
+
+// Client Skin Notes
+window.loadClientSkinNotes = async function() {
+    if (!currentUser) return;
+    const notesInput = document.getElementById('clientSkinNotesInput');
+    if (!notesInput) return;
+
+    notesInput.value = "Loading notes...";
+    try {
+        const clientDoc = await getDoc(doc(db, "clients", currentUser.uid));
+        if (clientDoc.exists() && clientDoc.data().skinNotes) {
+            notesInput.value = clientDoc.data().skinNotes;
+        } else {
+            notesInput.value = "";
+        }
+    } catch (e) {
+        console.error(e);
+        notesInput.value = "";
+    }
+}
+
+window.saveSkinNotes = async function() {
+    if (!currentUser) return;
+    const notesInput = document.getElementById('clientSkinNotesInput');
+    const feedback = document.getElementById('skinNotesFeedback');
+    if (!notesInput || !feedback) return;
+
+    try {
+        await setDoc(doc(db, "clients", currentUser.uid), {
+            email: currentUser.email,
+            skinNotes: notesInput.value,
+            updatedAt: new Date().toISOString()
+        }, { merge: true });
+
+        feedback.textContent = "Skin notes saved!";
+        setTimeout(() => { feedback.textContent = ""; }, 3000);
+    } catch (e) {
+        console.error(e);
+        alert("Failed to save skin notes: " + e.message);
+    }
+}
+
+// Gift Cards Simulated Purchases
+window.selectedGcAmount = 50;
+
+window.setupGiftCardForm = function() {
+    const gcForm = document.getElementById('giftcardForm');
+    if (!gcForm) return;
+
+    const amountBtns = document.querySelectorAll('.gc-amount-btn');
+    const customAmountInput = document.getElementById('gcCustomAmount');
+
+    amountBtns.forEach(btn => {
+        const val = btn.getAttribute('data-value');
+        if (val !== 'custom' && parseInt(val) === window.selectedGcAmount) {
+            btn.classList.add('btn-solid');
+            btn.classList.remove('btn-outline');
+        }
+
+        btn.onclick = () => {
+            amountBtns.forEach(b => {
+                b.classList.remove('btn-solid');
+                b.classList.add('btn-outline');
+            });
+            btn.classList.add('btn-solid');
+            btn.classList.remove('btn-outline');
+
+            if (val === 'custom') {
+                customAmountInput.style.display = 'block';
+                window.selectedGcAmount = 'custom';
+            } else {
+                customAmountInput.style.display = 'none';
+                window.selectedGcAmount = parseInt(val);
+            }
+        };
+    });
+
+    gcForm.onsubmit = async (e) => {
+        e.preventDefault();
+        if (!currentUser) return;
+
+        let amount = window.selectedGcAmount;
+        if (window.selectedGcAmount === 'custom') {
+            amount = parseInt(customAmountInput.value);
+        }
+
+        if (!amount || amount < 10) {
+            alert("Minimum gift card value is $10.");
+            return;
+        }
+
+        const recipientEmail = document.getElementById('gcRecipientEmail').value;
+        const message = document.getElementById('gcMessage').value;
+        const purchaseBtn = document.getElementById('gcPurchaseBtn');
+
+        purchaseBtn.disabled = true;
+        purchaseBtn.textContent = 'PROCESSING SIMULATED PAY...';
+
+        try {
+            const code = 'GC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            await addDoc(collection(db, "giftcards"), {
+                userId: currentUser.uid,
+                buyerEmail: currentUser.email,
+                recipientEmail: recipientEmail,
+                message: message,
+                amount: amount,
+                code: code,
+                status: "Active",
+                createdAt: new Date().toISOString()
+            });
+
+            alert(`Simulated Purchase Complete!\nGift Card Code: ${code}\nAssigned to: ${recipientEmail}`);
+            gcForm.reset();
+            customAmountInput.style.display = 'none';
+            window.selectedGcAmount = 50;
+            amountBtns.forEach(b => {
+                b.classList.remove('btn-solid');
+                b.classList.add('btn-outline');
+                if (b.getAttribute('data-value') === '50') {
+                    b.classList.add('btn-solid');
+                    b.classList.remove('btn-outline');
+                }
+            });
+            window.loadClientGiftCards();
+        } catch (err) {
+            console.error(err);
+            alert("Error purchasing card: " + err.message);
+        } finally {
+            purchaseBtn.disabled = false;
+            purchaseBtn.textContent = 'PURCHASE (SIMULATED PAY)';
+        }
+    };
+}
+
+window.loadClientGiftCards = async function() {
+    if (!currentUser) return;
+    const gcList = document.getElementById('giftcardsList');
+    if (!gcList) return;
+
+    try {
+        const q = query(collection(db, "giftcards"), where("userId", "==", currentUser.uid));
+        const snap = await getDocs(q);
+        if (snap.empty) {
+            gcList.innerHTML = `<p style="color: var(--text-secondary);">No purchased gift cards yet.</p>`;
+            return;
+        }
+
+        let html = '';
+        snap.forEach(d => {
+            const gc = d.data();
+            html += `
+                <div class="giftcard-card">
+                    <div class="giftcard-value">$${gc.amount}</div>
+                    <div class="giftcard-code">${gc.code}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                        To: ${gc.recipientEmail}<br>
+                        Status: <span style="color: #00c873;">${gc.status}</span>
+                    </div>
+                </div>
+            `;
+        });
+        gcList.innerHTML = html;
+    } catch (e) {
+        console.error(e);
+        gcList.innerHTML = `<p style="color: var(--text-secondary);">Error loading gift cards.</p>`;
+    }
+}
+
+// Shop Products Website & Portal
+window.dbProducts = [];
+
+window.loadClientShopProducts = async function() {
+    const portalShopGrid = document.getElementById('portalShopGrid');
+    if (!portalShopGrid) return;
+
+    try {
+        const snap = await getDocs(collection(db, "products"));
+        window.dbProducts = [];
+        if (snap.empty) {
+            portalShopGrid.innerHTML = `<p style="color: var(--text-secondary);">No shop products found.</p>`;
+            return;
+        }
+
+        let html = '';
+        snap.forEach(d => {
+            const prod = d.data();
+            window.dbProducts.push({ id: d.id, ...prod });
+            html += `
+                <div class="shop-card">
+                    <img src="${prod.image || 'assets/tattoo_front_desk_1781911857115.png'}" alt="${prod.name}">
+                    <div class="shop-card-content">
+                        <h3>${prod.name}</h3>
+                        <p>${prod.description}</p>
+                        <div class="shop-price">$${prod.price}</div>
+                        <button class="btn btn-solid" style="width: 100%;" onclick="buyProductSimulated('${d.id}', '${prod.name}')">BUY NOW</button>
+                    </div>
+                </div>
+            `;
+        });
+        portalShopGrid.innerHTML = html;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+window.buyProductSimulated = function(prodId, prodName) {
+    alert(`Simulated Order Registered!\nYou have purchased: ${prodName}.\nYour order is ready for in-studio pickup.`);
+}
+
+window.loadShopWebsite = async function() {
+    const shopGrid = document.getElementById('shopGrid');
+    if (!shopGrid) return;
+
+    try {
+        const snap = await getDocs(collection(db, "products"));
+        if (snap.empty) {
+            shopGrid.innerHTML = `<p style="color: var(--text-secondary);">Check back soon for studio aftercare and merchandise!</p>`;
+            return;
+        }
+
+        let html = '';
+        snap.forEach(d => {
+            const prod = d.data();
+            html += `
+                <div class="shop-card">
+                    <img src="${prod.image || 'assets/tattoo_front_desk_1781911857115.png'}" alt="${prod.name}">
+                    <div class="shop-card-content">
+                        <h3>${prod.name}</h3>
+                        <p>${prod.description}</p>
+                        <div class="shop-price">$${prod.price}</div>
+                        <a href="#portal/browse-shop" class="btn btn-solid" style="width: 100%; display: block; text-align: center;">ORDER FOR PICKUP</a>
+                    </div>
+                </div>
+            `;
+        });
+        shopGrid.innerHTML = html;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// Blog Articles Website
+window.dbBlogs = [];
+
+window.loadBlogWebsite = async function() {
+    const blogGrid = document.getElementById('blogGrid');
+    if (!blogGrid) return;
+
+    try {
+        const snap = await getDocs(query(collection(db, "blogs"), orderBy("createdAt", "desc")));
+        window.dbBlogs = [];
+        if (snap.empty) {
+            blogGrid.innerHTML = `<p style="color: var(--text-secondary);">Check back soon for updates and stories from Diamond Tip.</p>`;
+            return;
+        }
+
+        let html = '';
+        snap.forEach(d => {
+            const blog = d.data();
+            window.dbBlogs.push({ id: d.id, ...blog });
+            const dateStr = new Date(blog.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+            
+            html += `
+                <div class="blog-card">
+                    <img src="${blog.image || 'assets/tattoo_workspace_1781911831357.png'}" alt="${blog.title}">
+                    <div class="blog-card-content">
+                        <div class="blog-meta">${dateStr} | BY ${blog.author}</div>
+                        <h3>${blog.title}</h3>
+                        <p>${blog.content.substring(0, 120)}...</p>
+                        <a href="#blog" class="explore" onclick="alert('Article:\\n\\n' + \`${blog.title}\\n\\n\` + \`${blog.content}\`); return false;">READ MORE &rarr;</a>
+                    </div>
+                </div>
+            `;
+        });
+        blogGrid.innerHTML = html;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// Live Chat real-time sync (Client-side)
+window.chatUnsubscribe = null;
+window.chatSessionId = null;
+window.chatSessionName = null;
+window.chatSessionEmail = null;
+
+window.setupLiveChat = function() {
+    const chatToggle = document.getElementById('chatToggleBtn');
+    const chatWin = document.getElementById('chatWindow');
+    const chatClose = document.getElementById('chatCloseBtn');
+
+    if (!chatToggle) return;
+
+    chatToggle.onclick = () => {
+        chatWin.classList.toggle('open');
+        if (chatWin.classList.contains('open')) {
+            initChatSession();
+        }
+    };
+
+    chatClose.onclick = () => {
+        chatWin.classList.remove('open');
+    };
+
+    const chatStartBtn = document.getElementById('chatStartBtn');
+    if (chatStartBtn) {
+        chatStartBtn.onclick = () => {
+            const name = document.getElementById('chatGuestName').value;
+            const email = document.getElementById('chatGuestEmail').value;
+            if (!name || !email) {
+                alert("Please enter your name and email to start.");
+                return;
+            }
+            window.chatSessionId = 'guest_' + Math.random().toString(36).substr(2, 9);
+            window.chatSessionName = name;
+            window.chatSessionEmail = email;
+            localStorage.setItem('dt_chat_session_id', window.chatSessionId);
+            localStorage.setItem('dt_chat_session_name', name);
+            localStorage.setItem('dt_chat_session_email', email);
+            startChatLiveSync();
+        };
+    }
+
+    const chatSendBtn = document.getElementById('chatSendBtn');
+    const chatInput = document.getElementById('chatMessageInput');
+    if (chatSendBtn && chatInput) {
+        const sendMsg = () => {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            sendChatMessageToServer(text);
+            chatInput.value = '';
+        };
+        chatSendBtn.onclick = sendMsg;
+        chatInput.onkeypress = (e) => {
+            if (e.key === 'Enter') sendMsg();
+        };
+    }
+}
+
+function initChatSession() {
+    if (currentUser) {
+        window.chatSessionId = currentUser.uid;
+        window.chatSessionName = currentUser.email.split('@')[0];
+        window.chatSessionEmail = currentUser.email;
+        startChatLiveSync();
+    } else {
+        const cachedId = localStorage.getItem('dt_chat_session_id');
+        if (cachedId) {
+            window.chatSessionId = cachedId;
+            window.chatSessionName = localStorage.getItem('dt_chat_session_name');
+            window.chatSessionEmail = localStorage.getItem('dt_chat_session_email');
+            startChatLiveSync();
+        } else {
+            document.getElementById('chatPreAuth').style.display = 'flex';
+            document.getElementById('chatMessages').style.display = 'none';
+            document.getElementById('chatInputArea').style.display = 'none';
+        }
+    }
+}
+
+function startChatLiveSync() {
+    document.getElementById('chatPreAuth').style.display = 'none';
+    document.getElementById('chatMessages').style.display = 'flex';
+    document.getElementById('chatInputArea').style.display = 'flex';
+
+    if (window.chatUnsubscribe) window.chatUnsubscribe();
+
+    window.chatUnsubscribe = onSnapshot(doc(db, "chats", window.chatSessionId), (docSnap) => {
+        const messagesDiv = document.getElementById('chatMessages');
+        if (!docSnap.exists()) {
+            messagesDiv.innerHTML = `<p style="color: var(--text-secondary); text-align: center; margin-top: 1rem; font-size: 0.8rem;">Chat with Diamond Tip Tattoo live!</p>`;
+            return;
+        }
+
+        const data = docSnap.data();
+        const msgs = data.messages || [];
+        if (msgs.length === 0) {
+            messagesDiv.innerHTML = `<p style="color: var(--text-secondary); text-align: center; margin-top: 1rem; font-size: 0.8rem;">Chat with Diamond Tip Tattoo live!</p>`;
+            return;
+        }
+
+        messagesDiv.innerHTML = msgs.map(m => {
+            const isClient = m.sender === 'client';
+            const time = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            return `
+                <div class="chat-msg ${isClient ? 'client' : 'admin'}">
+                    ${m.text}
+                    <span class="chat-msg-time">${time}</span>
+                </div>
+            `;
+        }).join('');
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+}
+
+async function sendChatMessageToServer(text) {
+    try {
+        const chatRef = doc(db, "chats", window.chatSessionId);
+        const chatSnap = await getDoc(chatRef);
+        let messages = [];
+        if (chatSnap.exists()) {
+            messages = chatSnap.data().messages || [];
+        }
+
+        messages.push({
+            text: text,
+            sender: "client",
+            timestamp: new Date().toISOString(),
+            senderName: window.chatSessionName
+        });
+
+        await setDoc(chatRef, {
+            clientName: window.chatSessionName,
+            clientEmail: window.chatSessionEmail,
+            lastMessageAt: new Date().toISOString(),
+            messages: messages
+        }, { merge: true });
+
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// Chat CRM Admin Dashboard
+window.adminChatUnsubscribe = null;
+window.activeAdminChatId = null;
+window.activeAdminChatMessages = [];
+
+window.loadChatCrm = async function() {
+    const threadsDiv = document.getElementById('chatCrmThreads');
+    if (!threadsDiv) return;
+
+    try {
+        const snap = await getDocs(query(collection(db, "chats"), orderBy("lastMessageAt", "desc")));
+        if (snap.empty) {
+            threadsDiv.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.85rem;">No active chat threads.</p>`;
+            return;
+        }
+
+        let html = '';
+        snap.forEach(d => {
+            const chat = d.data();
+            const activeClass = (d.id === window.activeAdminChatId) ? 'active' : '';
+            html += `
+                <div class="chat-thread-item ${activeClass}" onclick="selectAdminChatThread('${d.id}')">
+                    <strong>${chat.clientName || 'Guest'}</strong>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        ${chat.clientEmail}<br>
+                        ${chat.messages && chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].text : 'No messages'}
+                    </div>
+                </div>
+            `;
+        });
+        threadsDiv.innerHTML = html;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+window.selectAdminChatThread = function(chatId) {
+    if (window.adminChatUnsubscribe) window.adminChatUnsubscribe();
+    window.activeAdminChatId = chatId;
+
+    window.loadChatCrm();
+
+    document.getElementById('chatCrmInputArea').style.display = 'flex';
+
+    window.adminChatUnsubscribe = onSnapshot(doc(db, "chats", chatId), (docSnap) => {
+        const messagesDiv = document.getElementById('chatCrmMessages');
+        const headerDiv = document.getElementById('chatCrmHeader');
+        
+        if (!docSnap.exists()) return;
+        const data = docSnap.data();
+        headerDiv.innerHTML = `Chatting with: ${data.clientName} (${data.clientEmail})`;
+
+        window.activeAdminChatMessages = data.messages || [];
+
+        messagesDiv.innerHTML = window.activeAdminChatMessages.map(m => {
+            const isClient = m.sender === 'client';
+            const time = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            return `
+                <div class="chat-msg ${isClient ? 'admin' : 'client'}">
+                    <strong>${isClient ? 'Client' : 'Admin'}:</strong> ${m.text}
+                    <span class="chat-msg-time">${time}</span>
+                </div>
+            `;
+        }).join('');
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+}
+
+window.sendAdminReply = async function() {
+    const input = document.getElementById('chatCrmMessageInput');
+    const text = input.value.trim();
+    if (!text || !window.activeAdminChatId) return;
+
+    try {
+        window.activeAdminChatMessages.push({
+            text: text,
+            sender: "admin",
+            timestamp: new Date().toISOString(),
+            senderName: "Admin"
+        });
+
+        await setDoc(doc(db, "chats", window.activeAdminChatId), {
+            lastMessageAt: new Date().toISOString(),
+            messages: window.activeAdminChatMessages
+        }, { merge: true });
+
+        input.value = '';
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// Client Database Admin view
+window.dbClients = [];
+
+window.loadClientDatabase = async function() {
+    const clientList = document.getElementById('clientDbList');
+    if (!clientList) return;
+
+    try {
+        const snap = await getDocs(collection(db, "clients"));
+        window.dbClients = [];
+        snap.forEach(d => {
+            window.dbClients.push({ id: d.id, ...d.data() });
+        });
+
+        renderClientDbList(window.dbClients);
+        
+        const clientSearch = document.getElementById('clientSearchInput');
+        if (clientSearch) {
+            clientSearch.oninput = () => {
+                const val = clientSearch.value.toLowerCase();
+                const filtered = window.dbClients.filter(c => c.email.toLowerCase().includes(val));
+                renderClientDbList(filtered);
+            };
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function renderClientDbList(clientsList) {
+    const clientList = document.getElementById('clientDbList');
+    if (clientsList.length === 0) {
+        clientList.innerHTML = `<p style="color: var(--text-secondary);">No clients found.</p>`;
+        return;
+    }
+
+    clientList.innerHTML = clientsList.map(c => `
+        <div class="client-db-item" onclick="selectClientForDbView('${c.id}')">
+            <div>
+                <strong style="color: #fff; font-size: 0.9rem;">${c.email}</strong>
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">ID: ${c.id.substring(0, 8)}...</div>
+            </div>
+            <span style="font-size: 1.2rem; color: var(--accent);">&rarr;</span>
+        </div>
+    `).join('');
+}
+
+window.selectClientForDbView = async function(clientId) {
+    const detailPanel = document.getElementById('selectedClientContent');
+    const client = window.dbClients.find(c => c.id === clientId);
+    if (!client || !detailPanel) return;
+
+    let bookingsHtml = '<li>No bookings</li>';
+    try {
+        const bSnap = await getDocs(query(collection(db, "bookings"), where("email", "==", client.email)));
+        if (!bSnap.empty) {
+            bookingsHtml = '';
+            bSnap.forEach(bd => {
+                const b = bd.data();
+                bookingsHtml += `<li>${b.preferredDate || 'No Date'} - <strong>${b.status}</strong> (${b.style})</li>`;
+            });
+        }
+    } catch (err) {
+        console.error(err);
+    }
+
+    detailPanel.innerHTML = `
+        <div style="border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
+            <strong style="font-size: 0.85rem; color: var(--text-secondary); display: block;">Email:</strong>
+            <span style="font-size: 1.1rem; color: #fff;">${client.email}</span>
+            <span style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-top: 0.25rem;">Joined: ${client.createdAt ? new Date(client.createdAt).toLocaleDateString() : 'N/A'}</span>
+        </div>
+        
+        <div style="margin-bottom: 1rem;">
+            <strong style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Client Skin Notes:</strong>
+            <p style="background: rgba(255,255,255,0.02); padding: 0.75rem; border: 1px solid var(--border); font-size: 0.9rem; white-space: pre-wrap;">${client.skinNotes || 'No skin notes added by client.'}</p>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+            <strong style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Booking History:</strong>
+            <ul style="padding-left: 1.25rem; font-size: 0.85rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 0.25rem;">
+                ${bookingsHtml}
+            </ul>
+        </div>
+        
+        <div style="margin-top: auto;">
+            <label for="adminClientNotes" style="font-size: 0.85rem; color: var(--text-secondary); font-weight: bold; display: block; margin-bottom: 0.25rem;">Private Admin Notes (Internal):</label>
+            <textarea id="adminClientNotes" placeholder="Allergies, preferences, needle size preferences..." rows="4" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); background: #222; color: #fff; resize: vertical; margin-bottom: 0.5rem;">${client.adminNotes || ''}</textarea>
+            <button class="btn btn-solid" style="width: 100%; padding: 0.5rem;" onclick="saveAdminClientNotes('${clientId}')">SAVE INTERNAL NOTES</button>
+        </div>
+    `;
+}
+
+window.saveAdminClientNotes = async function(clientId) {
+    const notes = document.getElementById('adminClientNotes').value;
+    try {
+        await setDoc(doc(db, "clients", clientId), {
+            adminNotes: notes
+        }, { merge: true });
+        alert("Internal admin notes saved!");
+        const index = window.dbClients.findIndex(c => c.id === clientId);
+        if (index > -1) window.dbClients[index].adminNotes = notes;
+    } catch (e) {
+        console.error(e);
+        alert("Failed to save admin notes: " + e.message);
+    }
+}
+
+// Blog CMS Actions
+window.renderCMSBlogs = function() {
+    const listDiv = document.getElementById('cmsBlogList');
+    if (!listDiv) return;
+
+    if (window.dbBlogs.length === 0) {
+        listDiv.innerHTML = `<p style="color: var(--text-secondary);">No blog articles found.</p>`;
+        return;
+    }
+
+    listDiv.innerHTML = window.dbBlogs.map(blog => `
+        <div class="cms-faq-item box-inner">
+            <div class="faq-details">
+                <h4>${blog.title}</h4>
+                <p>By ${blog.author} | ${new Date(blog.createdAt).toLocaleDateString()}</p>
+            </div>
+            <button class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="openBlogModal('${blog.id}')">EDIT</button>
+        </div>
+    `).join('');
+}
+
+window.activeBlogId = null;
+
+window.openBlogModal = function(blogId = null) {
+    const titleInput = document.getElementById('blogTitleInput');
+    const authorInput = document.getElementById('blogAuthorInput');
+    const imageInput = document.getElementById('blogImageInput');
+    const contentInput = document.getElementById('blogContentInput');
+    const deleteBtn = document.getElementById('deleteBlogBtn');
+    const blogIdInput = document.getElementById('blogIdInput');
+    const title = document.getElementById('blogModalTitle');
+
+    if (blogId) {
+        const blog = window.dbBlogs.find(b => b.id === blogId);
+        if (!blog) return;
+
+        window.activeBlogId = blogId;
+        blogIdInput.value = blogId;
+        titleInput.value = blog.title;
+        authorInput.value = blog.author;
+        imageInput.value = blog.image || '';
+        contentInput.value = blog.content;
+        deleteBtn.style.display = 'block';
+        title.textContent = 'Edit Blog Post';
+    } else {
+        window.activeBlogId = null;
+        blogIdInput.value = '';
+        titleInput.value = '';
+        authorInput.value = 'Adrian V.';
+        imageInput.value = '';
+        contentInput.value = '';
+        deleteBtn.style.display = 'none';
+        title.textContent = 'Add Blog Post';
+    }
+
+    document.getElementById('blogModal').style.display = 'flex';
+}
+
+window.closeBlogModal = function() {
+    document.getElementById('blogModal').style.display = 'none';
+    window.activeBlogId = null;
+}
+
+window.saveBlogItem = async function() {
+    const title = document.getElementById('blogTitleInput').value;
+    const author = document.getElementById('blogAuthorInput').value;
+    const image = document.getElementById('blogImageInput').value || 'assets/tattoo_workspace_1781911831357.png';
+    const content = document.getElementById('blogContentInput').value;
+
+    if (!title || !content) {
+        alert("Title and content are required.");
+        return;
+    }
+
+    try {
+        if (window.activeBlogId) {
+            await setDoc(doc(db, "blogs", window.activeBlogId), {
+                title, author, image, content,
+                createdAt: new Date().toISOString()
+            }, { merge: true });
+        } else {
+            const newId = `blog_${Date.now()}`;
+            await setDoc(doc(db, "blogs", newId), {
+                title, author, image, content,
+                createdAt: new Date().toISOString()
+            });
+        }
+
+        alert("Blog post saved!");
+        window.closeBlogModal();
+        await fetchCMSDataCache();
+        window.renderCMSBlogs();
+        window.loadBlogWebsite();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+window.deleteBlogItem = async function() {
+    if (!window.activeBlogId) return;
+    if (!confirm("Delete this blog post?")) return;
+
+    try {
+        await deleteDoc(doc(db, "blogs", window.activeBlogId));
+        alert("Blog post deleted!");
+        window.closeBlogModal();
+        await fetchCMSDataCache();
+        window.renderCMSBlogs();
+        window.loadBlogWebsite();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// Product CMS Actions
+window.renderCMSProducts = function() {
+    const listDiv = document.getElementById('cmsProductList');
+    if (!listDiv) return;
+
+    if (window.dbProducts.length === 0) {
+        listDiv.innerHTML = `<p style="color: var(--text-secondary);">No products found.</p>`;
+        return;
+    }
+
+    listDiv.innerHTML = window.dbProducts.map(prod => `
+        <div class="cms-faq-item box-inner">
+            <div class="faq-details">
+                <h4>${prod.name}</h4>
+                <p>$${prod.price} | ${prod.description}</p>
+            </div>
+            <button class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="openProductModal('${prod.id}')">EDIT</button>
+        </div>
+    `).join('');
+}
+
+window.activeProductId = null;
+
+window.openProductModal = function(prodId = null) {
+    const nameInput = document.getElementById('productNameInput');
+    const priceInput = document.getElementById('productPriceInput');
+    const imageInput = document.getElementById('productImageInput');
+    const descInput = document.getElementById('productDescInput');
+    const deleteBtn = document.getElementById('deleteProductBtn');
+    const productIdInput = document.getElementById('productIdInput');
+    const title = document.getElementById('productModalTitle');
+
+    if (prodId) {
+        const prod = window.dbProducts.find(p => p.id === prodId);
+        if (!prod) return;
+
+        window.activeProductId = prodId;
+        productIdInput.value = prodId;
+        nameInput.value = prod.name;
+        priceInput.value = prod.price;
+        imageInput.value = prod.image || '';
+        descInput.value = prod.description;
+        deleteBtn.style.display = 'block';
+        title.textContent = 'Edit Product';
+    } else {
+        window.activeProductId = null;
+        productIdInput.value = '';
+        nameInput.value = '';
+        priceInput.value = '';
+        imageInput.value = '';
+        descInput.value = '';
+        deleteBtn.style.display = 'none';
+        title.textContent = 'Add Product';
+    }
+
+    document.getElementById('productModal').style.display = 'flex';
+}
+
+window.closeProductModal = function() {
+    document.getElementById('productModal').style.display = 'none';
+    window.activeProductId = null;
+}
+
+window.saveProductItem = async function() {
+    const name = document.getElementById('productNameInput').value;
+    const price = parseFloat(document.getElementById('productPriceInput').value);
+    const image = document.getElementById('productImageInput').value || 'assets/tattoo_front_desk_1781911857115.png';
+    const description = document.getElementById('productDescInput').value;
+
+    if (!name || isNaN(price) || !description) {
+        alert("Please fill all required fields.");
+        return;
+    }
+
+    try {
+        if (window.activeProductId) {
+            await setDoc(doc(db, "products", window.activeProductId), {
+                name, price, image, description
+            }, { merge: true });
+        } else {
+            const newId = `product_${Date.now()}`;
+            await setDoc(doc(db, "products", newId), {
+                name, price, image, description
+            });
+        }
+
+        alert("Product saved!");
+        window.closeProductModal();
+        await window.loadClientShopProducts();
+        window.renderCMSProducts();
+        window.loadShopWebsite();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+window.deleteProductItem = async function() {
+    if (!window.activeProductId) return;
+    if (!confirm("Delete this product?")) return;
+
+    try {
+        await deleteDoc(doc(db, "products", window.activeProductId));
+        alert("Product deleted!");
+        window.closeProductModal();
+        await window.loadClientShopProducts();
+        window.renderCMSProducts();
+        window.loadShopWebsite();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// SEO Meta Config
+window.loadSeoSettings = async function() {
+    const pageSelect = document.getElementById('seoPageSelect');
+    const titleInput = document.getElementById('seoTitleInput');
+    const descInput = document.getElementById('seoDescInput');
+    const keywordsInput = document.getElementById('seoKeywordsInput');
+
+    if (!pageSelect || !titleInput) return;
+
+    const pageKey = pageSelect.value;
+    let titleText = "Diamond Tip Tattoo";
+    let descText = "Private tattoo atelier for custom work.";
+    let keywordsText = "tattoo, Dapto";
+
+    if (window.dbSeo[pageKey]) {
+        titleText = window.dbSeo[pageKey].title || titleText;
+        descText = window.dbSeo[pageKey].description || descText;
+        keywordsText = window.dbSeo[pageKey].keywords || keywordsText;
+    }
+
+    titleInput.value = titleText;
+    descInput.value = descText;
+    keywordsInput.value = keywordsText;
+}
+
+window.saveSeoItem = async function(e) {
+    if (e) e.preventDefault();
+    const pageSelect = document.getElementById('seoPageSelect');
+    const titleInput = document.getElementById('seoTitleInput');
+    const descInput = document.getElementById('seoDescInput');
+    const keywordsInput = document.getElementById('seoKeywordsInput');
+    const feedback = document.getElementById('seoFeedback');
+
+    if (!pageSelect || !titleInput || !feedback) return;
+
+    const pageKey = pageSelect.value;
+    window.dbSeo[pageKey] = {
+        title: titleInput.value,
+        description: descInput.value,
+        keywords: keywordsInput.value
+    };
+
+    try {
+        await setDoc(doc(db, "content", "seo"), window.dbSeo);
+        feedback.textContent = "SEO Settings Saved!";
+        setTimeout(() => { feedback.textContent = ""; }, 3000);
+        updateSEOMeta(window.location.hash || '#home');
+    } catch (err) {
+        console.error(err);
+        alert(err.message);
+    }
+}
+
+window.fetchCMSDataCache = async function() {
+    try {
+        const bSnap = await getDocs(collection(db, "blogs"));
+        window.dbBlogs = [];
+        bSnap.forEach(d => {
+            window.dbBlogs.push({ id: d.id, ...d.data() });
+        });
+
+        const pSnap = await getDocs(collection(db, "products"));
+        window.dbProducts = [];
+        pSnap.forEach(d => {
+            window.dbProducts.push({ id: d.id, ...d.data() });
+        });
+
+        const sSnap = await getDoc(doc(db, "content", "seo"));
+        if (sSnap.exists()) {
+            window.dbSeo = sSnap.data();
+        }
+    } catch (e) {
+        console.error(e);
     }
 }

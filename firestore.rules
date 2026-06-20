@@ -1,17 +1,53 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /bookings/{bookingId} {
-      allow create: if true; // Public can create bookings
-      allow read, write: if request.auth != null; // Authed users can manage
+    
+    function isAdmin() {
+      return request.auth != null && 
+        (request.auth.token.email.lower() == 'stormychaseforrester@gmail.com' ||
+         request.auth.token.email.lower() == 'stormyforrester@gmail.com' ||
+         request.auth.token.email.lower() == 'chaseforrester@gmail.com' ||
+         request.auth.token.email.lower() == 'hello@diamondtiptattoo.com' ||
+         exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower())));
     }
-    match /content/{documentId} {
-      allow read: if true; // Public can read content
-      allow write: if request.auth != null; // Authed users can update content
-    }
+
     match /admins/{email} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    match /bookings/{bookingId} {
+      allow create: if true;
+      allow read, write: if request.auth != null; // Authed users and admins
+    }
+
+    match /content/{documentId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /blogs/{blogId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /giftcards/{cardId} {
+      allow create: if true;
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    match /chats/{chatId} {
+      allow create, read, write: if true; // Public chat can send/read, admin reads/replies
+    }
+
+    match /clients/{clientId} {
+      allow read, write: if request.auth != null && (request.auth.uid == clientId || isAdmin());
     }
   }
 }
