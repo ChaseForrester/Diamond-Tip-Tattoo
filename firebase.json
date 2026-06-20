@@ -1,7 +1,11 @@
 {
   "auth": {
     "providers": {
-      "emailPassword": true
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Diamond Tip Tattoo",
+        "supportEmail": "stormychaseforrester@gmail.com"
+      }
     }
   },
   "hosting": {
