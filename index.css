@@ -1419,20 +1419,67 @@ footer {
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
+    z-index: 10;
+}
+
+/* Smoke Particle System */
+.smoke-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 250px;
+    height: 250px;
+    pointer-events: none;
+    z-index: 1;
+}
+.smoke-particle {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    background: rgba(230, 57, 70, 0.05); /* very faint red smoke */
+    border-radius: 50%;
+    filter: blur(18px);
+    opacity: 0;
+    animation: smokeRise 3.5s infinite ease-out;
+}
+.smoke-particle:nth-child(1) { animation-delay: 0s; left: 45%; }
+.smoke-particle:nth-child(2) { animation-delay: 0.7s; left: 52%; }
+.smoke-particle:nth-child(3) { animation-delay: 1.4s; left: 48%; }
+.smoke-particle:nth-child(4) { animation-delay: 2.1s; left: 54%; }
+.smoke-particle:nth-child(5) { animation-delay: 2.8s; left: 41%; }
+
+@keyframes smokeRise {
+    0% {
+        transform: translateY(0) scale(0.8);
+        opacity: 0;
+    }
+    12% {
+        opacity: 0.6;
+    }
+    100% {
+        transform: translateY(-160px) scale(3.8);
+        opacity: 0;
+        background: rgba(255, 255, 255, 0.02); /* fades to dark grey/white */
+    }
 }
 
 .loader-diamond {
-    width: 120px;
-    height: 120px;
-    fill: none;
+    width: 140px;
+    height: 140px;
     stroke: var(--accent);
     stroke-width: 1.5;
     stroke-linecap: round;
     stroke-linejoin: round;
-    stroke-dasharray: 450;
-    stroke-dashoffset: 450;
-    animation: drawDiamond 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-    filter: drop-shadow(0 0 10px rgba(230, 57, 70, 0.7));
+    stroke-dasharray: 600;
+    stroke-dashoffset: 600;
+    animation: drawDiamond 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    filter: drop-shadow(0 0 12px rgba(230, 57, 70, 0.8));
+    position: relative;
+    z-index: 10;
 }
 
 @keyframes drawDiamond {

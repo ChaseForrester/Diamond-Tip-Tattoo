@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
             setTimeout(() => {
                 loader.style.display = 'none';
             }, 800);
-        }, 2500);
+        }, 3000);
     }
 
     // Mobile Hamburger Menu Toggle

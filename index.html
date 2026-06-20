@@ -13,15 +13,26 @@
 
 <!-- Start Intro Loader -->
 <div id="introLoader" class="intro-loader">
-    <div class="loader-content">
-        <svg class="loader-diamond" viewBox="0 0 100 100">
-            <polygon points="50,15 85,45 50,85 15,45" />
-            <line x1="50" y1="15" x2="50" y2="85" />
-            <line x1="15" y1="45" x2="85" y2="45" />
-            <line x1="50" y1="15" x2="35" y2="45" />
-            <line x1="50" y1="15" x2="65" y2="45" />
-            <line x1="35" y1="45" x2="50" y2="85" />
-            <line x1="65" y1="45" x2="50" y2="85" />
+    <!-- Smoke particles container -->
+    <div class="smoke-container">
+        <div class="smoke-particle"></div>
+        <div class="smoke-particle"></div>
+        <div class="smoke-particle"></div>
+        <div class="smoke-particle"></div>
+        <div class="smoke-particle"></div>
+    </div>
+    
+    <div class="loader-content" style="z-index: 10;">
+        <svg class="loader-diamond" viewBox="0 0 100 100" width="140" height="140" fill="none">
+            <!-- Center Diamond -->
+            <polygon points="50,25 75,50 50,75 25,50" fill="none" stroke="#e63946" stroke-width="1.5" />
+            <!-- Tribal Inner Accent Lines -->
+            <path d="M 50,25 L 50,75" stroke="#e63946" stroke-width="1" />
+            <path d="M 25,50 L 75,50" stroke="#e63946" stroke-width="1" />
+            <!-- Tribal Left wing curve -->
+            <path d="M 50,15 C 35,25 20,35 15,50 C 25,55 35,50 50,85 C 40,65 42,55 50,25" fill="none" stroke="#e63946" stroke-width="1.5" stroke-linecap="round" />
+            <!-- Tribal Right wing curve -->
+            <path d="M 50,15 C 65,25 80,35 85,50 C 75,55 65,50 50,85 C 60,65 58,55 50,25" fill="none" stroke="#e63946" stroke-width="1.5" stroke-linecap="round" />
         </svg>
         <h1 class="loader-title">Diamond Tip Tattoo</h1>
         <p class="loader-subtitle">TATTOO ATELIER</p>
