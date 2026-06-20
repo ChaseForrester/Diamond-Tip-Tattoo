@@ -268,3 +268,215 @@ footer { background: #080808; border-top: 1px solid var(--border); padding: 4rem
 .close-modal:hover { color: var(--accent); }
 .error-text { color: #ff4d4d; font-size: 0.85rem; margin-bottom: 1rem; text-align: center; min-height: 1.2rem; }
 
+/* File Upload Styles */
+.file-preview-item {
+    position: relative;
+    border: 1px solid var(--border);
+    padding: 0.25rem;
+    background: rgba(255, 255, 255, 0.02);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80px;
+    width: 80px;
+}
+.file-preview-item img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+}
+.file-preview-item .remove-file-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4d4d;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    line-height: 18px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 0;
+}
+
+/* CRM Table */
+.crm-table th, .crm-table td {
+    padding: 1rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+.crm-table tbody tr {
+    transition: background 0.2s;
+}
+.crm-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Portal Nav */
+.portal-nav li {
+    padding: 0.25rem 0;
+}
+.portal-nav li.active a {
+    color: var(--accent) !important;
+}
+.portal-nav li a {
+    transition: color 0.3s;
+}
+.portal-nav li a:hover {
+    color: var(--text) !important;
+}
+
+/* Badges */
+.badge {
+    border-radius: 2px;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    font-weight: bold;
+    display: inline-block;
+}
+.badge-status {
+    padding: 0.25rem 0.5rem;
+}
+.badge-status.pending {
+    background: rgba(255, 161, 0, 0.1);
+    color: #ffa100;
+    border: 1px solid #ffa100;
+}
+.badge-status.confirmed {
+    background: rgba(0, 200, 115, 0.1);
+    color: #00c873;
+    border: 1px solid #00c873;
+}
+.badge-status.cancelled {
+    background: rgba(255, 77, 77, 0.1);
+    color: #ff4d4d;
+    border: 1px solid #ff4d4d;
+}
+.badge-status.completed {
+    background: rgba(0, 155, 229, 0.1);
+    color: #039be5;
+    border: 1px solid #039be5;
+}
+
+/* Calendar Days Grid */
+.calendar-days-grid .day-cell {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--border);
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    position: relative;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.01);
+    transition: background 0.3s, border-color 0.3s;
+}
+.calendar-days-grid .day-cell:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--accent);
+}
+.calendar-days-grid .day-cell.empty {
+    background: none;
+    border: none;
+    cursor: default;
+    pointer-events: none;
+}
+.calendar-days-grid .day-cell.today {
+    border-color: var(--accent);
+    background: rgba(181, 150, 93, 0.05);
+}
+.calendar-days-grid .day-cell.selected {
+    background: var(--accent);
+    color: #111;
+}
+.calendar-days-grid .day-cell .day-num {
+    font-weight: 500;
+}
+.calendar-days-grid .day-cell .day-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-bottom: 0.25rem;
+}
+.calendar-days-grid .day-cell.selected .day-indicator {
+    background: #111;
+}
+
+/* CRM List Booking item */
+.crm-booking-item {
+    border: 1px solid var(--border);
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.01);
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+.crm-booking-item:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* CMS Gallery Styles */
+.cms-portfolio-item {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+.cms-portfolio-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+.cms-portfolio-item:hover img {
+    transform: scale(1.05);
+}
+.cms-portfolio-item .cms-delete-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(255, 77, 77, 0.9);
+    color: #fff;
+    border: none;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    letter-spacing: 0.5px;
+}
+.cms-portfolio-item:hover .cms-delete-btn {
+    opacity: 1;
+}
+
+/* CMS FAQ edit row */
+.cms-faq-item {
+    border: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.01);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+.cms-faq-item .faq-details {
+    flex: 1;
+}
+.cms-faq-item .faq-details h4 {
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+    color: #fff;
+}
+.cms-faq-item .faq-details p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+

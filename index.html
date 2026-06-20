@@ -19,11 +19,12 @@
         <li><a href="#process">Process</a></li>
         <li><a href="#faq">FAQ</a></li>
     </ul>
-    <div style="display: flex; gap: 1rem;">
-        <button id="loginBtn" class="btn btn-outline">LOGIN</button>
-        <button id="logoutBtn" class="btn btn-outline" style="display: none;">LOGOUT</button>
-        <a href="#book" class="btn btn-solid">BOOK CONSULTATION</a>
-    </div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <button id="portalBtn" class="btn btn-solid" style="display: none; background: var(--accent); color: #111;">PORTAL</button>
+            <button id="loginBtn" class="btn btn-outline">LOGIN</button>
+            <button id="logoutBtn" class="btn btn-outline" style="display: none;">LOGOUT</button>
+            <a href="#book" id="bookNavBtn" class="btn btn-solid">BOOK CONSULTATION</a>
+        </div>
 </nav>
 
 <header id="home" class="hero fade-in">
@@ -51,7 +52,7 @@
         <p class="subtitle">OUR SPECIALTIES</p>
         <h2>Expertise in Every Style</h2>
     </div>
-    <div class="grid-4">
+    <div class="grid-4" id="specialtiesGrid">
         <div class="card spec-card">
             <img src="assets/style_fineline_1781912087176.png" alt="Fine Line">
             <div class="card-content">
@@ -92,7 +93,7 @@
         <p class="subtitle">OUR ARTISTS</p>
         <h2>Masters of Their Craft</h2>
     </div>
-    <div class="grid-4">
+    <div class="grid-4" id="artistsGrid">
         <div class="artist-card">
             <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=300&q=80" alt="Adrian V.">
             <div class="artist-info">
@@ -136,7 +137,7 @@
         </div>
         <a href="#" class="explore">VIEW FULL PORTFOLIO &rarr;</a>
     </div>
-    <div class="portfolio-grid">
+    <div class="portfolio-grid" id="portfolioGrid">
         <img src="assets/style_fineline_1781912087176.png" alt="Work 1">
         <img src="assets/style_blackgrey_1781912097975.png" alt="Work 2">
         <img src="assets/style_realism_1781912108842.png" alt="Work 3">
@@ -219,18 +220,43 @@
     <div class="booking-form box">
         <h2>BOOK A PRIVATE CONSULTATION</h2>
         <p>Let's create something timeless.</p>
-        <form>
+        <form id="bookingForm">
             <div class="form-row">
-                <input type="text" placeholder="Full Name" required>
-                <input type="email" placeholder="Email Address" required>
+                <input type="text" id="bookingName" placeholder="Full Name" required>
+                <input type="email" id="bookingEmail" placeholder="Email Address" required>
             </div>
             <div class="form-row">
-                <input type="tel" placeholder="Phone Number">
-                <input type="date" placeholder="Preferred Date">
+                <input type="tel" id="bookingPhone" placeholder="Phone Number">
+                <input type="date" id="bookingDate" placeholder="Preferred Date">
             </div>
-            <textarea placeholder="Tell us about your idea..." rows="4"></textarea>
-            <div class="form-footer">
-                <button type="submit" class="btn btn-solid">REQUEST CONSULTATION</button>
+            <div class="form-row">
+                <select id="bookingStyle" required style="width: 100%; padding: 1rem; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: var(--font-body); border-radius: 0; outline: none; transition: border-color 0.3s;">
+                    <option value="" disabled selected style="background: var(--bg); color: var(--text-secondary);">Select Preferred Style</option>
+                    <option value="Fine Line" style="background: var(--bg); color: var(--text);">Fine Line</option>
+                    <option value="Black & Grey" style="background: var(--bg); color: var(--text);">Black & Grey</option>
+                    <option value="Realism" style="background: var(--bg); color: var(--text);">Realism</option>
+                    <option value="Custom Design" style="background: var(--bg); color: var(--text);">Custom Design</option>
+                </select>
+            </div>
+            <textarea id="bookingIdea" placeholder="Tell us about your idea (size, placement, details)..." rows="4" required></textarea>
+            
+            <div class="upload-container" style="border: 1px dashed var(--border); padding: 1.5rem; text-align: center; margin-top: 1rem; cursor: pointer; transition: border-color 0.3s; background: rgba(255,255,255,0.01);">
+                <label for="bookingFiles" style="cursor: pointer; display: block;">
+                    <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">📁</span>
+                    <p style="margin: 0.25rem 0;">Drag & drop or <strong style="color: var(--accent);">browse files</strong></p>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-top: 0.25rem;">Upload reference images (max 5 files, 5MB each)</span>
+                </label>
+                <input type="file" id="bookingFiles" multiple accept="image/*,application/pdf" style="display: none;">
+                <div id="filePreviewGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.75rem; margin-top: 1rem;"></div>
+            </div>
+            
+            <div class="progress-bar-container" id="uploadProgressContainer" style="display: none; margin-top: 1rem; background: rgba(255,255,255,0.05); padding: 0.75rem; border: 1px solid var(--border);">
+                <div id="uploadProgressLabel" style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--accent);">Uploading files... 0%</div>
+                <div style="height: 4px; background: rgba(255,255,255,0.1); width: 100%;"><div id="uploadProgressFill" style="height: 100%; background: var(--accent); width: 0%; transition: width 0.2s;"></div></div>
+            </div>
+
+            <div class="form-footer" style="margin-top: 1.5rem;">
+                <button type="submit" id="bookingSubmitBtn" class="btn btn-solid">REQUEST CONSULTATION</button>
                 <span class="privacy-note">By submitting, you agree to our Privacy Policy.</span>
             </div>
         </form>
@@ -274,7 +300,7 @@
 <section id="info" class="section bottom-info slide-up">
     <div class="info-col box">
         <h3>FAQ</h3>
-        <div class="accordion">
+        <div class="accordion" id="faqAccordion">
             <div class="acc-item">
                 <button class="acc-btn">How do I book an appointment? <span>+</span></button>
                 <div class="acc-content"><p>Fill out the booking form to request a consultation.</p></div>
@@ -334,9 +360,8 @@
         <div class="footer-social">
             <h4>FOLLOW US</h4>
             <ul>
-                <li><a href="#">Instagram</a></li>
-                <li><a href="#">Facebook</a></li>
-                <li><a href="#">YouTube</a></li>
+                <li><a href="https://www.instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener">Instagram</a></li>
+                <li><a href="https://www.facebook.com/profile.php?id=100049840695666" target="_blank" rel="noopener">Facebook</a></li>
             </ul>
         </div>
         <div class="footer-contact">
@@ -375,6 +400,217 @@
     </div>
 </div>
 
-<script type="module" src="app.js"></script>
-</body>
+    <!-- Portal Section (Admin CRM / Client Portal) -->
+    <section id="portalSection" class="section portal-section" style="display: none; padding: 8rem 5% 4rem; min-height: 100vh; background: var(--bg); position: relative; z-index: 100;">
+        <div class="portal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <h2 id="portalTitle" style="font-family: var(--font-display); letter-spacing: 2px;">Client Portal</h2>
+                <span id="adminBadge" class="badge" style="display: none; background: var(--accent); color: #111; padding: 0.25rem 0.5rem; font-size: 0.75rem; font-family: var(--font-body); letter-spacing: 1px; font-weight: 600;">ADMIN</span>
+            </div>
+            <button id="closePortalBtn" class="btn btn-outline" style="border-color: var(--border);">Back to Website</button>
+        </div>
+        
+        <div class="portal-layout" style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem; align-items: start;">
+            <!-- Sidebar Navigation -->
+            <div class="portal-sidebar box" style="padding: 1.5rem; border: 1px solid var(--border); background: rgba(255,255,255,0.01);">
+                <ul class="portal-nav" style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; padding: 0;">
+                    <li id="navMyBookings" class="active" style="border-left: 2px solid var(--accent); padding-left: 0.75rem;"><a href="#" id="linkMyBookings" style="color: var(--text); text-decoration: none; font-size: 0.95rem; font-weight: 500; letter-spacing: 1px;">MY BOOKINGS</a></li>
+                    <li id="navCalendarCRM" style="display: none; border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" id="linkCalendarCRM" style="color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; font-weight: 500; letter-spacing: 1px;">CALENDAR CRM</a></li>
+                    <li id="navCMS" style="display: none; border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" id="linkCMS" style="color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; font-weight: 500; letter-spacing: 1px;">MANAGE SITE CONTENT</a></li>
+                </ul>
+            </div>
+            
+            <!-- Main Content Area -->
+            <div class="portal-content">
+                <!-- Client: My Bookings Tab -->
+                <div id="tabMyBookings" class="portal-tab-content active" style="display: block;">
+                     <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
+                         <h3 style="margin-bottom: 1.5rem; font-family: var(--font-display); letter-spacing: 1px;">Your Booking Requests</h3>
+                         <div id="clientBookingsList" class="bookings-list-container" style="display: flex; flex-direction: column; gap: 1rem;">
+                             <p style="color: var(--text-secondary);">No bookings found.</p>
+                         </div>
+                     </div>
+                </div>
+                
+                <!-- Admin: Calendar CRM Tab -->
+                <div id="tabCalendarCRM" class="portal-tab-content" style="display: none;">
+                    <div class="grid-2" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; align-items: start; margin-bottom: 2rem;">
+                        <!-- Calendar Panel -->
+                        <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
+                            <div class="calendar-header-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                <h3 id="calendarMonthYear" style="font-family: var(--font-display); font-size: 1.25rem;">June 2026</h3>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button id="prevMonthBtn" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">&larr;</button>
+                                    <button id="nextMonthBtn" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">&rarr;</button>
+                                </div>
+                            </div>
+                            <div class="calendar-grid-container">
+                                <div class="calendar-weekdays" style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 500; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+                                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                                </div>
+                                <div id="calendarDaysGrid" class="calendar-days-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 0.5rem; column-gap: 0.25rem; text-align: center;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Selected Day Drawer -->
+                        <div class="box" style="padding: 2rem; border: 1px solid var(--border); min-height: 380px; display: flex; flex-direction: column;">
+                            <h3 id="selectedDayLabel" style="font-family: var(--font-display); font-size: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 1rem;">Appointments</h3>
+                            <div id="dayBookingsList" class="bookings-list-container" style="flex: 1; display: flex; flex-direction: column; gap: 0.75rem;">
+                                <p style="color: var(--text-secondary);">Select a date to view appointments.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- All Bookings Table/List Panel -->
+                    <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                            <h3 style="font-family: var(--font-display); letter-spacing: 1px;">All Bookings List</h3>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <input type="text" id="bookingSearchInput" placeholder="Search client name/email..." style="padding: 0.5rem 1rem; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: #fff; border-radius: 0; font-family: var(--font-body); font-size: 0.9rem; outline: none; width: 220px;">
+                                <select id="bookingFilterStatus" style="padding: 0.5rem; border: 1px solid var(--border); background: var(--bg); color: #fff; border-radius: 0; font-family: var(--font-body); font-size: 0.9rem; outline: none;">
+                                    <option value="all">All Statuses</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Confirmed">Confirmed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                            <table class="crm-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--border); color: var(--text-secondary);">
+                                        <th style="padding: 0.75rem 0.5rem; font-weight: 500;">Client</th>
+                                        <th style="padding: 0.75rem 0.5rem; font-weight: 500;">Style</th>
+                                        <th style="padding: 0.75rem 0.5rem; font-weight: 500;">Preferred Date</th>
+                                        <th style="padding: 0.75rem 0.5rem; font-weight: 500;">Status</th>
+                                        <th style="padding: 0.75rem 0.5rem; font-weight: 500;">Artist</th>
+                                        <th style="padding: 0.75rem 0.5rem; font-weight: 500; text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="crmBookingsTableBody">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Admin: CMS Tab -->
+                <div id="tabCMS" class="portal-tab-content" style="display: none;">
+                    <!-- Portfolio Manager -->
+                    <div class="box" style="padding: 2rem; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                        <h3 style="font-family: var(--font-display); margin-bottom: 0.5rem;">Manage Portfolio</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Upload new works or remove current works from the live gallery.</p>
+                        <div style="border: 1px dashed var(--border); padding: 1.5rem; text-align: center; margin-bottom: 1.5rem; background: rgba(255,255,255,0.01); cursor: pointer;">
+                            <label for="cmsPortfolioFile" style="cursor: pointer; display: block; width: 100%;">
+                                <span style="font-size: 1.5rem; display: block; margin-bottom: 0.25rem;">📤</span>
+                                <span>Upload New Work</span>
+                            </label>
+                            <input type="file" id="cmsPortfolioFile" accept="image/*" style="display: none;">
+                        </div>
+                        <div id="cmsPortfolioGrid" class="portfolio-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- FAQ Manager -->
+                    <div class="box" style="padding: 2rem; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h3 style="font-family: var(--font-display);">Manage FAQ</h3>
+                            <button id="cmsAddFaqBtn" class="btn btn-solid" style="padding: 0.5rem 1rem; font-size: 0.85rem;">+ Add Question</button>
+                        </div>
+                        <div id="cmsFaqList" class="cms-faq-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Details / Edit Modal -->
+    <div id="bookingModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 200; padding: 1rem;">
+        <div class="modal-content box" style="max-width: 600px; width: 100%; border: 1px solid var(--border); padding: 2rem; background: var(--bg); position: relative;">
+            <span class="close-modal" id="closeBookingModalBtn" style="position: absolute; top: 1rem; right: 1.5rem; font-size: 2rem; cursor: pointer; color: var(--text-secondary); transition: color 0.3s;">&times;</span>
+            <h2 id="modalBookingClient" style="font-family: var(--font-display); letter-spacing: 1px; margin-bottom: 0.25rem;">Booking Details</h2>
+            <p class="subtitle" id="modalBookingId" style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">ID: --</p>
+            
+            <div class="modal-body-grid" style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+                    <div><strong style="font-size: 0.85rem; color: var(--text-secondary); display: block;">Email:</strong> <span id="mBookingEmail">--</span></div>
+                    <div><strong style="font-size: 0.85rem; color: var(--text-secondary); display: block;">Phone:</strong> <span id="mBookingPhone">--</span></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+                    <div><strong style="font-size: 0.85rem; color: var(--text-secondary); display: block;">Preferred Date:</strong> <span id="mBookingDate">--</span></div>
+                    <div><strong style="font-size: 0.85rem; color: var(--text-secondary); display: block;">Style:</strong> <span id="mBookingStyle">--</span></div>
+                </div>
+                <div style="border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+                    <strong style="font-size: 0.85rem; color: var(--text-secondary); display: block;">Idea / Details:</strong>
+                    <p id="mBookingIdea" style="margin-top: 0.25rem; white-space: pre-wrap; font-size: 0.95rem; line-height: 1.4;"></p>
+                </div>
+                
+                <div id="mBookingImagesContainer">
+                    <strong style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Reference Images:</strong>
+                    <div class="file-preview-grid" id="mBookingImagesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem;"></div>
+                </div>
+                
+                <!-- Admin Controls -->
+                <div id="adminBookingControls" style="border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 150px;">
+                            <label for="mBookingStatusSelect" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Status:</strong></label>
+                            <select id="mBookingStatusSelect" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); background: #222; color: #fff; border-radius: 0; margin-top: 0.25rem;">
+                                <option value="Pending">Pending</option>
+                                <option value="Confirmed">Confirmed</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label for="mBookingArtistSelect" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Assign Artist:</strong></label>
+                            <select id="mBookingArtistSelect" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); background: #222; color: #fff; border-radius: 0; margin-top: 0.25rem;">
+                                <option value="Unassigned">Unassigned</option>
+                                <option value="Adrian V.">Adrian V.</option>
+                                <option value="Luna M.">Luna M.</option>
+                                <option value="Marcus D.">Marcus D.</option>
+                                <option value="Isabella R.">Isabella R.</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="mBookingNotes" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Internal Notes:</strong></label>
+                        <textarea id="mBookingNotes" placeholder="Add internal notes..." rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); background: #222; color: #fff; border-radius: 0; margin-top: 0.25rem; resize: vertical; font-family: var(--font-body); font-size: 0.9rem;"></textarea>
+                    </div>
+                    <button id="saveBookingDetailsBtn" class="btn btn-solid" style="width: 100%; margin-top: 0.5rem;">SAVE CHANGES</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Edit Modal -->
+    <div id="faqModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 200; padding: 1rem;">
+        <div class="modal-content box" style="max-width: 500px; width: 100%; border: 1px solid var(--border); padding: 2rem; background: var(--bg); position: relative;">
+            <span class="close-modal" id="closeFaqModalBtn" style="position: absolute; top: 1rem; right: 1.5rem; font-size: 2rem; cursor: pointer; color: var(--text-secondary); transition: color 0.3s;">&times;</span>
+            <h2 id="faqModalTitle" style="font-family: var(--font-display); letter-spacing: 1px; margin-bottom: 0.5rem;">Add/Edit FAQ</h2>
+            <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+                <input type="hidden" id="faqIdInput">
+                <div>
+                     <label for="faqQuestionInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Question:</strong></label>
+                     <input type="text" id="faqQuestionInput" required style="width: 100%; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; border-radius: 0; margin-top: 0.25rem; font-family: var(--font-body); font-size: 0.95rem; outline: none;">
+                </div>
+                <div>
+                     <label for="faqAnswerInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Answer:</strong></label>
+                     <textarea id="faqAnswerInput" required rows="4" style="width: 100%; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; border-radius: 0; margin-top: 0.25rem; resize: vertical; font-family: var(--font-body); font-size: 0.95rem; outline: none;"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 0.5rem;">
+                    <button id="deleteFaqBtn" class="btn btn-outline" style="border-color: #ff4d4d; color: #ff4d4d; display: none;" onclick="deleteFaqItem()">DELETE</button>
+                    <button id="saveFaqItemBtn" class="btn btn-solid">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+    </body>
 </html>
