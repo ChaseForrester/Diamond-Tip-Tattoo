@@ -547,9 +547,13 @@ onAuthStateChanged(auth, async (user) => {
         // 1. Authorize role: check hardcoded admins or admins collection
         try {
             const adminDoc = await getDoc(doc(db, "admins", user.email.toLowerCase()));
-            if (adminDoc.exists() || 
-                user.email.toLowerCase() === 'stormychaseforrester@gmail.com' || 
-                user.email.toLowerCase() === 'hello@diamondtiptattoo.com') {
+            const adminEmails = [
+                'stormychaseforrester@gmail.com',
+                'stormyforrester@gmail.com',
+                'chaseforrester@gmail.com',
+                'hello@diamondtiptattoo.com'
+            ];
+            if (adminDoc.exists() || adminEmails.includes(user.email.toLowerCase())) {
                 
                 isAdmin = true;
                 document.getElementById('adminBadge').style.display = 'inline-block';
@@ -687,6 +691,8 @@ async function seedDatabaseIfNeeded() {
 
             // Seed Admin emails
             await setDoc(doc(db, "admins", "stormychaseforrester@gmail.com"), { role: "super_admin" });
+            await setDoc(doc(db, "admins", "stormyforrester@gmail.com"), { role: "super_admin" });
+            await setDoc(doc(db, "admins", "chaseforrester@gmail.com"), { role: "super_admin" });
             await setDoc(doc(db, "admins", "hello@diamondtiptattoo.com"), { role: "super_admin" });
 
             console.log("Seeding completed successfully.");
