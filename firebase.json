@@ -3,5 +3,15 @@
     "providers": {
       "emailPassword": true
     }
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      ".git/**",
+      ".firebase/**"
+    ]
   }
 }

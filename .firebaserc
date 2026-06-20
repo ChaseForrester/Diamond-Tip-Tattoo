@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "diamond-tip-tattoo"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }
