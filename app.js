@@ -89,17 +89,205 @@ document.addEventListener("DOMContentLoaded", () => {
                 navLinks.classList.remove('open');
             });
         });
+
+        // Close drawer when action buttons are clicked
+        navLinks.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                menuToggle.classList.remove('open');
+                navLinks.classList.remove('open');
+            });
+        });
     }
 
-    // Scroll effects
-    const navbar = document.querySelector('.navbar');
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-            navbar.style.borderBottom = "1px solid var(--accent)";
-        } else {
-            navbar.style.borderBottom = "1px solid var(--border)";
+    // Hero Slider Functionality
+    const sliderTitle = document.getElementById('sliderTitle');
+    const sliderBgText = document.getElementById('sliderBgText');
+    const sliderLocationTag = document.getElementById('sliderLocationTag');
+    const sliderMainImg = document.getElementById('sliderMainImg');
+    const sliderTeaserImg = document.getElementById('sliderTeaserImg');
+    const sliderAction1 = document.getElementById('sliderAction1');
+    const sliderAction2 = document.getElementById('sliderAction2');
+    const sliderPrevBtn = document.getElementById('sliderPrevBtn');
+    const sliderNextBtn = document.getElementById('sliderNextBtn');
+    const sliderCurrentNum = document.getElementById('sliderCurrentNum');
+    const sliderDotsContainer = document.getElementById('sliderDots');
+    const sliderTeaserFrame = document.getElementById('sliderTeaserFrame');
+    const homeHeader = document.getElementById('home');
+
+    const heroSlides = [
+      {
+        title: "EXPERT TATTOOS<br>& PIERCINGS",
+        bgText: "TATTOOS",
+        mainImg: "assets/tattoo_model_main.png",
+        teaserImg: "assets/tattoo_model_secondary.png",
+        location: "Private Atelier, Dapto",
+        actionText1: "SCHEDULE AN APPOINTMENT",
+        actionText2: "OUR SERVICES",
+        actionLink1: "#book",
+        actionLink2: "#specialties"
+      },
+      {
+        title: "FINE LINE<br>& REALISM",
+        bgText: "FINE LINE",
+        mainImg: "assets/tattoo_workspace_1781911831357.png",
+        teaserImg: "assets/style_fineline_1781912087176.png",
+        location: "Masters of Fine Line",
+        actionText1: "MEET OUR ARTISTS",
+        actionText2: "VIEW PORTFOLIO",
+        actionLink1: "#artists",
+        actionLink2: "#portfolio"
+      },
+      {
+        title: "CUSTOM INK<br>& DESIGNS",
+        bgText: "CUSTOM INK",
+        mainImg: "assets/tattoo_chest_1781911844150.png",
+        teaserImg: "assets/style_custom_1781912121519.png",
+        location: "Unique To You",
+        actionText1: "BOOK CONSULTATION",
+        actionText2: "READ OUR PROCESS",
+        actionLink1: "#book",
+        actionLink2: "#process"
+      },
+      {
+        title: "UNCOMPROMISING<br>QUALITY",
+        bgText: "ATELIER",
+        mainImg: "assets/tattoo_artist_1781911870037.png",
+        teaserImg: "assets/style_blackgrey_1781912097975.png",
+        location: "Diamond Tip Atelier",
+        actionText1: "SHOP AFTERCARE",
+        actionText2: "VISIT OUR BLOG",
+        actionLink1: "#shop",
+        actionLink2: "#blog"
+      }
+    ];
+
+    let currentSlideIndex = 0;
+    let isTransitioning = false;
+    let sliderTimer = null;
+
+    function initSlider() {
+        if (!homeHeader) return;
+        
+        // Trigger initial slide reveal transition after page load
+        setTimeout(() => {
+            homeHeader.classList.add('slide-in');
+        }, 3100); // Trigger after intro loader fades out
+
+        // Dot Navigation
+        if (sliderDotsContainer) {
+            sliderDotsContainer.querySelectorAll('.dot').forEach((dot, idx) => {
+                dot.onclick = () => {
+                    if (idx !== currentSlideIndex) goToSlide(idx);
+                };
+            });
         }
-    });
+
+        // Arrow Navigation
+        if (sliderPrevBtn) {
+            sliderPrevBtn.onclick = () => {
+                let prevIdx = (currentSlideIndex - 1 + heroSlides.length) % heroSlides.length;
+                goToSlide(prevIdx);
+            };
+        }
+        if (sliderNextBtn) {
+            sliderNextBtn.onclick = () => {
+                let nextIdx = (currentSlideIndex + 1) % heroSlides.length;
+                goToSlide(nextIdx);
+            };
+        }
+
+        // Teaser Image Click to advance
+        if (sliderTeaserFrame) {
+            sliderTeaserFrame.onclick = () => {
+                let nextIdx = (currentSlideIndex + 1) % heroSlides.length;
+                goToSlide(nextIdx);
+            };
+        }
+
+        // Start Auto rotation
+        startAutoSlider();
+    }
+
+    function startAutoSlider() {
+        stopAutoSlider();
+        sliderTimer = setInterval(() => {
+            if (!isTransitioning) {
+                let nextIdx = (currentSlideIndex + 1) % heroSlides.length;
+                goToSlide(nextIdx);
+            }
+        }, 7000);
+    }
+
+    function stopAutoSlider() {
+        if (sliderTimer) clearInterval(sliderTimer);
+    }
+
+    function goToSlide(index) {
+        if (isTransitioning || !homeHeader) return;
+        isTransitioning = true;
+
+        // Reset timer on manual interaction
+        startAutoSlider();
+
+        // Start slide-out animations
+        homeHeader.classList.remove('slide-in');
+
+        // Wait for slide-out transition (800ms matches CSS transition)
+        setTimeout(() => {
+            currentSlideIndex = index;
+            const slide = heroSlides[currentSlideIndex];
+
+            // Update content
+            if (sliderTitle) sliderTitle.innerHTML = slide.title;
+            if (sliderBgText) sliderBgText.textContent = slide.bgText;
+            if (sliderLocationTag) sliderLocationTag.textContent = slide.location;
+            if (sliderMainImg) sliderMainImg.src = slide.mainImg;
+            if (sliderTeaserImg) sliderTeaserImg.src = slide.teaserImg;
+            
+            if (sliderAction1) {
+                sliderAction1.textContent = slide.actionText1;
+                sliderAction1.href = slide.actionLink1;
+            }
+            if (sliderAction2) {
+                sliderAction2.textContent = slide.actionText2;
+                sliderAction2.href = slide.actionLink2;
+            }
+
+            // Update counter
+            if (sliderCurrentNum) {
+                sliderCurrentNum.textContent = `0${currentSlideIndex + 1}`;
+            }
+
+            // Update dots active class
+            if (sliderDotsContainer) {
+                sliderDotsContainer.querySelectorAll('.dot').forEach((dot, idx) => {
+                    dot.classList.toggle('active', idx === currentSlideIndex);
+                });
+            }
+
+            // Trigger slide-in animations
+            homeHeader.classList.add('slide-in');
+            
+            setTimeout(() => {
+                isTransitioning = false;
+            }, 500);
+        }, 800);
+    }
+
+    // Scroll effects for Navbar
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    }
+
+    initSlider();
+
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {

@@ -54,12 +54,11 @@
 </script>
 
 <nav class="navbar">
-    <div class="logo">Diamond Tip Tattoo</div>
-    <button id="menuToggleBtn" class="menu-toggle-btn" aria-label="Toggle Menu">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
+    <div class="nav-left-group">
+        <div class="logo">Diamond Tip Tattoo</div>
+        <span class="nav-location-tag">Dapto, NSW, Australia</span>
+    </div>
+    
     <ul class="nav-links" id="navbarLinks">
         <li><a href="#home">Home</a></li>
         <li><a href="#specialties">Specialties</a></li>
@@ -69,27 +68,91 @@
         <li><a href="#blog">Blog</a></li>
         <li><a href="#shop">Shop</a></li>
         <li><a href="#faq">FAQ</a></li>
+        <li class="drawer-divider" style="height: 1px; background: var(--border); margin: 1rem 0; list-style: none;"></li>
+        <li style="list-style: none;"><button id="portalBtn" class="btn btn-solid" style="display: none; background: var(--accent); color: #111; width: 100%;">PORTAL</button></li>
+        <li style="list-style: none; margin-top: 0.5rem;"><button id="loginBtn" class="btn btn-outline" style="width: 100%;">LOGIN</button></li>
+        <li style="list-style: none; margin-top: 0.5rem;"><button id="logoutBtn" class="btn btn-outline" style="display: none; width: 100%;">LOGOUT</button></li>
+        <li style="list-style: none; margin-top: 0.5rem;"><a href="#book" id="bookNavBtn" class="btn btn-solid" style="width: 100%; text-align: center; display: block;">BOOK CONSULTATION</a></li>
     </ul>
-        <div style="display: flex; gap: 1rem; align-items: center;">
-            <button id="portalBtn" class="btn btn-solid" style="display: none; background: var(--accent); color: #111;">PORTAL</button>
-            <button id="loginBtn" class="btn btn-outline">LOGIN</button>
-            <button id="logoutBtn" class="btn btn-outline" style="display: none;">LOGOUT</button>
-            <a href="#book" id="bookNavBtn" class="btn btn-solid">BOOK CONSULTATION</a>
+    
+    <div class="nav-right-group">
+        <div class="nav-social-links">
+            <a href="https://facebook.com" target="_blank" rel="noopener">Facebook</a>
+            <a href="https://twitter.com" target="_blank" rel="noopener">Twitter</a>
+            <a href="https://instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener">Instagram</a>
         </div>
+        
+        <button id="menuToggleBtn" class="menu-toggle-btn" aria-label="Toggle Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
 </nav>
 
-<header id="home" class="hero fade-in">
-    <div class="hero-bg" style="background-image: url('assets/tattoo_artist_1781911870037.png');"></div>
-    <div class="hero-content">
-        <p class="subtitle">PRIVATE BY APPOINTMENT ONLY</p>
-        <h1>Private Ink.<br>Timeless Craft.</h1>
-        <p class="desc">A private tattoo atelier for custom work of uncompromising quality. Fine art on skin, crafted to last a lifetime.</p>
-        <div class="hero-btns">
-            <a href="#book" class="btn btn-solid">BOOK CONSULTATION</a>
-            <a href="#portfolio" class="btn btn-outline">VIEW PORTFOLIO</a>
+<header id="home" class="hero-slider-section">
+    <!-- Background Outline Text -->
+    <div class="bg-outline-text" id="sliderBgText">TATTOOS</div>
+    
+    <div class="slider-container">
+        <!-- Left Content Column -->
+        <div class="slider-left-content">
+            <p class="studio-location-tag" id="sliderLocationTag">Private Atelier, Dapto</p>
+            <h1 class="slider-main-title" id="sliderTitle">EXPERT TATTOOS<br>& PIERCINGS</h1>
+            <div class="slider-action-links">
+                <a href="#book" class="slider-link-btn" id="sliderAction1">SCHEDULE AN APPOINTMENT</a>
+                <a href="#specialties" class="slider-link-btn" id="sliderAction2">OUR SERVICES</a>
+            </div>
+            <div class="slider-scroll-indicator">
+                <span>Scroll down</span>
+                <div class="scroll-line"></div>
+            </div>
+        </div>
+        
+        <!-- Main Center Image Frame -->
+        <div class="slider-center-frame" id="sliderCenterFrame">
+            <img src="assets/tattoo_model_main.png" alt="Diamond Tip Tattoo model" class="main-slide-img" id="sliderMainImg">
+        </div>
+        
+        <!-- Right Teaser Frame ("OUR WORK") -->
+        <div class="slider-right-teaser" id="sliderTeaserFrame">
+            <div class="teaser-header">OUR WORK</div>
+            <div class="teaser-image-container">
+                <img src="assets/tattoo_model_secondary.png" alt="Diamond Tip Tattoo portfolio teaser" class="teaser-img" id="sliderTeaserImg">
+                <div class="teaser-arrow">&rarr;</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Slider Interface Elements -->
+    <div class="slider-controls-overlay">
+        <!-- Center Bottom: Slider Pagination Dots -->
+        <div class="slider-dots" id="sliderDots">
+            <span class="dot active" data-slide="0"></span>
+            <span class="dot" data-slide="1"></span>
+            <span class="dot" data-slide="2"></span>
+            <span class="dot" data-slide="3"></span>
+        </div>
+        
+        <!-- Bottom Right: Circular Navigation Arrows -->
+        <div class="slider-arrows">
+            <button class="slider-arrow-btn prev-btn" id="sliderPrevBtn" aria-label="Previous Slide">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <button class="slider-arrow-btn next-btn" id="sliderNextBtn" aria-label="Next Slide">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+        </div>
+        
+        <!-- Right Edge: Vertical Slide Counter -->
+        <div class="slider-counter">
+            <span class="current-slide" id="sliderCurrentNum">01</span>
+            <div class="counter-line"></div>
+            <span class="total-slides">04</span>
         </div>
     </div>
 </header>
+
 
 <div class="features-bar slide-up">
     <div class="feature"><span class="icon">🕰️</span><div><h4>By Appointment Only</h4><p>Private & discreet</p></div></div>
