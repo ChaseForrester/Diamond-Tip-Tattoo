@@ -23,21 +23,35 @@
     </div>
     
     <div class="loader-content" style="z-index: 10;">
-        <svg class="loader-diamond" viewBox="0 0 100 100" width="140" height="140" fill="none">
+        <svg class="loader-diamond" viewBox="0 0 100 100" width="140" height="140" fill="none" style="width: 140px; height: 140px; fill: none !important; max-width: 100%; stroke: #e63946; stroke-width: 1.5;" xmlns="http://www.w3.org/2000/svg">
             <!-- Center Diamond -->
-            <polygon points="50,25 75,50 50,75 25,50" fill="none" stroke="#e63946" stroke-width="1.5" />
+            <polygon points="50,25 75,50 50,75 25,50" fill="none" stroke="#e63946" stroke-width="1.5" style="fill: none !important;" />
             <!-- Tribal Inner Accent Lines -->
-            <path d="M 50,25 L 50,75" stroke="#e63946" stroke-width="1" />
-            <path d="M 25,50 L 75,50" stroke="#e63946" stroke-width="1" />
+            <path d="M 50,25 L 50,75" fill="none" stroke="#e63946" stroke-width="1" style="fill: none !important;" />
+            <path d="M 25,50 L 75,50" fill="none" stroke="#e63946" stroke-width="1" style="fill: none !important;" />
             <!-- Tribal Left wing curve -->
-            <path d="M 50,15 C 35,25 20,35 15,50 C 25,55 35,50 50,85 C 40,65 42,55 50,25" fill="none" stroke="#e63946" stroke-width="1.5" stroke-linecap="round" />
+            <path d="M 50,15 C 35,25 20,35 15,50 C 25,55 35,50 50,85 C 40,65 42,55 50,25" fill="none" stroke="#e63946" stroke-width="1.5" stroke-linecap="round" style="fill: none !important;" />
             <!-- Tribal Right wing curve -->
-            <path d="M 50,15 C 65,25 80,35 85,50 C 75,55 65,50 50,85 C 60,65 58,55 50,25" fill="none" stroke="#e63946" stroke-width="1.5" stroke-linecap="round" />
+            <path d="M 50,15 C 65,25 80,35 85,50 C 75,55 65,50 50,85 C 60,65 58,55 50,25" fill="none" stroke="#e63946" stroke-width="1.5" stroke-linecap="round" style="fill: none !important;" />
         </svg>
         <h1 class="loader-title">Diamond Tip Tattoo</h1>
         <p class="loader-subtitle">TATTOO ATELIER</p>
     </div>
 </div>
+
+<script>
+    // Fallback safety timeout: ensure preloader is dismissed even if main JS module fails to load/is slow
+    setTimeout(function() {
+        var loader = document.getElementById('introLoader');
+        if (loader && !loader.classList.contains('fade-out')) {
+            loader.classList.add('fade-out');
+            document.body.classList.add('page-ready');
+            setTimeout(function() {
+                loader.style.display = 'none';
+            }, 800);
+        }
+    }, 3500);
+</script>
 
 <nav class="navbar">
     <div class="logo">Diamond Tip Tattoo</div>
