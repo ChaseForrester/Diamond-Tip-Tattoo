@@ -6,6 +6,7 @@ import {
 import { 
   getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject 
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
+import { getVertexAI, getGenerativeModel } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-vertexai.js";
 
 const firebaseConfig = {
   projectId: "diamond-tip-tattoo",
@@ -21,6 +22,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+const vertexAI = getVertexAI(app);
+const geminiModel = getGenerativeModel(vertexAI, { model: "gemini-2.5-flash" });
 
 // Global Variables
 let currentUser = null;
@@ -30,12 +33,20 @@ let dbBookings = [];
 let dbFaqs = [];
 let dbPortfolio = [];
 
+// Public Interactive Booking Calendar & AI Tattoo Studio State
+let pubCalendarDate = new Date();
+let selectedPubDate = null;
+let selectedPubTime = null;
+let aiUploadedFile = null;
+let aiGeneratedTattooUrl = null;
+let aiGeneratedTattooPrompt = null;
+
 // Static/Fallback Data
 const defaultSpecialties = [
-  { id: "fineline", title: "FINE LINE", description: "Delicate detail. Lasting elegance.", image: "assets/style_fineline_1781912087176.png" },
-  { id: "blackgrey", title: "BLACK & GREY", description: "Depth. Contrast. Timeless impact.", image: "assets/style_blackgrey_1781912097975.png" },
-  { id: "realism", title: "REALISM", description: "Photorealistic artistry. True to life.", image: "assets/style_realism_1781912108842.png" },
-  { id: "custom", title: "CUSTOM DESIGN", description: "Your vision. Our craft.", image: "assets/style_custom_1781912121519.png" }
+  { id: "fineline", title: "FINE LINE", description: "Delicate detail. Lasting elegance.", image: "assets/portfolio/fineline/fineline_butterfly-florals.jpg" },
+  { id: "blackgrey", title: "BLACK & GREY", description: "Depth. Contrast. Timeless impact.", image: "assets/portfolio/blackgrey/blackgrey_skull-backpiece.jpg" },
+  { id: "realism", title: "REALISM", description: "Photorealistic artistry. True to life.", image: "assets/portfolio/realism/realism_bear-wolf-landscape.jpg" },
+  { id: "custom", title: "CUSTOM DESIGN", description: "Your vision. Our craft.", image: "assets/portfolio/custom/custom_neotrad-oni.jpg" }
 ];
 
 const defaultArtists = [
@@ -45,13 +56,146 @@ const defaultArtists = [
   { id: "isabella", name: "ISABELLA R.", role: "Realism Specialist", image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80" }
 ];
 
+// Curated tattoo portfolio from Steven Benn / Diamond Tip Tattoo work
 const defaultPortfolio = [
-  "assets/style_fineline_1781912087176.png",
-  "assets/style_blackgrey_1781912097975.png",
-  "assets/style_realism_1781912108842.png",
-  "assets/style_custom_1781912121519.png",
-  "assets/tattoo_chest_1781911844150.png"
+  { src: "assets/portfolio/fineline/fineline_butterfly-florals.jpg", category: "fineline", alt: "Butterfly Florals" },
+  { src: "assets/portfolio/fineline/fineline_geometric-hand.jpg", category: "fineline", alt: "Geometric Hand" },
+  { src: "assets/portfolio/fineline/fineline_mandala-arm.jpg", category: "fineline", alt: "Mandala Arm" },
+  { src: "assets/portfolio/fineline/fineline_ornamental-mandala.jpg", category: "fineline", alt: "Ornamental Mandala" },
+  { src: "assets/portfolio/fineline/fineline_sunflower-script.jpg", category: "fineline", alt: "Sunflower Script" },
+  { src: "assets/portfolio/fineline/fineline_tribal-waves.jpg", category: "fineline", alt: "Tribal Waves" },
+  { src: "assets/portfolio/blackgrey/blackgrey_black-dragon.jpg", category: "blackgrey", alt: "Black Dragon" },
+  { src: "assets/portfolio/blackgrey/blackgrey_blackwork-sleeve.jpg", category: "blackgrey", alt: "Blackwork Sleeve" },
+  { src: "assets/portfolio/blackgrey/blackgrey_chest-blackwork.jpg", category: "blackgrey", alt: "Chest Blackwork" },
+  { src: "assets/portfolio/blackgrey/blackgrey_clock-angel-sleeve.jpg", category: "blackgrey", alt: "Clock Angel Sleeve" },
+  { src: "assets/portfolio/blackgrey/blackgrey_compass-lighthouse.jpg", category: "blackgrey", alt: "Compass Lighthouse" },
+  { src: "assets/portfolio/blackgrey/blackgrey_dagger-lettering.jpg", category: "blackgrey", alt: "Dagger Lettering" },
+  { src: "assets/portfolio/blackgrey/blackgrey_dragon-back.jpg", category: "blackgrey", alt: "Dragon Back" },
+  { src: "assets/portfolio/blackgrey/blackgrey_hand-tattoos.jpg", category: "blackgrey", alt: "Hand Tattoos" },
+  { src: "assets/portfolio/blackgrey/blackgrey_hooded-figure.jpg", category: "blackgrey", alt: "Hooded Figure" },
+  { src: "assets/portfolio/blackgrey/blackgrey_memorial-clock.jpg", category: "blackgrey", alt: "Memorial Clock" },
+  { src: "assets/portfolio/blackgrey/blackgrey_never-forget-clock.jpg", category: "blackgrey", alt: "Never Forget Clock" },
+  { src: "assets/portfolio/blackgrey/blackgrey_ocean-wave.jpg", category: "blackgrey", alt: "Ocean Wave" },
+  { src: "assets/portfolio/blackgrey/blackgrey_ornamental-sleeve.jpg", category: "blackgrey", alt: "Ornamental Sleeve" },
+  { src: "assets/portfolio/blackgrey/blackgrey_raven-feathers.jpg", category: "blackgrey", alt: "Raven Feathers" },
+  { src: "assets/portfolio/blackgrey/blackgrey_rose-and-orb.jpg", category: "blackgrey", alt: "Rose And Orb" },
+  { src: "assets/portfolio/blackgrey/blackgrey_scale-sleeve.jpg", category: "blackgrey", alt: "Scale Sleeve" },
+  { src: "assets/portfolio/blackgrey/blackgrey_script-lettering.jpg", category: "blackgrey", alt: "Script Lettering" },
+  { src: "assets/portfolio/blackgrey/blackgrey_skull-and-roses.jpg", category: "blackgrey", alt: "Skull And Roses" },
+  { src: "assets/portfolio/blackgrey/blackgrey_skull-backpiece.jpg", category: "blackgrey", alt: "Skull Backpiece" },
+  { src: "assets/portfolio/blackgrey/blackgrey_skull-script.jpg", category: "blackgrey", alt: "Skull Script" },
+  { src: "assets/portfolio/blackgrey/blackgrey_spades-lettering.jpg", category: "blackgrey", alt: "Spades Lettering" },
+  { src: "assets/portfolio/blackgrey/blackgrey_wing-feather.jpg", category: "blackgrey", alt: "Wing Feather" },
+  { src: "assets/portfolio/realism/realism_bear-wolf-landscape.jpg", category: "realism", alt: "Bear Wolf Landscape" },
+  { src: "assets/portfolio/realism/realism_clown-realism.jpg", category: "realism", alt: "Clown Realism" },
+  { src: "assets/portfolio/realism/realism_cowboy-skull.jpg", category: "realism", alt: "Cowboy Skull" },
+  { src: "assets/portfolio/realism/realism_crowned-woman.jpg", category: "realism", alt: "Crowned Woman" },
+  { src: "assets/portfolio/realism/realism_eye-and-rose.jpg", category: "realism", alt: "Eye And Rose" },
+  { src: "assets/portfolio/realism/realism_hyperreal-eye.jpg", category: "realism", alt: "Hyperreal Eye" },
+  { src: "assets/portfolio/realism/realism_indigenous-portrait.jpg", category: "realism", alt: "Indigenous Portrait" },
+  { src: "assets/portfolio/realism/realism_indigenous-woman.jpg", category: "realism", alt: "Indigenous Woman" },
+  { src: "assets/portfolio/realism/realism_joker-clown-faces.jpg", category: "realism", alt: "Joker Clown Faces" },
+  { src: "assets/portfolio/realism/realism_leopard-florals.jpg", category: "realism", alt: "Leopard Florals" },
+  { src: "assets/portfolio/realism/realism_leopard-realism.jpg", category: "realism", alt: "Leopard Realism" },
+  { src: "assets/portfolio/realism/realism_lynx-portrait.jpg", category: "realism", alt: "Lynx Portrait" },
+  { src: "assets/portfolio/realism/realism_ornate-tiger.jpg", category: "realism", alt: "Ornate Tiger" },
+  { src: "assets/portfolio/realism/realism_poseidon-portrait.jpg", category: "realism", alt: "Poseidon Portrait" },
+  { src: "assets/portfolio/realism/realism_roaring-tiger.jpg", category: "realism", alt: "Roaring Tiger" },
+  { src: "assets/portfolio/realism/realism_screaming-face.jpg", category: "realism", alt: "Screaming Face" },
+  { src: "assets/portfolio/realism/realism_skull-sleeve.jpg", category: "realism", alt: "Skull Sleeve" },
+  { src: "assets/portfolio/realism/realism_tiger-closeup.jpg", category: "realism", alt: "Tiger Closeup" },
+  { src: "assets/portfolio/realism/realism_tiger-portrait.jpg", category: "realism", alt: "Tiger Portrait" },
+  { src: "assets/portfolio/realism/realism_tiger-skull-back.jpg", category: "realism", alt: "Tiger Skull Back" },
+  { src: "assets/portfolio/realism/realism_tiger-woman.jpg", category: "realism", alt: "Tiger Woman" },
+  { src: "assets/portfolio/realism/realism_warrior-portrait.jpg", category: "realism", alt: "Warrior Portrait" },
+  { src: "assets/portfolio/realism/realism_wolf-blue-eye.jpg", category: "realism", alt: "Wolf Blue Eye" },
+  { src: "assets/portfolio/realism/realism_wolf-waterfall.jpg", category: "realism", alt: "Wolf Waterfall" },
+  { src: "assets/portfolio/custom/custom_color-serpent.jpg", category: "custom", alt: "Color Serpent" },
+  { src: "assets/portfolio/custom/custom_egyptian-back.jpg", category: "custom", alt: "Egyptian Back" },
+  { src: "assets/portfolio/custom/custom_egyptian-backpiece.jpg", category: "custom", alt: "Egyptian Backpiece" },
+  { src: "assets/portfolio/custom/custom_japanese-pagoda.jpg", category: "custom", alt: "Japanese Pagoda" },
+  { src: "assets/portfolio/custom/custom_koi-watercolor.jpg", category: "custom", alt: "Koi Watercolor" },
+  { src: "assets/portfolio/custom/custom_neotrad-oni.jpg", category: "custom", alt: "Neotrad Oni" },
+  { src: "assets/portfolio/custom/custom_neotrad-serpent.jpg", category: "custom", alt: "Neotrad Serpent" },
+  { src: "assets/portfolio/custom/custom_statue-sleeve.jpg", category: "custom", alt: "Statue Sleeve" },
+  { src: "assets/portfolio/custom/custom_studio-banner.jpg", category: "custom", alt: "Studio Banner" },
+  { src: "assets/portfolio/custom/custom_studio-collage.jpg", category: "custom", alt: "Studio Collage" }
 ];
+
+const portfolioCategoryLabels = {
+  fineline: "Fine Line",
+  blackgrey: "Black & Grey",
+  realism: "Realism",
+  custom: "Custom Design"
+};
+
+let activePortfolioFilter = "all";
+
+function normalizePortfolioItem(item) {
+  if (typeof item === "string") {
+    const src = item;
+    let category = "custom";
+    if (src.includes("fineline")) category = "fineline";
+    else if (src.includes("blackgrey") || src.includes("black-grey") || src.includes("black_grey")) category = "blackgrey";
+    else if (src.includes("realism")) category = "realism";
+    else if (src.includes("custom")) category = "custom";
+    return { src, category, alt: "Tattoo Portfolio Work" };
+  }
+  return {
+    src: item.src || item.image || item.url || "",
+    category: item.category || "custom",
+    alt: item.alt || item.title || "Tattoo Portfolio Work"
+  };
+}
+
+function portfolioHasCuratedWork(items) {
+  return Array.isArray(items) && items.some(item => {
+    const src = typeof item === "string" ? item : (item?.src || item?.image || "");
+    return typeof src === "string" && src.includes("assets/portfolio/");
+  });
+}
+
+function renderPortfolioGrid(items, filter = "all") {
+  const portfolioGrid = document.getElementById("portfolioGrid");
+  if (!portfolioGrid) return;
+
+  const normalized = (items || []).map(normalizePortfolioItem).filter(i => i.src);
+  const visible = filter === "all" ? normalized : normalized.filter(i => i.category === filter);
+
+  if (visible.length === 0) {
+    portfolioGrid.innerHTML = `<p class="portfolio-empty">No pieces in this category yet.</p>`;
+    return;
+  }
+
+  portfolioGrid.innerHTML = visible.map((item, index) => `
+    <figure class="portfolio-item" data-category="${item.category}" style="--smoke-delay: ${(index % 6) * 0.35}s">
+      <div class="portfolio-smoke" aria-hidden="true">
+        <span class="p-smoke"></span>
+        <span class="p-smoke"></span>
+        <span class="p-smoke"></span>
+      </div>
+      <img src="${item.src}" alt="${item.alt}" loading="lazy">
+      <figcaption class="portfolio-caption">
+        <span class="portfolio-cat-tag">${portfolioCategoryLabels[item.category] || item.category}</span>
+        <span class="portfolio-title">${item.alt}</span>
+      </figcaption>
+    </figure>
+  `).join("");
+}
+
+function initPortfolioFilters() {
+  const filterBar = document.getElementById("portfolioFilters");
+  if (!filterBar) return;
+
+  filterBar.querySelectorAll("[data-filter]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      filterBar.querySelectorAll("[data-filter]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activePortfolioFilter = btn.getAttribute("data-filter") || "all";
+      renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
+    });
+  });
+}
 
 const defaultFaqs = [
   { id: "faq1", question: "How do I book an appointment?", answer: "Fill out the booking form to request a consultation." },
@@ -129,8 +273,8 @@ document.addEventListener("DOMContentLoaded", () => {
       {
         title: "FINE LINE<br>& REALISM",
         bgText: "FINE LINE",
-        mainImg: "assets/tattoo_workspace_1781911831357.png",
-        teaserImg: "assets/style_fineline_1781912087176.png",
+        mainImg: "assets/portfolio/realism/realism_bear-wolf-landscape.jpg",
+        teaserImg: "assets/portfolio/fineline/fineline_butterfly-florals.jpg",
         location: "Masters of Fine Line",
         actionText1: "MEET OUR ARTISTS",
         actionText2: "VIEW PORTFOLIO",
@@ -140,8 +284,8 @@ document.addEventListener("DOMContentLoaded", () => {
       {
         title: "CUSTOM INK<br>& DESIGNS",
         bgText: "CUSTOM INK",
-        mainImg: "assets/tattoo_chest_1781911844150.png",
-        teaserImg: "assets/style_custom_1781912121519.png",
+        mainImg: "assets/portfolio/custom/custom_neotrad-oni.jpg",
+        teaserImg: "assets/portfolio/custom/custom_japanese-pagoda.jpg",
         location: "Unique To You",
         actionText1: "BOOK CONSULTATION",
         actionText2: "READ OUR PROCESS",
@@ -151,8 +295,8 @@ document.addEventListener("DOMContentLoaded", () => {
       {
         title: "UNCOMPROMISING<br>QUALITY",
         bgText: "ATELIER",
-        mainImg: "assets/tattoo_artist_1781911870037.png",
-        teaserImg: "assets/style_blackgrey_1781912097975.png",
+        mainImg: "assets/portfolio/realism/realism_joker-clown-faces.jpg",
+        teaserImg: "assets/portfolio/blackgrey/blackgrey_skull-backpiece.jpg",
         location: "Diamond Tip Atelier",
         actionText1: "SHOP AFTERCARE",
         actionText2: "VISIT OUR BLOG",
@@ -299,6 +443,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }, { threshold: 0.1 });
 
     document.querySelectorAll('.fade-in, .slide-up').forEach((el) => observer.observe(el));
+
+    // Show curated portfolio immediately (before Firebase responds)
+    dbPortfolio = defaultPortfolio;
+    renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
+    initPortfolioFilters();
+
+    // Specialty "Explore" links jump to portfolio with matching filter
+    document.querySelectorAll('[data-portfolio-filter]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            const filter = link.getAttribute('data-portfolio-filter');
+            if (!filter) return;
+            activePortfolioFilter = filter;
+            const filterBar = document.getElementById('portfolioFilters');
+            if (filterBar) {
+                filterBar.querySelectorAll('[data-filter]').forEach(b => {
+                    b.classList.toggle('active', b.getAttribute('data-filter') === filter);
+                });
+            }
+            renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
+        });
+    });
 
     // Dynamic Content Initial Loading
     loadDynamicContent().then(() => {
@@ -611,8 +776,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const email = document.getElementById('bookingEmail').value;
             const phone = document.getElementById('bookingPhone').value;
             const date = document.getElementById('bookingDate').value;
+            const time = document.getElementById('bookingTime').value;
             const style = document.getElementById('bookingStyle').value;
             const idea = document.getElementById('bookingIdea').value;
+
+            if (!date || !time) {
+                alert("Please select a preferred date and available time slot on the calendar.");
+                bookingSubmitBtn.disabled = false;
+                bookingSubmitBtn.textContent = "REQUEST CONSULTATION";
+                return;
+            }
 
             try {
                 // 1. Create a Booking ID first
@@ -620,6 +793,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 const bookingId = bookingRef.id;
 
                 const uploadedUrls = [];
+
+                // Attach AI generated tattoo if present
+                if (aiGeneratedTattooUrl) {
+                    uploadedUrls.push(aiGeneratedTattooUrl);
+                }
 
                 // 2. Upload Reference Images to Storage
                 if (selectedBookingFiles.length > 0) {
@@ -666,6 +844,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     email,
                     phone,
                     date,
+                    time,
                     style,
                     idea,
                     referenceImages: uploadedUrls,
@@ -682,8 +861,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert("Thank you! Your private consultation request has been submitted. We will review and contact you shortly.");
                 bookingForm.reset();
                 selectedBookingFiles = [];
-                previewGrid.innerHTML = '';
+                const previewGrid = document.getElementById('filePreviewGrid');
+                if (previewGrid) previewGrid.innerHTML = '';
                 uploadProgressContainer.style.display = 'none';
+
+                // Reset AI attachment reference UI
+                aiGeneratedTattooUrl = null;
+                aiGeneratedTattooPrompt = null;
+                const aiContainer = document.getElementById('aiBookingAttachmentContainer');
+                if (aiContainer) aiContainer.style.display = 'none';
+
+                // Reset calendar states
+                selectedPubDate = null;
+                selectedPubTime = null;
+                renderPublicBookingCalendar();
+                const pubTimeSlotsContainer = document.getElementById('pubTimeSlotsContainer');
+                if (pubTimeSlotsContainer) pubTimeSlotsContainer.style.display = 'none';
 
                 if (currentUser) {
                     loadClientBookings();
@@ -792,6 +985,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         };
     }
+
+    // Initialize public booking calendar
+    initPublicBookingCalendar();
 });
 
 // Authentication Handling
@@ -950,14 +1146,10 @@ window.switchPortalTab = function(tabId) {
         activeNavLi = document.getElementById('navMyNotes');
         activeTabDiv = document.getElementById('tabMyNotes');
         loadClientSkinNotes();
-    } else if (tabId === 'buy-giftcards') {
-        activeNavLi = document.getElementById('navBuyGiftCards');
-        activeTabDiv = document.getElementById('tabBuyGiftCards');
-        loadClientGiftCards();
-    } else if (tabId === 'browse-shop') {
-        activeNavLi = document.getElementById('navBrowseShop');
-        activeTabDiv = document.getElementById('tabBrowseShop');
-        loadClientShopProducts();
+    } else if (tabId === 'tattoo-generator') {
+        activeNavLi = document.getElementById('navTattooGenerator');
+        activeTabDiv = document.getElementById('tabTattooGenerator');
+        initAiTattooStudio();
     } else if (tabId === 'calendar-crm') {
         activeNavLi = document.getElementById('navCalendarCRM');
         activeTabDiv = document.getElementById('tabCalendarCRM');
@@ -971,17 +1163,6 @@ window.switchPortalTab = function(tabId) {
         activeNavLi = document.getElementById('navChatCRM');
         activeTabDiv = document.getElementById('tabChatCRM');
         loadChatCrm();
-    } else if (tabId === 'cms') {
-        activeNavLi = document.getElementById('navCMS');
-        activeTabDiv = document.getElementById('tabCMS');
-        renderCMSPortfolio();
-        renderCMSFaqs();
-        renderCMSBlogs();
-        renderCMSProducts();
-    } else if (tabId === 'seo') {
-        activeNavLi = document.getElementById('navSEO');
-        activeTabDiv = document.getElementById('tabSEO');
-        loadSeoSettings();
     }
 
     if (activeNavLi) {
@@ -1099,10 +1280,26 @@ async function loadDynamicContent() {
                     <div class="card-content">
                         <h3>${spec.title}</h3>
                         <p>${spec.description}</p>
-                        <a href="#book" class="explore">BOOK NOW &rarr;</a>
+                        <a href="#portfolio" class="explore" data-portfolio-filter="${spec.id || ''}">EXPLORE &rarr;</a>
                     </div>
                 </div>
             `).join('');
+
+            // Re-bind specialty filter links after dynamic render
+            specialtiesGrid.querySelectorAll('[data-portfolio-filter]').forEach(link => {
+                link.addEventListener('click', () => {
+                    const filter = link.getAttribute('data-portfolio-filter');
+                    if (!filter) return;
+                    activePortfolioFilter = filter;
+                    const filterBar = document.getElementById('portfolioFilters');
+                    if (filterBar) {
+                        filterBar.querySelectorAll('[data-filter]').forEach(b => {
+                            b.classList.toggle('active', b.getAttribute('data-filter') === filter);
+                        });
+                    }
+                    renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
+                });
+            });
         }
 
         // 2. Artists
@@ -1122,16 +1319,12 @@ async function loadDynamicContent() {
             `).join('');
         }
 
-        // 3. Portfolio
+        // 3. Portfolio — prefer curated local tattoo work when CMS still has placeholders
         const portfolioSnap = await getDoc(doc(db, "content", "portfolio"));
-        const portfolio = portfolioSnap.exists() ? portfolioSnap.data().items : defaultPortfolio;
-        dbPortfolio = portfolio;
-        const portfolioGrid = document.getElementById('portfolioGrid');
-        if (portfolioGrid) {
-            portfolioGrid.innerHTML = portfolio.map(imgUrl => `
-                <img src="${imgUrl}" alt="Tattoo Portfolio Work">
-            `).join('');
-        }
+        const cmsPortfolio = portfolioSnap.exists() ? portfolioSnap.data().items : null;
+        dbPortfolio = portfolioHasCuratedWork(cmsPortfolio) ? cmsPortfolio : defaultPortfolio;
+        renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
+        initPortfolioFilters();
 
         // 4. FAQs
         const faqsSnap = await getDoc(doc(db, "content", "faqs"));
@@ -1493,12 +1686,15 @@ function renderCMSPortfolio() {
         return;
     }
 
-    cmsGrid.innerHTML = dbPortfolio.map((imgUrl, index) => `
+    cmsGrid.innerHTML = dbPortfolio.map((item, index) => {
+        const normalized = normalizePortfolioItem(item);
+        return `
         <div class="cms-portfolio-item">
-            <img src="${imgUrl}" alt="Portfolio Work ${index + 1}">
+            <img src="${normalized.src}" alt="${normalized.alt}">
             <button class="cms-delete-btn" onclick="deleteCMSPortfolioImage(${index})">DELETE</button>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // Upload CMS Portfolio image
@@ -1518,10 +1714,11 @@ async function uploadCMSPortfolioImage(file) {
         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
         
         // Add to array and save to Firestore
-        dbPortfolio.push(downloadURL);
+        dbPortfolio.push({ src: downloadURL, category: "custom", alt: file.name.replace(/\.[^.]+$/, "") });
         await updateDoc(doc(db, "content", "portfolio"), {
             items: dbPortfolio
         });
+        renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
 
         alert("Portfolio image uploaded successfully!");
         renderCMSPortfolio();
@@ -1537,7 +1734,8 @@ async function uploadCMSPortfolioImage(file) {
 window.deleteCMSPortfolioImage = async function(index) {
     if (!confirm("Are you sure you want to delete this portfolio image?")) return;
 
-    const imgUrl = dbPortfolio[index];
+    const item = dbPortfolio[index];
+    const imgUrl = typeof item === "string" ? item : (item?.src || item?.image || "");
 
     try {
         // 1. Delete from storage if it is a firebase storage URL
@@ -1554,7 +1752,7 @@ window.deleteCMSPortfolioImage = async function(index) {
 
         alert("Portfolio image deleted!");
         renderCMSPortfolio();
-        loadDynamicContent(); // Refresh main gallery
+        renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
 
     } catch (err) {
         console.error("Failed to delete portfolio item: ", err);
@@ -2684,5 +2882,396 @@ window.fetchCMSDataCache = async function() {
         }
     } catch (e) {
         console.error(e);
+    }
+}
+
+// PUBLIC APPOINTMENT SCHEDULER WIDGET
+window.initPublicBookingCalendar = function() {
+    const prevBtn = document.getElementById('pubPrevMonthBtn');
+    const nextBtn = document.getElementById('pubNextMonthBtn');
+    
+    if (prevBtn) {
+        prevBtn.onclick = (e) => {
+            e.preventDefault();
+            pubCalendarDate.setMonth(pubCalendarDate.getMonth() - 1);
+            renderPublicBookingCalendar();
+        };
+    }
+    if (nextBtn) {
+        nextBtn.onclick = (e) => {
+            e.preventDefault();
+            pubCalendarDate.setMonth(pubCalendarDate.getMonth() + 1);
+            renderPublicBookingCalendar();
+        };
+    }
+    
+    renderPublicBookingCalendar();
+};
+
+window.renderPublicBookingCalendar = function() {
+    const monthYearLabel = document.getElementById('pubCalendarMonthYear');
+    const daysGrid = document.getElementById('pubCalendarDaysGrid');
+    if (!monthYearLabel || !daysGrid) return;
+    
+    const year = pubCalendarDate.getFullYear();
+    const month = pubCalendarDate.getMonth();
+    
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    monthYearLabel.textContent = `${months[month]} ${year}`;
+    
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    let gridHtml = '';
+    
+    // Empty cells before start of month
+    for (let i = 0; i < firstDayIndex; i++) {
+        gridHtml += `<div class="pub-day-cell empty"></div>`;
+    }
+    
+    // Today boundary calculation
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+        const currentDayDate = new Date(year, month, day);
+        const dayOfWeek = currentDayDate.getDay(); // 0 = Sun, 1 = Mon, etc.
+        const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        
+        let cellClasses = 'pub-day-cell';
+        let isClosed = (dayOfWeek === 0 || dayOfWeek === 1); // Sunday & Monday closed
+        let isPast = (currentDayDate < today);
+        let isSelected = (selectedPubDate === dateString);
+        let isToday = (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day);
+        
+        if (isToday) cellClasses += ' today';
+        if (isSelected) cellClasses += ' selected';
+        
+        if (isPast) {
+            cellClasses += ' disabled';
+            gridHtml += `<div class="${cellClasses}" title="Past date">${day}</div>`;
+        } else if (isClosed) {
+            cellClasses += ' closed';
+            gridHtml += `<div class="${cellClasses}" title="Studio closed on Sunday & Monday">${day}</div>`;
+        } else {
+            gridHtml += `<div class="${cellClasses}" onclick="selectPublicCalendarDate('${dateString}')">${day}</div>`;
+        }
+    }
+    
+    daysGrid.innerHTML = gridHtml;
+};
+
+window.selectPublicCalendarDate = function(dateString) {
+    selectedPubDate = dateString;
+    selectedPubTime = null;
+    
+    // Reset hidden fields
+    document.getElementById('bookingDate').value = dateString;
+    document.getElementById('bookingTime').value = '';
+    
+    // Render the grid to reflect selection
+    renderPublicBookingCalendar();
+    
+    // Display slots container
+    const container = document.getElementById('pubTimeSlotsContainer');
+    const dateLabel = document.getElementById('pubSelectedDateLabel');
+    if (container && dateLabel) {
+        container.style.display = 'block';
+        const dateObj = new Date(dateString + 'T00:00:00');
+        dateLabel.textContent = dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+    }
+    
+    renderPublicTimeSlots(dateString);
+};
+
+window.renderPublicTimeSlots = async function(dateString) {
+    const slotsGrid = document.getElementById('pubTimeSlotsGrid');
+    if (!slotsGrid) return;
+    
+    slotsGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem;">
+            <div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">Checking availability...</span>
+        </div>
+    `;
+    
+    const slots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:30 PM"];
+    
+    try {
+        // Query database to see what's booked for this day
+        const q = query(collection(db, "bookings"), where("date", "==", dateString));
+        const snapshot = await getDocs(q);
+        const bookedTimes = [];
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            if (data.status !== "Cancelled") {
+                bookedTimes.push(data.time);
+            }
+        });
+        
+        let gridHtml = '';
+        slots.forEach(slot => {
+            const isBooked = bookedTimes.includes(slot);
+            if (isBooked) {
+                gridHtml += `<button type="button" class="time-slot-btn booked" disabled>${slot} (Booked)</button>`;
+            } else {
+                const isSelected = (selectedPubTime === slot);
+                gridHtml += `<button type="button" class="time-slot-btn ${isSelected ? 'selected' : ''}" onclick="selectPublicTimeSlot('${slot}')">${slot}</button>`;
+            }
+        });
+        
+        slotsGrid.innerHTML = gridHtml;
+    } catch (err) {
+        console.error("Error loading time slots:", err);
+        slotsGrid.innerHTML = `<p style="grid-column: 1 / -1; color: var(--accent); font-size: 0.85rem;">Failed to check slot availability. Please try again.</p>`;
+    }
+};
+
+window.selectPublicTimeSlot = function(timeString) {
+    selectedPubTime = timeString;
+    document.getElementById('bookingTime').value = timeString;
+    
+    // Highlight selected button
+    const buttons = document.querySelectorAll('#pubTimeSlotsGrid .time-slot-btn');
+    buttons.forEach(btn => {
+        if (btn.classList.contains('booked')) return;
+        if (btn.textContent.trim() === timeString) {
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
+        }
+    });
+};
+
+// GEMINI TATTOO VARIATION STUDIO
+window.initAiTattooStudio = function() {
+    const aiDropZone = document.getElementById('aiDropZone');
+    const aiImageFile = document.getElementById('aiImageFile');
+    const removeAiFileBtn = document.getElementById('removeAiFileBtn');
+    const generateAiBtn = document.getElementById('generateAiVariationBtn');
+    
+    if (aiDropZone && aiImageFile) {
+        // Dropzone drag/drop events
+        aiDropZone.ondragover = (e) => {
+            e.preventDefault();
+            aiDropZone.style.borderColor = 'var(--accent)';
+        };
+        aiDropZone.ondragleave = () => {
+            aiDropZone.style.borderColor = 'var(--border)';
+        };
+        aiDropZone.ondrop = (e) => {
+            e.preventDefault();
+            aiDropZone.style.borderColor = 'var(--border)';
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handleAiStudioFileUpload(e.dataTransfer.files[0]);
+            }
+        };
+        
+        aiDropZone.onclick = (e) => {
+            if (e.target !== removeAiFileBtn && !removeAiFileBtn.contains(e.target)) {
+                aiImageFile.click();
+            }
+        };
+        
+        aiImageFile.onchange = (e) => {
+            if (e.target.files && e.target.files[0]) {
+                handleAiStudioFileUpload(e.target.files[0]);
+            }
+        };
+    }
+    
+    if (removeAiFileBtn) {
+        removeAiFileBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            clearAiStudioFile();
+        };
+    }
+    
+    if (generateAiBtn) {
+        generateAiBtn.onclick = async (e) => {
+            e.preventDefault();
+            await generateTattooVariationTextToImage();
+        };
+    }
+    
+    // Download action
+    const downloadBtn = document.getElementById('downloadAiResultBtn');
+    if (downloadBtn) {
+        downloadBtn.onclick = async (e) => {
+            e.preventDefault();
+            if (!aiGeneratedTattooUrl) return;
+            try {
+                const res = await fetch(aiGeneratedTattooUrl);
+                const blob = await res.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `diamond_tip_tattoo_variation_${Date.now()}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (err) {
+                console.error("Failed to download image:", err);
+                alert("Download failed. You can right-click the image and select 'Save image as...'");
+            }
+        };
+    }
+    
+    // Use for Booking action
+    const useForBookingBtn = document.getElementById('useAiResultForBookingBtn');
+    if (useForBookingBtn) {
+        useForBookingBtn.onclick = (e) => {
+            e.preventDefault();
+            if (!aiGeneratedTattooUrl) return;
+            
+            // Attach image to booking global reference
+            const container = document.getElementById('aiBookingAttachmentContainer');
+            const img = document.getElementById('aiBookingAttachmentImg');
+            const promptDesc = document.getElementById('aiBookingAttachmentPrompt');
+            const removeBtn = document.getElementById('removeAiAttachmentBtn');
+            
+            if (container && img && promptDesc) {
+                img.src = aiGeneratedTattooUrl;
+                promptDesc.textContent = aiGeneratedTattooPrompt;
+                container.style.display = 'block';
+                
+                // Show standard feedback
+                alert("Redesigned artwork is now attached to your consultation form. Please scroll down to complete your details and pick a date/time!");
+                
+                // Hide portal and jump to booking section
+                exitPortal();
+                const bookingSection = document.getElementById('book');
+                if (bookingSection) {
+                    bookingSection.scrollIntoView({ behavior: 'smooth' });
+                }
+                
+                removeBtn.onclick = (ev) => {
+                    ev.preventDefault();
+                    aiGeneratedTattooUrl = null;
+                    aiGeneratedTattooPrompt = null;
+                    container.style.display = 'none';
+                };
+            }
+        };
+    }
+};
+
+function handleAiStudioFileUpload(file) {
+    if (!file.type.startsWith('image/')) {
+        alert("Please upload a valid image file (JPG, PNG, or WebP).");
+        return;
+    }
+    
+    aiUploadedFile = file;
+    
+    const preview = document.getElementById('aiFilePreview');
+    const previewImg = document.getElementById('aiFilePreviewImage');
+    
+    if (preview && previewImg) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImg.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function clearAiStudioFile() {
+    aiUploadedFile = null;
+    const fileInput = document.getElementById('aiImageFile');
+    if (fileInput) fileInput.value = '';
+    
+    const preview = document.getElementById('aiFilePreview');
+    const previewImg = document.getElementById('aiFilePreviewImage');
+    if (preview && previewImg) {
+        previewImg.src = '';
+        preview.style.display = 'none';
+    }
+}
+
+async function generateTattooVariationTextToImage() {
+    if (!aiUploadedFile) {
+        alert("Please upload a base tattoo design or sketch first.");
+        return;
+    }
+    
+    const instructions = document.getElementById('aiInstructions').value.trim();
+    if (!instructions) {
+        alert("Please describe what modifications or variations you'd like.");
+        return;
+    }
+    
+    const placeholder = document.getElementById('aiOutputPlaceholder');
+    const loading = document.getElementById('aiOutputLoading');
+    const resultDiv = document.getElementById('aiOutputResult');
+    const statusText = document.getElementById('aiLoadingStatus');
+    
+    if (placeholder && loading && resultDiv && statusText) {
+        placeholder.style.display = 'none';
+        resultDiv.style.display = 'none';
+        loading.style.display = 'flex';
+        statusText.textContent = "Analyzing design with Gemini...";
+    }
+    
+    try {
+        // 1. Process base64
+        const imagePart = await fileToGenerativePart(aiUploadedFile);
+        
+        // 2. Query Gemini
+        const promptText = `You are an expert tattoo designer and prompt engineer.
+The user has uploaded a base tattoo design image and requested the following modifications:
+"${instructions}"
+
+Analyze the image and the requested changes. Generate a detailed, highly descriptive text-to-image prompt that describes the final, modified tattoo design in detail. The prompt should be optimized for a text-to-image generator, focusing on style (e.g., "fine line", "tribal", "realism"), colors ("black and red", "black and grey"), composition, shading, and details.
+
+Your response must contain ONLY the raw text-to-image prompt. Do not include any explanations, markdown code blocks, intro, or outro. Just the prompt itself.`;
+
+        const result = await geminiModel.generateContent([promptText, imagePart]);
+        const responseText = await result.response.text();
+        
+        let optimizedPrompt = responseText.trim();
+        // Strip markdown code block formatting if present
+        if (optimizedPrompt.startsWith('```')) {
+            optimizedPrompt = optimizedPrompt.replace(/^```[a-zA-Z]*\n/, '').replace(/\n```$/, '');
+        }
+        optimizedPrompt = optimizedPrompt.trim();
+        
+        if (loading && statusText) {
+            statusText.textContent = "Rendering redesigned artwork...";
+        }
+        
+        // 3. Generate image using Pollinations.ai
+        const seed = Math.floor(Math.random() * 100000);
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(optimizedPrompt)}?width=1024&height=1024&nologo=true&private=true&enhance=false&seed=${seed}`;
+        
+        // 4. Preload image in browser
+        const imgElement = document.getElementById('aiResultImage');
+        const promptElement = document.getElementById('aiResultPrompt');
+        
+        if (imgElement && promptElement) {
+            imgElement.src = imageUrl;
+            promptElement.textContent = optimizedPrompt;
+            
+            await new Promise((resolve, reject) => {
+                imgElement.onload = () => resolve();
+                imgElement.onerror = () => reject(new Error("Failed to load image from generator"));
+            });
+            
+            aiGeneratedTattooUrl = imageUrl;
+            aiGeneratedTattooPrompt = instructions;
+            
+            if (loading && resultDiv) {
+                loading.style.display = 'none';
+                resultDiv.style.display = 'flex';
+            }
+        }
+    } catch (err) {
+        console.error("AI Redesign failed:", err);
+        alert("AI variation generation failed: " + err.message);
+        if (loading && placeholder) {
+            loading.style.display = 'none';
+            placeholder.style.display = 'flex';
+        }
     }
 }

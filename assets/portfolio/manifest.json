@@ -1,0 +1,436 @@
+[
+  {
+    "id": "008",
+    "category": "fineline",
+    "src": "assets/portfolio/fineline/fineline_butterfly-florals.jpg",
+    "alt": "Butterfly Florals",
+    "title": "Butterfly Florals"
+  },
+  {
+    "id": "085",
+    "category": "fineline",
+    "src": "assets/portfolio/fineline/fineline_geometric-hand.jpg",
+    "alt": "Geometric Hand",
+    "title": "Geometric Hand"
+  },
+  {
+    "id": "061",
+    "category": "fineline",
+    "src": "assets/portfolio/fineline/fineline_mandala-arm.jpg",
+    "alt": "Mandala Arm",
+    "title": "Mandala Arm"
+  },
+  {
+    "id": "018",
+    "category": "fineline",
+    "src": "assets/portfolio/fineline/fineline_ornamental-mandala.jpg",
+    "alt": "Ornamental Mandala",
+    "title": "Ornamental Mandala"
+  },
+  {
+    "id": "021",
+    "category": "fineline",
+    "src": "assets/portfolio/fineline/fineline_sunflower-script.jpg",
+    "alt": "Sunflower Script",
+    "title": "Sunflower Script"
+  },
+  {
+    "id": "033",
+    "category": "fineline",
+    "src": "assets/portfolio/fineline/fineline_tribal-waves.jpg",
+    "alt": "Tribal Waves",
+    "title": "Tribal Waves"
+  },
+  {
+    "id": "054",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_black-dragon.jpg",
+    "alt": "Black Dragon",
+    "title": "Black Dragon"
+  },
+  {
+    "id": "024",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_blackwork-sleeve.jpg",
+    "alt": "Blackwork Sleeve",
+    "title": "Blackwork Sleeve"
+  },
+  {
+    "id": "053",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_chest-blackwork.jpg",
+    "alt": "Chest Blackwork",
+    "title": "Chest Blackwork"
+  },
+  {
+    "id": "065",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_clock-angel-sleeve.jpg",
+    "alt": "Clock Angel Sleeve",
+    "title": "Clock Angel Sleeve"
+  },
+  {
+    "id": "183",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_compass-lighthouse.jpg",
+    "alt": "Compass Lighthouse",
+    "title": "Compass Lighthouse"
+  },
+  {
+    "id": "096",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_dagger-lettering.jpg",
+    "alt": "Dagger Lettering",
+    "title": "Dagger Lettering"
+  },
+  {
+    "id": "095",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_dragon-back.jpg",
+    "alt": "Dragon Back",
+    "title": "Dragon Back"
+  },
+  {
+    "id": "137",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_hand-tattoos.jpg",
+    "alt": "Hand Tattoos",
+    "title": "Hand Tattoos"
+  },
+  {
+    "id": "020",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_hooded-figure.jpg",
+    "alt": "Hooded Figure",
+    "title": "Hooded Figure"
+  },
+  {
+    "id": "071",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_memorial-clock.jpg",
+    "alt": "Memorial Clock",
+    "title": "Memorial Clock"
+  },
+  {
+    "id": "117",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_never-forget-clock.jpg",
+    "alt": "Never Forget Clock",
+    "title": "Never Forget Clock"
+  },
+  {
+    "id": "030",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_ocean-wave.jpg",
+    "alt": "Ocean Wave",
+    "title": "Ocean Wave"
+  },
+  {
+    "id": "052",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_ornamental-sleeve.jpg",
+    "alt": "Ornamental Sleeve",
+    "title": "Ornamental Sleeve"
+  },
+  {
+    "id": "056",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_raven-feathers.jpg",
+    "alt": "Raven Feathers",
+    "title": "Raven Feathers"
+  },
+  {
+    "id": "014",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_rose-and-orb.jpg",
+    "alt": "Rose And Orb",
+    "title": "Rose And Orb"
+  },
+  {
+    "id": "103",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_scale-sleeve.jpg",
+    "alt": "Scale Sleeve",
+    "title": "Scale Sleeve"
+  },
+  {
+    "id": "011",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_script-lettering.jpg",
+    "alt": "Script Lettering",
+    "title": "Script Lettering"
+  },
+  {
+    "id": "070",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_skull-and-roses.jpg",
+    "alt": "Skull And Roses",
+    "title": "Skull And Roses"
+  },
+  {
+    "id": "004",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_skull-backpiece.jpg",
+    "alt": "Skull Backpiece",
+    "title": "Skull Backpiece"
+  },
+  {
+    "id": "143",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_skull-script.jpg",
+    "alt": "Skull Script",
+    "title": "Skull Script"
+  },
+  {
+    "id": "005",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_spades-lettering.jpg",
+    "alt": "Spades Lettering",
+    "title": "Spades Lettering"
+  },
+  {
+    "id": "132",
+    "category": "blackgrey",
+    "src": "assets/portfolio/blackgrey/blackgrey_wing-feather.jpg",
+    "alt": "Wing Feather",
+    "title": "Wing Feather"
+  },
+  {
+    "id": "128",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_bear-wolf-landscape.jpg",
+    "alt": "Bear Wolf Landscape",
+    "title": "Bear Wolf Landscape"
+  },
+  {
+    "id": "025",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_clown-realism.jpg",
+    "alt": "Clown Realism",
+    "title": "Clown Realism"
+  },
+  {
+    "id": "002",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_cowboy-skull.jpg",
+    "alt": "Cowboy Skull",
+    "title": "Cowboy Skull"
+  },
+  {
+    "id": "034",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_crowned-woman.jpg",
+    "alt": "Crowned Woman",
+    "title": "Crowned Woman"
+  },
+  {
+    "id": "152",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_eye-and-rose.jpg",
+    "alt": "Eye And Rose",
+    "title": "Eye And Rose"
+  },
+  {
+    "id": "158",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_hyperreal-eye.jpg",
+    "alt": "Hyperreal Eye",
+    "title": "Hyperreal Eye"
+  },
+  {
+    "id": "138",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_indigenous-portrait.jpg",
+    "alt": "Indigenous Portrait",
+    "title": "Indigenous Portrait"
+  },
+  {
+    "id": "012",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_indigenous-woman.jpg",
+    "alt": "Indigenous Woman",
+    "title": "Indigenous Woman"
+  },
+  {
+    "id": "006",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_joker-clown-faces.jpg",
+    "alt": "Joker Clown Faces",
+    "title": "Joker Clown Faces"
+  },
+  {
+    "id": "077",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_leopard-florals.jpg",
+    "alt": "Leopard Florals",
+    "title": "Leopard Florals"
+  },
+  {
+    "id": "072",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_leopard-realism.jpg",
+    "alt": "Leopard Realism",
+    "title": "Leopard Realism"
+  },
+  {
+    "id": "082",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_lynx-portrait.jpg",
+    "alt": "Lynx Portrait",
+    "title": "Lynx Portrait"
+  },
+  {
+    "id": "142",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_ornate-tiger.jpg",
+    "alt": "Ornate Tiger",
+    "title": "Ornate Tiger"
+  },
+  {
+    "id": "060",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_poseidon-portrait.jpg",
+    "alt": "Poseidon Portrait",
+    "title": "Poseidon Portrait"
+  },
+  {
+    "id": "003",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_roaring-tiger.jpg",
+    "alt": "Roaring Tiger",
+    "title": "Roaring Tiger"
+  },
+  {
+    "id": "101",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_screaming-face.jpg",
+    "alt": "Screaming Face",
+    "title": "Screaming Face"
+  },
+  {
+    "id": "055",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_skull-sleeve.jpg",
+    "alt": "Skull Sleeve",
+    "title": "Skull Sleeve"
+  },
+  {
+    "id": "091",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_tiger-closeup.jpg",
+    "alt": "Tiger Closeup",
+    "title": "Tiger Closeup"
+  },
+  {
+    "id": "167",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_tiger-portrait.jpg",
+    "alt": "Tiger Portrait",
+    "title": "Tiger Portrait"
+  },
+  {
+    "id": "036",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_tiger-skull-back.jpg",
+    "alt": "Tiger Skull Back",
+    "title": "Tiger Skull Back"
+  },
+  {
+    "id": "177",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_tiger-woman.jpg",
+    "alt": "Tiger Woman",
+    "title": "Tiger Woman"
+  },
+  {
+    "id": "001",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_warrior-portrait.jpg",
+    "alt": "Warrior Portrait",
+    "title": "Warrior Portrait"
+  },
+  {
+    "id": "057",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_wolf-blue-eye.jpg",
+    "alt": "Wolf Blue Eye",
+    "title": "Wolf Blue Eye"
+  },
+  {
+    "id": "115",
+    "category": "realism",
+    "src": "assets/portfolio/realism/realism_wolf-waterfall.jpg",
+    "alt": "Wolf Waterfall",
+    "title": "Wolf Waterfall"
+  },
+  {
+    "id": "150",
+    "category": "custom",
+    "src": "assets/portfolio/custom/custom_color-serpent.jpg",
+    "alt": "Color Serpent",
+    "title": "Color Serpent"
+  },
+  {
+    "id": "062",
+    "category": "custom",
+    "src": "assets/portfolio/custom/custom_egyptian-back.jpg",
+    "alt": "Egyptian Back",
+    "title": "Egyptian Back"
+  },
+  {
+    "id": "172",
+    "category": "custom",
+    "src": "assets/portfolio/custom/custom_egyptian-backpiece.jpg",
+    "alt": "Egyptian Backpiece",
+    "title": "Egyptian Backpiece"
+  },
+  {
+    "id": "074",
+    "category": "custom",
+    "src": "assets/portfolio/custom/custom_japanese-pagoda.jpg",
+    "alt": "Japanese Pagoda",
+    "title": "Japanese Pagoda"
+  },
+  {
+    "id": "015",
+    "category": "custom",
+    "src": "assets/portfolio/custom/custom_koi-watercolor.jpg",
+    "alt": "Koi Watercolor",
+    "title": "Koi Watercolor"
+  },
+  {
+    "id": "111",
+    "category": "custom",
+    "src": "assets/portfolio/custom/custom_neotrad-oni.jpg",
+    "alt": "Neotrad Oni",
+    "title": "Neotrad Oni"
+  },
+  {
+    "id": "017",
+    "category": "custom",
+    "src": "assets/portfolio/custom/custom_neotrad-serpent.jpg",
+    "alt": "Neotrad Serpent",
+    "title": "Neotrad Serpent"
+  },
+  {
+    "id": "181",
+    "category": "custom",
+    "src": "assets/portfolio/custom/custom_statue-sleeve.jpg",
+    "alt": "Statue Sleeve",
+    "title": "Statue Sleeve"
+  },
+  {
+    "id": "146",
+    "category": "custom",
+    "src": "assets/portfolio/custom/custom_studio-banner.jpg",
+    "alt": "Studio Banner",
+    "title": "Studio Banner"
+  },
+  {
+    "id": "029",
+    "category": "custom",
+    "src": "assets/portfolio/custom/custom_studio-collage.jpg",
+    "alt": "Studio Collage",
+    "title": "Studio Collage"
+  }
+]

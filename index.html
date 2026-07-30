@@ -168,35 +168,35 @@
     </div>
     <div class="grid-4" id="specialtiesGrid">
         <div class="card spec-card">
-            <img src="assets/style_fineline_1781912087176.png" alt="Fine Line">
+            <img src="assets/portfolio/fineline/fineline_butterfly-florals.jpg" alt="Fine Line">
             <div class="card-content">
                 <h3>FINE LINE</h3>
                 <p>Delicate detail. Lasting elegance.</p>
-                <a href="#" class="explore">EXPLORE &rarr;</a>
+                <a href="#portfolio" class="explore" data-portfolio-filter="fineline">EXPLORE &rarr;</a>
             </div>
         </div>
         <div class="card spec-card">
-            <img src="assets/style_blackgrey_1781912097975.png" alt="Black & Grey">
+            <img src="assets/portfolio/blackgrey/blackgrey_skull-backpiece.jpg" alt="Black & Grey">
             <div class="card-content">
                 <h3>BLACK & GREY</h3>
                 <p>Depth. Contrast. Timeless impact.</p>
-                <a href="#" class="explore">EXPLORE &rarr;</a>
+                <a href="#portfolio" class="explore" data-portfolio-filter="blackgrey">EXPLORE &rarr;</a>
             </div>
         </div>
         <div class="card spec-card">
-            <img src="assets/style_realism_1781912108842.png" alt="Realism">
+            <img src="assets/portfolio/realism/realism_bear-wolf-landscape.jpg" alt="Realism">
             <div class="card-content">
                 <h3>REALISM</h3>
                 <p>Photorealistic artistry. True to life.</p>
-                <a href="#" class="explore">EXPLORE &rarr;</a>
+                <a href="#portfolio" class="explore" data-portfolio-filter="realism">EXPLORE &rarr;</a>
             </div>
         </div>
         <div class="card spec-card">
-            <img src="assets/style_custom_1781912121519.png" alt="Custom Design">
+            <img src="assets/portfolio/custom/custom_neotrad-oni.jpg" alt="Custom Design">
             <div class="card-content">
                 <h3>CUSTOM DESIGN</h3>
                 <p>Your vision. Our craft.</p>
-                <a href="#" class="explore">EXPLORE &rarr;</a>
+                <a href="#portfolio" class="explore" data-portfolio-filter="custom">EXPLORE &rarr;</a>
             </div>
         </div>
     </div>
@@ -243,20 +243,30 @@
     </div>
 </section>
 
-<section id="portfolio" class="section slide-up">
+<section id="portfolio" class="section slide-up portfolio-section">
+    <div class="portfolio-ambient-smoke" aria-hidden="true">
+        <span class="ambient-smoke"></span>
+        <span class="ambient-smoke"></span>
+        <span class="ambient-smoke"></span>
+        <span class="ambient-smoke"></span>
+        <span class="ambient-smoke"></span>
+    </div>
     <div class="section-header split">
         <div>
             <p class="subtitle">FEATURED PORTFOLIO</p>
             <h2>Selected Works</h2>
         </div>
-        <a href="#" class="explore">VIEW FULL PORTFOLIO &rarr;</a>
+        <a href="#book" class="explore">BOOK YOUR PIECE &rarr;</a>
+    </div>
+    <div class="portfolio-filters" id="portfolioFilters">
+        <button type="button" class="portfolio-filter-btn active" data-filter="all">All Work</button>
+        <button type="button" class="portfolio-filter-btn" data-filter="fineline">Fine Line</button>
+        <button type="button" class="portfolio-filter-btn" data-filter="blackgrey">Black &amp; Grey</button>
+        <button type="button" class="portfolio-filter-btn" data-filter="realism">Realism</button>
+        <button type="button" class="portfolio-filter-btn" data-filter="custom">Custom Design</button>
     </div>
     <div class="portfolio-grid" id="portfolioGrid">
-        <img src="assets/style_fineline_1781912087176.png" alt="Work 1">
-        <img src="assets/style_blackgrey_1781912097975.png" alt="Work 2">
-        <img src="assets/style_realism_1781912108842.png" alt="Work 3">
-        <img src="assets/style_custom_1781912121519.png" alt="Work 4">
-        <img src="assets/tattoo_chest_1781911844150.png" alt="Work 5">
+        <!-- Populated by app.js from curated tattoo portfolio -->
     </div>
 </section>
 
@@ -340,9 +350,49 @@
                 <input type="email" id="bookingEmail" placeholder="Email Address" required>
             </div>
             <div class="form-row">
-                <input type="tel" id="bookingPhone" placeholder="Phone Number">
-                <input type="date" id="bookingDate" placeholder="Preferred Date">
+                <input type="tel" id="bookingPhone" placeholder="Phone Number" style="width: 100%;">
             </div>
+            
+            <!-- Hidden Fields for Calendar Selection -->
+            <input type="hidden" id="bookingDate" required>
+            <input type="hidden" id="bookingTime" required>
+            
+            <!-- AI Generated Reference Linkage (populated via Studio "Use for Booking") -->
+            <div id="aiBookingAttachmentContainer" style="display: none; border: 1px solid var(--accent); padding: 1rem; margin-top: 1rem; margin-bottom: 1.5rem; background: rgba(230, 57, 70, 0.05); position: relative;">
+                <h5 style="margin: 0 0 0.5rem 0; font-family: var(--font-display); font-size: 0.85rem; color: var(--accent); letter-spacing: 1px;">ATTACHED AI TATTOO VARIATION</h5>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <img id="aiBookingAttachmentImg" src="" style="width: 60px; height: 60px; object-fit: cover; border: 1px solid var(--border);">
+                    <p id="aiBookingAttachmentPrompt" style="margin: 0; font-size: 0.8rem; color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-style: italic;"></p>
+                </div>
+                <button type="button" id="removeAiAttachmentBtn" style="position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; color: var(--text-secondary); font-size: 1.2rem; cursor: pointer;">&times;</button>
+            </div>
+
+            <!-- Custom Interactive Calendar Widget -->
+            <div class="booking-calendar-wrapper" style="margin-top: 1rem; margin-bottom: 1.5rem; text-align: left;">
+                <label style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: block; letter-spacing: 1px;"><strong>SELECT APPOINTMENT DATE & TIME</strong></label>
+                <div class="pub-calendar-container box" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border); padding: 1.5rem; max-width: 100%;">
+                    <div class="calendar-header-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 id="pubCalendarMonthYear" style="font-family: var(--font-display); font-size: 1.1rem; color: #fff; margin: 0; letter-spacing: 1px;">June 2026</h4>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button type="button" id="pubPrevMonthBtn" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--border); color: #fff;">&larr;</button>
+                            <button type="button" id="pubNextMonthBtn" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--border); color: #fff;">&rarr;</button>
+                        </div>
+                    </div>
+                    <div class="calendar-weekdays" style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 500; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.25rem;">
+                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                    </div>
+                    <div id="pubCalendarDaysGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 0.5rem; column-gap: 0.25rem; text-align: center;"></div>
+                </div>
+                
+                <!-- Time Slots Grid -->
+                <div id="pubTimeSlotsContainer" style="margin-top: 1rem; display: none;">
+                    <label style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: block; letter-spacing: 1px;"><strong>AVAILABLE TIME SLOTS FOR <span id="pubSelectedDateLabel">--</span></strong></label>
+                    <div id="pubTimeSlotsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.5rem;">
+                        <!-- Time slot buttons injected here -->
+                    </div>
+                </div>
+            </div>
+
             <div class="form-row">
                 <select id="bookingStyle" required style="width: 100%; padding: 1rem; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: var(--font-body); border-radius: 0; outline: none; transition: border-color 0.3s;">
                     <option value="" disabled selected style="background: var(--bg); color: var(--text-secondary);">Select Preferred Style</option>
@@ -565,8 +615,7 @@
                 <ul id="clientPortalNav" class="portal-nav" style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; padding: 0;">
                     <li id="navMyBookings" class="active" style="border-left: 2px solid var(--accent); padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('my-bookings'); return false;" style="color: var(--text-primary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">MY BOOKINGS</a></li>
                     <li id="navMyNotes" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('my-notes'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">MY SKIN NOTES</a></li>
-                    <li id="navBuyGiftCards" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('buy-giftcards'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">GIFT CARDS</a></li>
-                    <li id="navBrowseShop" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('browse-shop'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">STORE</a></li>
+                    <li id="navTattooGenerator" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('tattoo-generator'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">TATTOO STUDIO</a></li>
                 </ul>
                 <!-- Admin Navigation -->
                 <ul id="adminPortalNav" class="portal-nav" style="list-style: none; display: none; flex-direction: column; gap: 0.75rem; padding: 0; margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
@@ -574,8 +623,6 @@
                     <li id="navCalendarCRM" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('calendar-crm'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">CALENDAR CRM</a></li>
                     <li id="navClientDatabase" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('client-database'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">CLIENT DATABASE</a></li>
                     <li id="navChatCRM" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('chat-crm'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">CHAT CRM</a></li>
-                    <li id="navCMS" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('cms'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">MANAGE SITE CONTENT</a></li>
-                    <li id="navSEO" style="border-left: 2px solid transparent; padding-left: 0.75rem;"><a href="#" onclick="switchPortalTab('seo'); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; letter-spacing: 1px;">SEO & METATAGS</a></li>
                 </ul>
             </div>
             
@@ -605,52 +652,72 @@
                     </div>
                 </div>
 
-                <!-- Client: Gift Cards Tab -->
-                <div id="tabBuyGiftCards" class="portal-tab-content" style="display: none;">
-                    <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 2rem; align-items: start;">
-                        <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
-                            <h3 style="margin-bottom: 1rem; font-family: var(--font-display); letter-spacing: 1px;">Purchase Gift Card</h3>
-                            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Select an amount to purchase a digital gift card for yourself or a friend.</p>
-                            <form id="giftcardForm">
-                                <div style="margin-bottom: 1rem;">
-                                    <label style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Select Amount:</strong></label>
-                                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem;">
-                                        <button type="button" class="btn btn-outline gc-amount-btn" data-value="50" style="flex: 1; padding: 0.5rem 0;">$50</button>
-                                        <button type="button" class="btn btn-outline gc-amount-btn" data-value="100" style="flex: 1; padding: 0.5rem 0;">$100</button>
-                                        <button type="button" class="btn btn-outline gc-amount-btn" data-value="200" style="flex: 1; padding: 0.5rem 0;">$200</button>
-                                        <button type="button" class="btn btn-outline gc-amount-btn" data-value="custom" style="flex: 1; padding: 0.5rem 0;">Custom</button>
+                <!-- Client: Tattoo Studio Tab (AI Generator) -->
+                <div id="tabTattooGenerator" class="portal-tab-content" style="display: none;">
+                    <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
+                        <h3 style="margin-bottom: 0.5rem; font-family: var(--font-display); letter-spacing: 1px;">Tattoo Studio AI Redesigner</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Upload a tattoo design sketch or photo, and describe what modifications or variations you'd like. Our Gemini AI will redesign it for you instantly.</p>
+                        
+                        <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+                            <!-- Controls Form -->
+                            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                                <!-- File Upload Dropzone -->
+                                <div id="aiDropZone" class="upload-container" style="border: 1px dashed var(--border); padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.01); transition: border-color 0.3s; position: relative;">
+                                    <label for="aiImageFile" style="cursor: pointer; display: block; width: 100%;">
+                                        <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">📤</span>
+                                        <p style="margin: 0.25rem 0;">Drag & drop or <strong style="color: var(--accent);">browse a file</strong></p>
+                                        <span style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-top: 0.25rem;">Base design image (JPG, PNG, WebP)</span>
+                                    </label>
+                                    <input type="file" id="aiImageFile" accept="image/*" style="display: none;">
+                                    
+                                    <!-- File Preview Container -->
+                                    <div id="aiFilePreview" style="display: none; margin-top: 1rem; position: relative; z-index: 10;">
+                                        <img id="aiFilePreviewImage" src="" style="max-height: 180px; max-width: 100%; border: 1px solid var(--border); object-fit: contain; background: #000;">
+                                        <button type="button" id="removeAiFileBtn" class="btn btn-outline" style="position: absolute; top: -10px; right: -10px; padding: 0.25rem 0.5rem; font-size: 0.75rem; background: var(--bg); border-color: var(--accent); color: var(--accent); border-radius: 50%; line-height: 1; min-width: auto; width: 24px; height: 24px;">&times;</button>
                                     </div>
-                                    <input type="number" id="gcCustomAmount" placeholder="Enter Custom Amount" min="10" max="1000" style="display: none; width: 100%; margin-top: 0.5rem; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff;">
                                 </div>
-                                <div style="margin-bottom: 1rem;">
-                                    <label for="gcRecipientEmail" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Recipient Email:</strong></label>
-                                    <input type="email" id="gcRecipientEmail" placeholder="Your email (or a friend's email)" required style="width: 100%; margin-top: 0.25rem; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff;">
+
+                                <!-- Text Prompt Description -->
+                                <div>
+                                    <label for="aiInstructions" style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem; letter-spacing: 0.5px;"><strong>DESCRIBE MODIFICATIONS OR NEW VARIATION:</strong></label>
+                                    <textarea id="aiInstructions" placeholder="e.g., Make it black and red tribal style with detailed roses around it, or convert this sketch into a realistic fine-line tattoo..." rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); background: #111; color: #fff; border-radius: 0; resize: vertical; outline: none; font-family: var(--font-body); font-size: 0.9rem; transition: border-color 0.3s;"></textarea>
                                 </div>
-                                <div style="margin-bottom: 1.5rem;">
-                                    <label for="gcMessage" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Gift Message (Optional):</strong></label>
-                                    <textarea id="gcMessage" placeholder="Happy Birthday! Can't wait to see your new ink!" rows="3" style="width: 100%; margin-top: 0.25rem; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; resize: vertical;"></textarea>
+
+                                <button id="generateAiVariationBtn" class="btn btn-solid" style="width: 100%;">GENERATE AI VARIATION</button>
+                            </div>
+
+                            <!-- Generation Output Display -->
+                            <div class="box-inner" style="border: 1px solid var(--border); padding: 1.5rem; background: rgba(0,0,0,0.3); min-height: 380px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative;">
+                                <div id="aiOutputPlaceholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                    <span style="font-size: 3rem; display: block; margin-bottom: 1rem; opacity: 0.5;">🎨</span>
+                                    <p style="color: var(--text-secondary); font-size: 0.95rem;">Your generated variation will appear here.</p>
+                                    <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.5rem; max-width: 300px;">Upload a base image and describe your desired changes to start.</p>
                                 </div>
-                                <button type="submit" id="gcPurchaseBtn" class="btn btn-solid" style="width: 100%;">PURCHASE (SIMULATED PAY)</button>
-                            </form>
-                        </div>
-                        <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
-                            <h3 style="margin-bottom: 1rem; font-family: var(--font-display); letter-spacing: 1px;">My Gift Cards</h3>
-                            <div id="giftcardsList" class="giftcard-grid">
-                                <!-- Dynamically loaded purchased gift cards -->
-                                <p style="color: var(--text-secondary);">You haven't purchased any gift cards yet.</p>
+
+                                <div id="aiOutputLoading" style="display: none; flex-direction: column; align-items: center; gap: 1rem;">
+                                    <div class="spinner" style="width: 40px; height: 40px; border: 3px solid rgba(230,57,70,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s infinite linear;"></div>
+                                    <p style="color: var(--text-primary); font-size: 0.95rem; font-weight: 500;" id="aiLoadingStatus">Uploading image...</p>
+                                    <p style="color: var(--text-secondary); font-size: 0.8rem; max-width: 250px;">This may take a moment to process the image and render the new artwork.</p>
+                                </div>
+
+                                <div id="aiOutputResult" style="display: none; width: 100%; height: 100%; flex-direction: column; gap: 1rem;">
+                                    <h4 style="font-family: var(--font-display); font-size: 1rem; color: var(--accent); text-align: left; letter-spacing: 1px; margin: 0;">REDESIGNED VARIATION:</h4>
+                                    <div style="position: relative; width: 100%; border: 1px solid var(--border); background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                        <img id="aiResultImage" src="" style="width: 100%; max-height: 280px; object-fit: contain; display: block;" alt="AI Generated Variation">
+                                    </div>
+                                    <div style="text-align: left; background: rgba(255,255,255,0.02); padding: 0.75rem; border-left: 2px solid var(--accent);">
+                                        <strong style="font-size: 0.75rem; color: var(--text-secondary); display: block; text-transform: uppercase; letter-spacing: 0.5px;">Gemini Translation:</strong>
+                                        <p id="aiResultPrompt" style="font-size: 0.8rem; color: var(--text-primary); line-height: 1.4; margin: 0.25rem 0 0 0; font-style: italic; word-break: break-word;"></p>
+                                    </div>
+                                    <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                                        <button id="downloadAiResultBtn" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-color: var(--border);">Download Image</button>
+                                        <button id="useAiResultForBookingBtn" class="btn btn-solid" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Use for Booking</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Client: Shop Browsing Tab -->
-                <div id="tabBrowseShop" class="portal-tab-content" style="display: none;">
-                    <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
-                        <h3 style="margin-bottom: 0.5rem; font-family: var(--font-display); letter-spacing: 1px;">Atelier Shop</h3>
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Browse our premium tattoo aftercare products. Purchase items directly (simulated) and pick them up at the studio.</p>
-                        <div id="portalShopGrid" class="shop-grid">
-                            <!-- Dynamically populated from Firestore products -->
-                        </div>
+                </div></div>
                     </div>
                 </div>
                 
@@ -764,96 +831,6 @@
                     </div>
                 </div>
                 
-                <!-- Admin: CMS Tab -->
-                <div id="tabCMS" class="portal-tab-content" style="display: none;">
-                    <!-- Portfolio Manager -->
-                    <div class="box" style="padding: 2rem; border: 1px solid var(--border); margin-bottom: 1.5rem;">
-                        <h3 style="font-family: var(--font-display); margin-bottom: 0.5rem;">Manage Portfolio</h3>
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Upload new works or remove current works from the live gallery.</p>
-                        <div style="border: 1px dashed var(--border); padding: 1.5rem; text-align: center; margin-bottom: 1.5rem; background: rgba(255,255,255,0.01); cursor: pointer;">
-                            <label for="cmsPortfolioFile" style="cursor: pointer; display: block; width: 100%;">
-                                <span style="font-size: 1.5rem; display: block; margin-bottom: 0.25rem;">📤</span>
-                                <span>Upload New Work</span>
-                            </label>
-                            <input type="file" id="cmsPortfolioFile" accept="image/*" style="display: none;">
-                        </div>
-                        <div id="cmsPortfolioGrid" class="portfolio-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
-                    
-                    <!-- FAQ Manager -->
-                    <div class="box" style="padding: 2rem; border: 1px solid var(--border); margin-bottom: 1.5rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h3 style="font-family: var(--font-display);">Manage FAQ</h3>
-                            <button id="cmsAddFaqBtn" class="btn btn-solid" style="padding: 0.5rem 1rem; font-size: 0.85rem;">+ Add Question</button>
-                        </div>
-                        <div id="cmsFaqList" class="cms-faq-list" style="display: flex; flex-direction: column; gap: 1rem;">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
-
-                    <!-- Blog Manager -->
-                    <div class="box" style="padding: 2rem; border: 1px solid var(--border); margin-bottom: 1.5rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h3 style="font-family: var(--font-display);">Manage Blog Posts</h3>
-                            <button id="cmsAddBlogBtn" class="btn btn-solid" style="padding: 0.5rem 1rem; font-size: 0.85rem;">+ Add Blog Post</button>
-                        </div>
-                        <div id="cmsBlogList" class="cms-faq-list" style="display: flex; flex-direction: column; gap: 1rem;">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
-
-                    <!-- Shop Product Manager -->
-                    <div class="box" style="padding: 2rem; border: 1px solid var(--border); margin-bottom: 1.5rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h3 style="font-family: var(--font-display);">Manage Shop Products</h3>
-                            <button id="cmsAddProductBtn" class="btn btn-solid" style="padding: 0.5rem 1rem; font-size: 0.85rem;">+ Add Product</button>
-                        </div>
-                        <div id="cmsProductList" class="cms-faq-list" style="display: flex; flex-direction: column; gap: 1rem;">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Admin: SEO Settings Tab -->
-                <div id="tabSEO" class="portal-tab-content" style="display: none;">
-                    <div class="box" style="padding: 2rem; border: 1px solid var(--border);">
-                        <h3 style="margin-bottom: 0.5rem; font-family: var(--font-display); letter-spacing: 1px;">SEO & Page Settings</h3>
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Configure SEO metadata (Title, Description, Keywords) for search engine indexing and site URLs.</p>
-                        <form id="seoForm">
-                            <div style="margin-bottom: 1.25rem;">
-                                <label for="seoPageSelect" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Select Page View:</strong></label>
-                                <select id="seoPageSelect" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); background: #222; color: #fff; border-radius: 0; margin-top: 0.25rem; outline: none; font-family: var(--font-body);">
-                                    <option value="home">Home Page (#home)</option>
-                                    <option value="specialties">Specialties (#specialties)</option>
-                                    <option value="artists">Artists (#artists)</option>
-                                    <option value="portfolio">Portfolio (#portfolio)</option>
-                                    <option value="blog">Blog (#blog)</option>
-                                    <option value="shop">Shop (#shop)</option>
-                                    <option value="faq">FAQ (#faq)</option>
-                                    <option value="portal">Client Portal (#portal)</option>
-                                </select>
-                            </div>
-                            <div style="margin-bottom: 1.25rem;">
-                                <label for="seoTitleInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Meta Title:</strong></label>
-                                <input type="text" id="seoTitleInput" required style="width: 100%; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; border-radius: 0; margin-top: 0.25rem; font-family: var(--font-body); outline: none;">
-                            </div>
-                            <div style="margin-bottom: 1.25rem;">
-                                <label for="seoDescInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Meta Description:</strong></label>
-                                <textarea id="seoDescInput" required rows="3" style="width: 100%; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; border-radius: 0; margin-top: 0.25rem; resize: vertical; font-family: var(--font-body); outline: none;"></textarea>
-                            </div>
-                            <div style="margin-bottom: 1.5rem;">
-                                <label for="seoKeywordsInput" style="font-size: 0.85rem; color: var(--text-secondary);"><strong>Meta Keywords:</strong></label>
-                                <input type="text" id="seoKeywordsInput" style="width: 100%; padding: 0.5rem 1rem; border: 1px solid var(--border); background: #222; color: #fff; border-radius: 0; margin-top: 0.25rem; font-family: var(--font-body); outline: none;" placeholder="tattoo, Dapto, fine line, realism">
-                            </div>
-                            <button type="submit" id="saveSeoBtn" class="btn btn-solid">SAVE SEO SETTINGS</button>
-                            <div id="seoFeedback" style="display: inline-block; margin-left: 1rem; font-size: 0.9rem; color: #00c873;"></div>
-                        </form>
-                    </div>
-                </div>
-            </div>v>
-                </div>
             </div>
         </div>
     </section>

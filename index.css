@@ -806,24 +806,235 @@ p {
     color: var(--accent);
 }
 
-/* Portfolio horizontal */
-.portfolio-grid {
+/* Portfolio section with ambient smoke */
+.portfolio-section {
+    position: relative;
+    overflow: hidden;
+}
+
+.portfolio-ambient-smoke {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.ambient-smoke {
+    position: absolute;
+    bottom: -10%;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(230, 57, 70, 0.12) 0%, rgba(255, 255, 255, 0.04) 40%, transparent 70%);
+    filter: blur(28px);
+    opacity: 0;
+    animation: ambientSmokeDrift 12s infinite ease-in-out;
+}
+
+.ambient-smoke:nth-child(1) { left: 8%; animation-delay: 0s; }
+.ambient-smoke:nth-child(2) { left: 28%; animation-delay: 2.2s; width: 220px; height: 220px; }
+.ambient-smoke:nth-child(3) { left: 48%; animation-delay: 4.4s; }
+.ambient-smoke:nth-child(4) { left: 68%; animation-delay: 1.1s; width: 200px; height: 200px; }
+.ambient-smoke:nth-child(5) { left: 85%; animation-delay: 3.3s; }
+
+@keyframes ambientSmokeDrift {
+    0% {
+        transform: translateY(40px) scale(0.7);
+        opacity: 0;
+    }
+    20% {
+        opacity: 0.55;
+    }
+    70% {
+        opacity: 0.25;
+    }
+    100% {
+        transform: translateY(-55vh) scale(2.2);
+        opacity: 0;
+    }
+}
+
+.portfolio-section .section-header,
+.portfolio-section .portfolio-filters,
+.portfolio-section .portfolio-grid {
+    position: relative;
+    z-index: 1;
+}
+
+.portfolio-filters {
     display: flex;
-    gap: 1rem;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+.portfolio-filter-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 0.65rem 1.1rem;
+    cursor: pointer;
+    transition: border-color 0.3s, color 0.3s, background 0.3s, box-shadow 0.3s;
+}
+
+.portfolio-filter-btn:hover {
+    border-color: var(--accent);
+    color: #fff;
+}
+
+.portfolio-filter-btn.active {
+    border-color: var(--accent);
+    color: #111;
+    background: var(--accent);
+    box-shadow: 0 0 18px rgba(230, 57, 70, 0.35);
+}
+
+/* Portfolio grid of tattoo work */
+.portfolio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.25rem;
     padding-bottom: 1rem;
 }
 
-.portfolio-grid img {
-    width: 300px;
-    height: 350px;
-    object-fit: cover;
-    filter: grayscale(50%);
-    transition: filter 0.3s;
+.portfolio-empty {
+    grid-column: 1 / -1;
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 2rem;
 }
 
-.portfolio-grid img:hover {
-    filter: grayscale(0%);
+.portfolio-item {
+    position: relative;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: #0a0a0a;
+    aspect-ratio: 4 / 5;
+    cursor: pointer;
+    transition: border-color 0.35s, transform 0.35s, box-shadow 0.35s;
+}
+
+.portfolio-item:hover {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 0 24px rgba(230, 57, 70, 0.15);
+}
+
+.portfolio-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(35%) contrast(1.05);
+    transition: filter 0.45s, transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    display: block;
+}
+
+.portfolio-item:hover img {
+    filter: grayscale(0%) contrast(1.08);
+    transform: scale(1.06);
+}
+
+.portfolio-smoke {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    overflow: hidden;
+}
+
+.portfolio-smoke .p-smoke {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(230, 57, 70, 0.18), rgba(255, 255, 255, 0.05) 50%, transparent 70%);
+    filter: blur(12px);
+    opacity: 0;
+    animation: portfolioSmokeRise 5.5s infinite ease-out;
+    animation-delay: var(--smoke-delay, 0s);
+}
+
+.portfolio-smoke .p-smoke:nth-child(1) { left: 30%; }
+.portfolio-smoke .p-smoke:nth-child(2) { left: 50%; animation-delay: calc(var(--smoke-delay, 0s) + 1.2s); width: 55px; height: 55px; }
+.portfolio-smoke .p-smoke:nth-child(3) { left: 70%; animation-delay: calc(var(--smoke-delay, 0s) + 2.4s); }
+
+.portfolio-item:hover .p-smoke {
+    animation-duration: 3.2s;
+}
+
+@keyframes portfolioSmokeRise {
+    0% {
+        transform: translate(-50%, 20px) scale(0.6);
+        opacity: 0;
+    }
+    15% {
+        opacity: 0.7;
+    }
+    100% {
+        transform: translate(-50%, -140%) scale(3);
+        opacity: 0;
+    }
+}
+
+.portfolio-caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+    padding: 2.5rem 1rem 1rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.45) 55%, transparent 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.35s, transform 0.35s;
+}
+
+.portfolio-item:hover .portfolio-caption {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.portfolio-cat-tag {
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.portfolio-title {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+    .portfolio-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .portfolio-caption {
+        opacity: 1;
+        transform: none;
+        padding: 1.5rem 0.65rem 0.65rem;
+    }
+
+    .portfolio-title {
+        font-size: 0.8rem;
+    }
 }
 
 /* Timeline new look */
@@ -2221,4 +2432,110 @@ body.page-ready .hero-content .hero-btns {
     h1 {
         font-size: 2.8rem !important;
     }
+}
+
+/* Interactive Public Booking Calendar */
+#pubCalendarDaysGrid {
+    margin-top: 0.5rem;
+}
+
+.pub-day-cell {
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid var(--border);
+    font-size: 0.9rem;
+    font-family: var(--font-body);
+    font-weight: 500;
+    color: #fff;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.01);
+    transition: all 0.2s ease;
+    user-select: none;
+    outline: none;
+}
+
+.pub-day-cell:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--accent);
+}
+
+.pub-day-cell.empty {
+    background: none;
+    border: none;
+    cursor: default;
+    pointer-events: none;
+}
+
+.pub-day-cell.today {
+    border-color: var(--accent);
+    background: rgba(230, 57, 70, 0.08);
+}
+
+.pub-day-cell.selected {
+    background: var(--accent) !important;
+    color: #111 !important;
+    border-color: var(--accent) !important;
+    font-weight: 700;
+}
+
+.pub-day-cell.disabled, .pub-day-cell.closed {
+    opacity: 0.15;
+    cursor: not-allowed;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* Time Slot Selector */
+.time-slot-btn {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+    color: #fff;
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.time-slot-btn:hover {
+    border-color: var(--accent);
+    background: rgba(230, 57, 70, 0.05);
+}
+
+.time-slot-btn.selected {
+    background: var(--accent) !important;
+    color: #111 !important;
+    border-color: var(--accent) !important;
+    font-weight: 700;
+}
+
+.time-slot-btn.booked {
+    opacity: 0.2;
+    background: rgba(255, 255, 255, 0.02) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border) !important;
+    text-decoration: line-through;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Spinner and Animations */
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(230, 57, 70, 0.1);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
