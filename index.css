@@ -773,6 +773,73 @@ p {
     transition: filter 0.3s ease;
 }
 
+/* Specialty cards with tattoo covers + smoke */
+.spec-image-wrap {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+    background: #0a0a0a;
+}
+
+.spec-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-bottom: none;
+    filter: grayscale(45%) contrast(1.08);
+    transition: filter 0.4s ease, transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.spec-card:hover .spec-image-wrap img {
+    filter: grayscale(0%) contrast(1.1);
+    transform: scale(1.06);
+}
+
+.spec-smoke {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    overflow: hidden;
+}
+
+.spec-smoke span {
+    position: absolute;
+    bottom: 8%;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(230, 57, 70, 0.2), rgba(255, 255, 255, 0.06) 45%, transparent 70%);
+    filter: blur(14px);
+    opacity: 0;
+    animation: specSmokeRise 5s infinite ease-out;
+}
+
+.spec-smoke span:nth-child(1) { left: 28%; animation-delay: 0s; }
+.spec-smoke span:nth-child(2) { left: 50%; width: 64px; height: 64px; animation-delay: 1.4s; }
+.spec-smoke span:nth-child(3) { left: 70%; animation-delay: 2.6s; }
+
+.spec-card:hover .spec-smoke span {
+    animation-duration: 3s;
+}
+
+@keyframes specSmokeRise {
+    0% {
+        transform: translateY(16px) scale(0.55);
+        opacity: 0;
+    }
+    18% {
+        opacity: 0.75;
+    }
+    100% {
+        transform: translateY(-160%) scale(2.8);
+        opacity: 0;
+    }
+}
+
 .card:hover img {
     filter: grayscale(0%);
 }

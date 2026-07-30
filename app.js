@@ -43,11 +43,73 @@ let aiGeneratedTattooPrompt = null;
 
 // Static/Fallback Data
 const defaultSpecialties = [
-  { id: "fineline", title: "FINE LINE", description: "Delicate detail. Lasting elegance.", image: "assets/portfolio/fineline/fineline_butterfly-florals.jpg" },
-  { id: "blackgrey", title: "BLACK & GREY", description: "Depth. Contrast. Timeless impact.", image: "assets/portfolio/blackgrey/blackgrey_skull-backpiece.jpg" },
-  { id: "realism", title: "REALISM", description: "Photorealistic artistry. True to life.", image: "assets/portfolio/realism/realism_bear-wolf-landscape.jpg" },
-  { id: "custom", title: "CUSTOM DESIGN", description: "Your vision. Our craft.", image: "assets/portfolio/custom/custom_neotrad-oni.jpg" }
+  { id: "fineline", title: "FINE LINE", description: "Delicate detail. Lasting elegance.", image: "assets/specialties/fineline.jpg" },
+  { id: "blackgrey", title: "BLACK & GREY", description: "Depth. Contrast. Timeless impact.", image: "assets/specialties/blackgrey.jpg" },
+  { id: "realism", title: "REALISM", description: "Photorealistic artistry. True to life.", image: "assets/specialties/realism.jpg" },
+  { id: "custom", title: "CUSTOM DESIGN", description: "Your vision. Our craft.", image: "assets/specialties/custom.jpg" }
 ];
+
+function resolveSpecialties(cmsItems) {
+  // Always keep the four style cards; use curated tattoo covers when CMS still has placeholders.
+  if (!Array.isArray(cmsItems) || cmsItems.length === 0) return defaultSpecialties;
+
+  const byId = Object.fromEntries(
+    cmsItems.map(item => [(item.id || item.title || "").toString().toLowerCase().replace(/[^a-z]/g, ""), item])
+  );
+
+  return defaultSpecialties.map(def => {
+    const key = def.id;
+    const cms = byId[key] || cmsItems.find(s => (s.title || "").toUpperCase().includes(def.title.split(" ")[0]));
+    if (!cms) return def;
+    const img = cms.image || cms.src || "";
+    const hasCuratedImg = typeof img === "string" && (
+      img.includes("assets/specialties/") ||
+      img.includes("assets/portfolio/")
+    );
+    return {
+      id: def.id,
+      title: cms.title || def.title,
+      description: cms.description || def.description,
+      image: hasCuratedImg ? img : def.image
+    };
+  });
+}
+
+function renderSpecialtiesGrid(specialties) {
+  const specialtiesGrid = document.getElementById("specialtiesGrid");
+  if (!specialtiesGrid) return;
+
+  specialtiesGrid.innerHTML = specialties.map(spec => `
+    <div class="card spec-card">
+      <div class="spec-image-wrap">
+        <img src="${spec.image}" alt="${spec.title}" loading="lazy">
+        <div class="spec-smoke" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="card-content">
+        <h3>${spec.title}</h3>
+        <p>${spec.description}</p>
+        <a href="#portfolio" class="explore" data-portfolio-filter="${spec.id || ""}">EXPLORE &rarr;</a>
+      </div>
+    </div>
+  `).join("");
+
+  specialtiesGrid.querySelectorAll("[data-portfolio-filter]").forEach(link => {
+    link.addEventListener("click", () => {
+      const filter = link.getAttribute("data-portfolio-filter");
+      if (!filter) return;
+      activePortfolioFilter = filter;
+      const filterBar = document.getElementById("portfolioFilters");
+      if (filterBar) {
+        filterBar.querySelectorAll("[data-filter]").forEach(b => {
+          b.classList.toggle("active", b.getAttribute("data-filter") === filter);
+        });
+      }
+      renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
+    });
+  });
+}
 
 const defaultArtists = [
   { id: "adrian", name: "ADRIAN V.", role: "Founder / Lead Artist", image: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=300&q=80" },
@@ -444,26 +506,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll('.fade-in, .slide-up').forEach((el) => observer.observe(el));
 
-    // Show curated portfolio immediately (before Firebase responds)
+    // Show curated specialties + portfolio immediately (before Firebase responds)
+    renderSpecialtiesGrid(defaultSpecialties);
     dbPortfolio = defaultPortfolio;
     renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
     initPortfolioFilters();
-
-    // Specialty "Explore" links jump to portfolio with matching filter
-    document.querySelectorAll('[data-portfolio-filter]').forEach(link => {
-        link.addEventListener('click', (e) => {
-            const filter = link.getAttribute('data-portfolio-filter');
-            if (!filter) return;
-            activePortfolioFilter = filter;
-            const filterBar = document.getElementById('portfolioFilters');
-            if (filterBar) {
-                filterBar.querySelectorAll('[data-filter]').forEach(b => {
-                    b.classList.toggle('active', b.getAttribute('data-filter') === filter);
-                });
-            }
-            renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
-        });
-    });
 
     // Dynamic Content Initial Loading
     loadDynamicContent().then(() => {
@@ -1182,6 +1229,29 @@ async function seedDatabaseIfNeeded() {
         const specRef = doc(db, "content", "specialties");
         const specSnap = await getDoc(specRef);
 
+        // Keep specialties + portfolio on curated tattoo assets even if CMS was seeded earlier
+        if (specSnap.exists()) {
+            const existing = specSnap.data().items || [];
+            const needsSpecialtyRefresh = !existing.some(s =>
+                typeof (s.image || s.src) === "string" &&
+                ((s.image || s.src).includes("assets/specialties/") || (s.image || s.src).includes("assets/portfolio/"))
+            );
+            if (needsSpecialtyRefresh) {
+                console.log("Refreshing specialties with curated tattoo covers...");
+                await setDoc(doc(db, "content", "specialties"), { items: defaultSpecialties });
+            }
+        }
+
+        const portfolioRef = doc(db, "content", "portfolio");
+        const portfolioSnap = await getDoc(portfolioRef);
+        if (portfolioSnap.exists()) {
+            const items = portfolioSnap.data().items || [];
+            if (!portfolioHasCuratedWork(items)) {
+                console.log("Refreshing portfolio with curated tattoo work...");
+                await setDoc(doc(db, "content", "portfolio"), { items: defaultPortfolio });
+            }
+        }
+
         if (!specSnap.exists()) {
             console.log("Seeding database with default template content...");
             
@@ -1269,38 +1339,11 @@ async function seedDatabaseIfNeeded() {
 // Load Content dynamically on Landing Page
 async function loadDynamicContent() {
     try {
-        // 1. Specialties
+        // 1. Specialties — always show curated tattoo covers for the 4 style cards
         const specialtiesSnap = await getDoc(doc(db, "content", "specialties"));
-        const specialties = specialtiesSnap.exists() ? specialtiesSnap.data().items : defaultSpecialties;
-        const specialtiesGrid = document.getElementById('specialtiesGrid');
-        if (specialtiesGrid) {
-            specialtiesGrid.innerHTML = specialties.map(spec => `
-                <div class="card spec-card">
-                    <img src="${spec.image}" alt="${spec.title}">
-                    <div class="card-content">
-                        <h3>${spec.title}</h3>
-                        <p>${spec.description}</p>
-                        <a href="#portfolio" class="explore" data-portfolio-filter="${spec.id || ''}">EXPLORE &rarr;</a>
-                    </div>
-                </div>
-            `).join('');
-
-            // Re-bind specialty filter links after dynamic render
-            specialtiesGrid.querySelectorAll('[data-portfolio-filter]').forEach(link => {
-                link.addEventListener('click', () => {
-                    const filter = link.getAttribute('data-portfolio-filter');
-                    if (!filter) return;
-                    activePortfolioFilter = filter;
-                    const filterBar = document.getElementById('portfolioFilters');
-                    if (filterBar) {
-                        filterBar.querySelectorAll('[data-filter]').forEach(b => {
-                            b.classList.toggle('active', b.getAttribute('data-filter') === filter);
-                        });
-                    }
-                    renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
-                });
-            });
-        }
+        const cmsSpecialties = specialtiesSnap.exists() ? specialtiesSnap.data().items : null;
+        const specialties = resolveSpecialties(cmsSpecialties);
+        renderSpecialtiesGrid(specialties);
 
         // 2. Artists
         const artistsSnap = await getDoc(doc(db, "content", "artists"));
