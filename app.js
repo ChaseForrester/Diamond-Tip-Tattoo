@@ -112,11 +112,49 @@ function renderSpecialtiesGrid(specialties) {
 }
 
 const defaultArtists = [
-  { id: "adrian", name: "ADRIAN V.", role: "Founder / Lead Artist", image: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=300&q=80" },
-  { id: "luna", name: "LUNA M.", role: "Fine Line Specialist", image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=80" },
-  { id: "marcus", name: "MARCUS D.", role: "Custom Design Artist", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80" },
-  { id: "isabella", name: "ISABELLA R.", role: "Realism Specialist", image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80" }
+  {
+    id: "steven",
+    name: "STEVEN BENN",
+    role: "Owner / Studio Master",
+    image: "assets/artists/steven-benn.png",
+    bio: "Owner of Diamond Tip Tattoo in Dapto. Decades of custom ink, realism, black & grey, and client-first studio craft. Known for high-impact portraits, animals, and full custom pieces.",
+    tags: ["Realism", "Black & Grey", "Custom Design"]
+  },
+  {
+    id: "scotty",
+    name: "SCOTTY",
+    role: "Tattooist",
+    image: "assets/artists/scotty.png",
+    bio: "Resident tattooist at Diamond Tip Tattoo. Clean linework, bold blackwork, and custom designs with a steady, professional studio approach.",
+    tags: ["Blackwork", "Custom", "Linework"]
+  }
 ];
+
+function artistsAreCurated(items) {
+  return Array.isArray(items) && items.some(a =>
+    typeof (a.image || "") === "string" && (a.image || "").includes("assets/artists/")
+  );
+}
+
+function renderArtistsGrid(artists) {
+  const artistsGrid = document.getElementById("artistsGrid");
+  if (!artistsGrid) return;
+  const list = artists && artists.length ? artists : defaultArtists;
+  artistsGrid.innerHTML = list.map(art => `
+    <article class="artist-card artist-profile-card" data-artist="${art.id || ""}">
+      <img src="${art.image}" alt="${art.name}">
+      <div class="artist-info">
+        <h3>${art.name}</h3>
+        <p class="role">${art.role || ""}</p>
+        ${art.bio ? `<p class="artist-bio">${art.bio}</p>` : ""}
+        ${Array.isArray(art.tags) && art.tags.length ? `
+          <ul class="artist-tags">${art.tags.map(t => `<li>${t}</li>`).join("")}</ul>
+        ` : ""}
+        <a href="#book" class="explore">BOOK WITH ${(art.name || "").split(" ")[0]} &rarr;</a>
+      </div>
+    </article>
+  `).join("");
+}
 
 // Curated tattoo portfolio from Steven Benn / Diamond Tip Tattoo work
 const defaultPortfolio = [
@@ -268,7 +306,6 @@ const defaultFaqs = [
 const defaultShopProducts = [
   { id: "prod_spf50-sunscreen", name: "SPF 50+ Sunscreen", price: 18.50, image: "assets/products/spf50-sunscreen.jpg", description: "Broad-spectrum face & body sunscreen for healing ink. Chemist Warehouse / Coles style staple." },
   { id: "prod_nitrile-gloves", name: "Black Nitrile Gloves (Box 100)", price: 24.00, image: "assets/products/nitrile-gloves.jpg", description: "Powder-free black nitrile gloves — studio hygiene essential." },
-  { id: "prod_petroleum-jelly", name: "Petroleum Jelly Tub", price: 6.50, image: "assets/products/petroleum-jelly.jpg", description: "Classic white petroleum jelly for sealed moisture during tattoo healing. Coles / Woolies staple." },
   { id: "prod_gentle-soap", name: "Fragrance-Free Liquid Soap", price: 8.90, image: "assets/products/gentle-soap.jpg", description: "Gentle pH-balanced cleanser for washing fresh tattoos safely." },
   { id: "prod_healing-ointment", name: "Healing Ointment Tube", price: 12.50, image: "assets/products/healing-ointment.jpg", description: "Thick protective ointment for the first days of tattoo aftercare. Chemist-aisle favourite." },
   { id: "prod_aloe-vera-gel", name: "Aloe Vera Gel", price: 9.90, image: "assets/products/aloe-vera-gel.jpg", description: "Cooling pure aloe gel to soothe irritated skin during healing." },
@@ -377,7 +414,7 @@ document.addEventListener("DOMContentLoaded", () => {
         bgText: "TATTOOS",
         mainImg: "assets/tattoo_model_main.png",
         teaserImg: "assets/tattoo_model_secondary.png",
-        location: "Private Atelier, Dapto",
+        location: "Diamond Tip Tattoo, Dapto",
         actionText1: "SCHEDULE AN APPOINTMENT",
         actionText2: "OUR SERVICES",
         actionLink1: "#book",
@@ -407,10 +444,10 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       {
         title: "UNCOMPROMISING<br>QUALITY",
-        bgText: "ATELIER",
+        bgText: "STUDIO",
         mainImg: "assets/portfolio/realism/realism_joker-clown-faces.jpg",
         teaserImg: "assets/portfolio/blackgrey/blackgrey_skull-backpiece.jpg",
-        location: "Diamond Tip Atelier",
+        location: "Diamond Tip Tattoo",
         actionText1: "SHOP AFTERCARE",
         actionText2: "VISIT OUR BLOG",
         actionLink1: "#shop",
@@ -557,11 +594,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll('.fade-in, .slide-up').forEach((el) => observer.observe(el));
 
-    // Show curated specialties + portfolio immediately (before Firebase responds)
+    // Show curated specialties + portfolio + artists immediately (before Firebase responds)
     renderSpecialtiesGrid(defaultSpecialties);
+    renderArtistsGrid(defaultArtists);
     dbPortfolio = defaultPortfolio;
     renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
     initPortfolioFilters();
+    initTattooTryOn();
 
     // Dynamic Content Initial Loading
     loadDynamicContent().then(() => {
@@ -835,7 +874,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (file.type.startsWith('image/')) {
                 content = `<img src="${e.target.result}" alt="Preview">`;
             } else {
-                content = `<span style="font-size: 1.5rem;">📄</span><span style="font-size: 0.6rem; color: var(--text-secondary); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; display: block;">${file.name}</span>`;
+                content = `<span style="display:inline-flex;width:22px;height:22px;color:var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:100%;height:100%;"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg></span><span style="font-size: 0.6rem; color: var(--text-secondary); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; display: block;">${file.name}</span>`;
             }
 
             div.innerHTML = `
@@ -1171,6 +1210,10 @@ function enterPortal() {
     if (blogEl) blogEl.style.display = 'none';
     const shopEl = document.getElementById('shop');
     if (shopEl) shopEl.style.display = 'none';
+    const tryOnEl = document.getElementById('try-on');
+    if (tryOnEl) tryOnEl.style.display = 'none';
+    const findUsEl = document.getElementById('find-us');
+    if (findUsEl) findUsEl.style.display = 'none';
     document.getElementById('info').style.display = 'none';
     document.querySelector('footer').style.display = 'none';
     document.querySelector('.features-bar').style.display = 'none';
@@ -1200,6 +1243,10 @@ function exitPortal() {
     if (blogEl) blogEl.style.display = 'block';
     const shopEl = document.getElementById('shop');
     if (shopEl) shopEl.style.display = 'block';
+    const tryOnEl = document.getElementById('try-on');
+    if (tryOnEl) tryOnEl.style.display = 'block';
+    const findUsEl = document.getElementById('find-us');
+    if (findUsEl) findUsEl.style.display = 'block';
     document.getElementById('info').style.display = 'grid';
     document.querySelector('footer').style.display = 'block';
     document.querySelector('.features-bar').style.display = 'flex';
@@ -1328,14 +1375,14 @@ async function seedDatabaseIfNeeded() {
             const defaultBlogs = [
                 {
                     title: "Aftercare: How to Heal Your Tattoo Perfectly",
-                    author: "Adrian V.",
+                    author: "Steven Benn",
                     image: "assets/tattoo_workspace_1781911831357.png",
                     content: "Taking care of your new tattoo is just as important as the tattooing process itself. Keep it clean, use premium vegan aftercare cream, avoid long soaking in water, and protect it from direct sunlight. Your skin notes are valuable here!",
                     createdAt: new Date().toISOString()
                 },
                 {
                     title: "Tattoo Placements: Finding the Perfect Spot",
-                    author: "Luna M.",
+                    author: "Scotty",
                     image: "assets/tattoo_artist_1781911870037.png",
                     content: "Tattoo placement can make or break a design. Fine line work looks gorgeous on wrists and collarbones, whereas large realism designs require larger canvases like sleeves or chests. Let's consult and design something custom.",
                     createdAt: new Date().toISOString()
@@ -1358,8 +1405,8 @@ async function seedDatabaseIfNeeded() {
             // Seed Default SEO
             const defaultSeo = {
                 home: {
-                    title: "Diamond Tip Tattoo | Private Tattoo Atelier Dapto",
-                    description: "Private tattoo atelier for custom work of uncompromising quality. Fine art on skin, crafted to last a lifetime in Dapto.",
+                    title: "Diamond Tip Tattoo | Private Tattoo Studio Dapto",
+                    description: "Private tattoo studio for custom work of uncompromising quality. Fine art on skin, crafted to last a lifetime in Dapto.",
                     keywords: "tattoo, Dapto, fine line, realism, custom design"
                 },
                 portal: {
@@ -1387,21 +1434,18 @@ async function loadDynamicContent() {
         const specialties = resolveSpecialties(cmsSpecialties);
         renderSpecialtiesGrid(specialties);
 
-        // 2. Artists
+        // 2. Artists — always prefer real studio roster (Steven + Scotty)
         const artistsSnap = await getDoc(doc(db, "content", "artists"));
-        const artists = artistsSnap.exists() ? artistsSnap.data().items : defaultArtists;
-        const artistsGrid = document.getElementById('artistsGrid');
-        if (artistsGrid) {
-            artistsGrid.innerHTML = artists.map(art => `
-                <div class="artist-card">
-                    <img src="${art.image}" alt="${art.name}">
-                    <div class="artist-info">
-                        <h3>${art.name}</h3>
-                        <p class="role">${art.role}</p>
-                        <a href="#book" class="explore">BOOK WITH ${art.name.split(' ')[0]} &rarr;</a>
-                    </div>
-                </div>
-            `).join('');
+        const cmsArtists = artistsSnap.exists() ? artistsSnap.data().items : null;
+        const artists = artistsAreCurated(cmsArtists) ? cmsArtists : defaultArtists;
+        renderArtistsGrid(artists);
+        // Refresh CMS artists if still on placeholder roster
+        if (!artistsAreCurated(cmsArtists)) {
+            try {
+                await setDoc(doc(db, "content", "artists"), { items: defaultArtists });
+            } catch (e) {
+                console.warn("Could not refresh artists doc:", e);
+            }
         }
 
         // 3. Portfolio — prefer curated local tattoo work when CMS still has placeholders
@@ -2013,8 +2057,8 @@ window.addEventListener('hashchange', window.handleRouting);
 
 async function updateSEOMeta(hash) {
     const pageKey = hash.replace('#', '').split('/')[0] || 'home';
-    let titleText = "Diamond Tip Tattoo | Private Tattoo Atelier Dapto";
-    let descText = "Private tattoo atelier for custom work of uncompromising quality. Fine art on skin, crafted to last a lifetime in Dapto.";
+    let titleText = "Diamond Tip Tattoo | Private Tattoo Studio Dapto";
+    let descText = "Private tattoo studio for custom work of uncompromising quality. Fine art on skin, crafted to last a lifetime in Dapto.";
     let keywordsText = "tattoo, Dapto, fine line, realism, custom design";
 
     if (window.dbSeo[pageKey]) {
@@ -2732,7 +2776,7 @@ window.openBlogModal = function(blogId = null) {
         window.activeBlogId = null;
         blogIdInput.value = '';
         titleInput.value = '';
-        authorInput.value = 'Adrian V.';
+        authorInput.value = 'Steven Benn';
         imageInput.value = '';
         contentInput.value = '';
         deleteBtn.style.display = 'none';
@@ -2921,7 +2965,7 @@ window.loadSeoSettings = async function() {
 
     const pageKey = pageSelect.value;
     let titleText = "Diamond Tip Tattoo";
-    let descText = "Private tattoo atelier for custom work.";
+    let descText = "Private tattoo studio for custom work.";
     let keywordsText = "tattoo, Dapto";
 
     if (window.dbSeo[pageKey]) {
@@ -3312,7 +3356,7 @@ async function generateTattooVariationTextToImage() {
         placeholder.style.display = 'none';
         resultDiv.style.display = 'none';
         loading.style.display = 'flex';
-        statusText.textContent = "Analyzing design with Gemini...";
+        statusText.textContent = "Analyzing design with AI...";
     }
     
     try {
@@ -3376,3 +3420,264 @@ Your response must contain ONLY the raw text-to-image prompt. Do not include any
         }
     }
 }
+
+// =============================================
+// PUBLIC TATTOO TRY-ON / STITCH PREVIEW
+// =============================================
+let tryOnDesignImg = null;
+let tryOnBodyImg = null;
+let tryOnDragging = false;
+let tryOnOffset = { x: 0.5, y: 0.45 }; // normalized placement center
+let tryOnLastPreviewUrl = null;
+
+const TRYON_PLACEMENT_DEFAULTS = {
+  forearm: { x: 0.5, y: 0.48 },
+  "upper-arm": { x: 0.55, y: 0.38 },
+  chest: { x: 0.5, y: 0.42 },
+  back: { x: 0.5, y: 0.45 },
+  ribs: { x: 0.62, y: 0.48 },
+  thigh: { x: 0.5, y: 0.55 },
+  calf: { x: 0.5, y: 0.58 },
+  wrist: { x: 0.5, y: 0.62 },
+  neck: { x: 0.5, y: 0.28 },
+  custom: { x: 0.5, y: 0.5 }
+};
+
+function loadImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.type.startsWith("image/")) {
+      reject(new Error("Please choose a valid image file."));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Could not load image."));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error("Could not read file."));
+    reader.readAsDataURL(file);
+  });
+}
+
+function previewFileInLabel(file, previewEl) {
+  if (!previewEl || !file) return;
+  const url = URL.createObjectURL(file);
+  previewEl.src = url;
+  previewEl.hidden = false;
+}
+
+function drawTryOnPreview() {
+  const canvas = document.getElementById("tryOnCanvas");
+  if (!canvas || !tryOnBodyImg) return;
+  const ctx = canvas.getContext("2d");
+  const cw = canvas.width;
+  const ch = canvas.height;
+  ctx.clearRect(0, 0, cw, ch);
+
+  // Fit body photo cover-style
+  const br = tryOnBodyImg.width / tryOnBodyImg.height;
+  const cr = cw / ch;
+  let dw, dh, dx, dy;
+  if (br > cr) {
+    dh = ch;
+    dw = ch * br;
+    dx = (cw - dw) / 2;
+    dy = 0;
+  } else {
+    dw = cw;
+    dh = cw / br;
+    dx = 0;
+    dy = (ch - dh) / 2;
+  }
+  ctx.drawImage(tryOnBodyImg, dx, dy, dw, dh);
+
+  if (tryOnDesignImg) {
+    const scalePct = Number(document.getElementById("tryOnScale")?.value || 35) / 100;
+    const maxSide = Math.min(cw, ch) * scalePct;
+    const ir = tryOnDesignImg.width / tryOnDesignImg.height;
+    let iw, ih;
+    if (ir >= 1) {
+      iw = maxSide;
+      ih = maxSide / ir;
+    } else {
+      ih = maxSide;
+      iw = maxSide * ir;
+    }
+    const cx = tryOnOffset.x * cw;
+    const cy = tryOnOffset.y * ch;
+
+    ctx.save();
+    // Soft blend so ink sits on skin
+    ctx.globalAlpha = 0.88;
+    ctx.globalCompositeOperation = "multiply";
+    ctx.drawImage(tryOnDesignImg, cx - iw / 2, cy - ih / 2, iw, ih);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = 0.35;
+    ctx.drawImage(tryOnDesignImg, cx - iw / 2, cy - ih / 2, iw, ih);
+    ctx.restore();
+
+    // Placement ring guide
+    ctx.save();
+    ctx.strokeStyle = "rgba(230,57,70,0.55)";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.strokeRect(cx - iw / 2 - 4, cy - ih / 2 - 4, iw + 8, ih + 8);
+    ctx.restore();
+  }
+
+  const placeholder = document.getElementById("tryOnPlaceholder");
+  const actions = document.getElementById("tryOnActions");
+  if (placeholder) placeholder.style.display = "none";
+  if (actions) actions.hidden = false;
+  tryOnLastPreviewUrl = canvas.toDataURL("image/png");
+}
+
+window.initTattooTryOn = function initTattooTryOn() {
+  const designInput = document.getElementById("tryOnDesignFile");
+  const bodyInput = document.getElementById("tryOnBodyFile");
+  const designPreview = document.getElementById("tryOnDesignPreview");
+  const bodyPreview = document.getElementById("tryOnBodyPreview");
+  const placement = document.getElementById("tryOnPlacement");
+  const scale = document.getElementById("tryOnScale");
+  const stitchBtn = document.getElementById("tryOnStitchBtn");
+  const downloadBtn = document.getElementById("tryOnDownloadBtn");
+  const canvas = document.getElementById("tryOnCanvas");
+
+  if (!designInput || !bodyInput || !stitchBtn || !canvas) return;
+
+  designInput.onchange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      tryOnDesignImg = await loadImageFromFile(file);
+      previewFileInLabel(file, designPreview);
+      if (tryOnBodyImg) drawTryOnPreview();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  bodyInput.onchange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      tryOnBodyImg = await loadImageFromFile(file);
+      previewFileInLabel(file, bodyPreview);
+      drawTryOnPreview();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  if (placement) {
+    placement.onchange = () => {
+      const key = placement.value;
+      tryOnOffset = { ...(TRYON_PLACEMENT_DEFAULTS[key] || TRYON_PLACEMENT_DEFAULTS.custom) };
+      if (tryOnBodyImg && tryOnDesignImg) drawTryOnPreview();
+    };
+  }
+
+  if (scale) {
+    scale.oninput = () => {
+      if (tryOnBodyImg && tryOnDesignImg) drawTryOnPreview();
+    };
+  }
+
+  stitchBtn.onclick = async () => {
+    if (!tryOnDesignImg) {
+      alert("Please upload your tattoo idea / design image first.");
+      return;
+    }
+    if (!tryOnBodyImg) {
+      alert("Please upload a photo of the body area where you want the tattoo.");
+      return;
+    }
+    const key = placement?.value || "custom";
+    tryOnOffset = { ...(TRYON_PLACEMENT_DEFAULTS[key] || TRYON_PLACEMENT_DEFAULTS.custom) };
+    stitchBtn.disabled = true;
+    const originalLabel = stitchBtn.textContent;
+    stitchBtn.textContent = "STITCHING...";
+
+    try {
+      // Optional AI placement tip via Gemini (non-blocking if it fails)
+      const notes = document.getElementById("tryOnNotes")?.value?.trim() || "";
+      try {
+        if (geminiModel && notes) {
+          // soft nudge only — visual stitch is canvas-based
+          console.log("Try-on notes for consultation:", notes, "placement:", key);
+        }
+      } catch (_) { /* ignore */ }
+
+      drawTryOnPreview();
+    } finally {
+      stitchBtn.disabled = false;
+      stitchBtn.textContent = originalLabel;
+    }
+  };
+
+  // Drag design on canvas
+  const getPos = (evt) => {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+    const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+    return {
+      x: (clientX - rect.left) / rect.width,
+      y: (clientY - rect.top) / rect.height
+    };
+  };
+
+  canvas.addEventListener("pointerdown", (e) => {
+    if (!tryOnDesignImg || !tryOnBodyImg) return;
+    tryOnDragging = true;
+    canvas.setPointerCapture?.(e.pointerId);
+    tryOnOffset = getPos(e);
+    drawTryOnPreview();
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    if (!tryOnDragging) return;
+    tryOnOffset = getPos(e);
+    drawTryOnPreview();
+  });
+  const endDrag = () => { tryOnDragging = false; };
+  canvas.addEventListener("pointerup", endDrag);
+  canvas.addEventListener("pointercancel", endDrag);
+
+  if (downloadBtn) {
+    downloadBtn.onclick = () => {
+      if (!tryOnLastPreviewUrl) {
+        alert("Create a preview first.");
+        return;
+      }
+      const a = document.createElement("a");
+      a.href = tryOnLastPreviewUrl;
+      a.download = `diamond-tip-tattoo-preview-${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    };
+  }
+
+  // Attach preview to booking when using Book With This Idea
+  const bookLink = document.querySelector('#tryOnActions a[href="#book"]');
+  if (bookLink) {
+    bookLink.addEventListener("click", () => {
+      if (!tryOnLastPreviewUrl) return;
+      const container = document.getElementById("aiBookingAttachmentContainer");
+      const img = document.getElementById("aiBookingAttachmentImg");
+      const promptDesc = document.getElementById("aiBookingAttachmentPrompt");
+      if (container && img) {
+        img.src = tryOnLastPreviewUrl;
+        if (promptDesc) {
+          const place = document.getElementById("tryOnPlacement")?.selectedOptions?.[0]?.text || "Custom";
+          const notes = document.getElementById("tryOnNotes")?.value?.trim() || "";
+          promptDesc.textContent = `Try-on preview · Placement: ${place}${notes ? " · " + notes : ""}`;
+        }
+        container.style.display = "block";
+        aiGeneratedTattooUrl = tryOnLastPreviewUrl;
+        aiGeneratedTattooPrompt = promptDesc?.textContent || "Try-on preview";
+      }
+    });
+  }
+};

@@ -16,14 +16,6 @@
     "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
   },
   {
-    "id": "prod_petroleum-jelly",
-    "name": "Petroleum Jelly Tub",
-    "price": 6.5,
-    "image": "assets/products/petroleum-jelly.jpg",
-    "description": "Classic white petroleum jelly for sealed moisture during tattoo healing. Coles / Woolies staple.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
-  },
-  {
     "id": "prod_gentle-soap",
     "name": "Fragrance-Free Liquid Soap",
     "price": 8.9,
