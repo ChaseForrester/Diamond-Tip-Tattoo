@@ -1,0 +1,162 @@
+[
+  {
+    "id": "prod_spf50-sunscreen",
+    "name": "SPF 50+ Sunscreen",
+    "price": 18.5,
+    "image": "assets/products/spf50-sunscreen.jpg",
+    "description": "Broad-spectrum face & body sunscreen for healing ink. Chemist Warehouse / Coles style staple.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_nitrile-gloves",
+    "name": "Black Nitrile Gloves (Box 100)",
+    "price": 24.0,
+    "image": "assets/products/nitrile-gloves.jpg",
+    "description": "Powder-free black nitrile gloves \u2014 studio hygiene essential.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_petroleum-jelly",
+    "name": "Petroleum Jelly Tub",
+    "price": 6.5,
+    "image": "assets/products/petroleum-jelly.jpg",
+    "description": "Classic white petroleum jelly for sealed moisture during tattoo healing. Coles / Woolies staple.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_gentle-soap",
+    "name": "Fragrance-Free Liquid Soap",
+    "price": 8.9,
+    "image": "assets/products/gentle-soap.jpg",
+    "description": "Gentle pH-balanced cleanser for washing fresh tattoos safely.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_healing-ointment",
+    "name": "Healing Ointment Tube",
+    "price": 12.5,
+    "image": "assets/products/healing-ointment.jpg",
+    "description": "Thick protective ointment for the first days of tattoo aftercare. Chemist-aisle favourite.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_aloe-vera-gel",
+    "name": "Aloe Vera Gel",
+    "price": 9.9,
+    "image": "assets/products/aloe-vera-gel.jpg",
+    "description": "Cooling pure aloe gel to soothe irritated skin during healing.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_hand-sanitizer",
+    "name": "Alcohol-Free Hand Sanitiser",
+    "price": 7.5,
+    "image": "assets/products/hand-sanitizer.jpg",
+    "description": "Moisturising hand sanitiser for clients and studio use.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_gauze-roll",
+    "name": "Sterile Gauze Roll",
+    "price": 5.5,
+    "image": "assets/products/gauze-roll.jpg",
+    "description": "Medical-grade gauze for aftercare wraps and blotting.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_moisturising-cream",
+    "name": "Fragrance-Free Moisturising Cream",
+    "price": 14.9,
+    "image": "assets/products/moisturising-cream.jpg",
+    "description": "Rich cream for dry healing skin once the tattoo has settled.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_micropore-tape",
+    "name": "Medical Micropore Tape",
+    "price": 6.2,
+    "image": "assets/products/micropore-tape.jpg",
+    "description": "Breathable paper tape for securing wraps without tearing skin.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_cotton-pads",
+    "name": "Cotton Rounds Pack",
+    "price": 4.5,
+    "image": "assets/products/cotton-pads.jpg",
+    "description": "Soft cotton pads for gentle cleansing \u2014 Coles / Woolies aisle.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_lip-balm",
+    "name": "Healing Lip Balm",
+    "price": 5.0,
+    "image": "assets/products/lip-balm.jpg",
+    "description": "Fragrance-free balm for lip tattoos and general dryness.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_antiseptic-liquid",
+    "name": "Antiseptic Liquid",
+    "price": 11.9,
+    "image": "assets/products/antiseptic-liquid.jpg",
+    "description": "Pharmacy antiseptic for studio prep and minor skin care.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_vitamin-e-cream",
+    "name": "Vitamin E Skin Cream",
+    "price": 10.5,
+    "image": "assets/products/vitamin-e-cream.jpg",
+    "description": "Vitamin E cream to support soft, hydrated healed skin.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_paper-towels",
+    "name": "Absorbent Paper Towels",
+    "price": 4.2,
+    "image": "assets/products/paper-towels.jpg",
+    "description": "Lint-conscious paper towels for studio and home aftercare.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_cling-wrap",
+    "name": "Cling Wrap Roll",
+    "price": 3.8,
+    "image": "assets/products/cling-wrap.jpg",
+    "description": "Food-grade cling wrap for initial tattoo covering after sessions.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_antibacterial-wipes",
+    "name": "Antibacterial Wipes Pack",
+    "price": 6.9,
+    "image": "assets/products/antibacterial-wipes.jpg",
+    "description": "Fragrance-aware wipes for surfaces and kit bags. Chemist style.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_liquid-bandage",
+    "name": "Liquid Bandage",
+    "price": 13.5,
+    "image": "assets/products/liquid-bandage.jpg",
+    "description": "Brush-on protective film for small healed areas needing cover.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_ink-heal-balm",
+    "name": "Ink Heal Balm Tin",
+    "price": 22.0,
+    "image": "assets/products/ink-heal-balm.jpg",
+    "description": "Studio-favourite healing balm tin \u2014 thick, clean, fragrance-free.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  },
+  {
+    "id": "prod_saline-wound-wash",
+    "name": "Saline Wound Wash Spray",
+    "price": 9.5,
+    "image": "assets/products/saline-wound-wash.jpg",
+    "description": "Sterile saline spray for gentle rinsing of fresh work.",
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+  }
+]

@@ -264,6 +264,60 @@ const defaultFaqs = [
   { id: "faq5", question: "Is the studio private?", answer: "Yes, we operate by appointment only in a private setting." }
 ];
 
+// Aftercare & studio supplies (Coles / Woolworths / Chemist Warehouse style stock)
+const defaultShopProducts = [
+  { id: "prod_spf50-sunscreen", name: "SPF 50+ Sunscreen", price: 18.50, image: "assets/products/spf50-sunscreen.jpg", description: "Broad-spectrum face & body sunscreen for healing ink. Chemist Warehouse / Coles style staple." },
+  { id: "prod_nitrile-gloves", name: "Black Nitrile Gloves (Box 100)", price: 24.00, image: "assets/products/nitrile-gloves.jpg", description: "Powder-free black nitrile gloves — studio hygiene essential." },
+  { id: "prod_petroleum-jelly", name: "Petroleum Jelly Tub", price: 6.50, image: "assets/products/petroleum-jelly.jpg", description: "Classic white petroleum jelly for sealed moisture during tattoo healing. Coles / Woolies staple." },
+  { id: "prod_gentle-soap", name: "Fragrance-Free Liquid Soap", price: 8.90, image: "assets/products/gentle-soap.jpg", description: "Gentle pH-balanced cleanser for washing fresh tattoos safely." },
+  { id: "prod_healing-ointment", name: "Healing Ointment Tube", price: 12.50, image: "assets/products/healing-ointment.jpg", description: "Thick protective ointment for the first days of tattoo aftercare. Chemist-aisle favourite." },
+  { id: "prod_aloe-vera-gel", name: "Aloe Vera Gel", price: 9.90, image: "assets/products/aloe-vera-gel.jpg", description: "Cooling pure aloe gel to soothe irritated skin during healing." },
+  { id: "prod_hand-sanitizer", name: "Alcohol-Free Hand Sanitiser", price: 7.50, image: "assets/products/hand-sanitizer.jpg", description: "Moisturising hand sanitiser for clients and studio use." },
+  { id: "prod_gauze-roll", name: "Sterile Gauze Roll", price: 5.50, image: "assets/products/gauze-roll.jpg", description: "Medical-grade gauze for aftercare wraps and blotting." },
+  { id: "prod_moisturising-cream", name: "Fragrance-Free Moisturising Cream", price: 14.90, image: "assets/products/moisturising-cream.jpg", description: "Rich cream for dry healing skin once the tattoo has settled." },
+  { id: "prod_micropore-tape", name: "Medical Micropore Tape", price: 6.20, image: "assets/products/micropore-tape.jpg", description: "Breathable paper tape for securing wraps without tearing skin." },
+  { id: "prod_cotton-pads", name: "Cotton Rounds Pack", price: 4.50, image: "assets/products/cotton-pads.jpg", description: "Soft cotton pads for gentle cleansing — Coles / Woolies aisle." },
+  { id: "prod_lip-balm", name: "Healing Lip Balm", price: 5.00, image: "assets/products/lip-balm.jpg", description: "Fragrance-free balm for lip tattoos and general dryness." },
+  { id: "prod_antiseptic-liquid", name: "Antiseptic Liquid", price: 11.90, image: "assets/products/antiseptic-liquid.jpg", description: "Pharmacy antiseptic for studio prep and minor skin care." },
+  { id: "prod_vitamin-e-cream", name: "Vitamin E Skin Cream", price: 10.50, image: "assets/products/vitamin-e-cream.jpg", description: "Vitamin E cream to support soft, hydrated healed skin." },
+  { id: "prod_paper-towels", name: "Absorbent Paper Towels", price: 4.20, image: "assets/products/paper-towels.jpg", description: "Lint-conscious paper towels for studio and home aftercare." },
+  { id: "prod_cling-wrap", name: "Cling Wrap Roll", price: 3.80, image: "assets/products/cling-wrap.jpg", description: "Food-grade cling wrap for initial tattoo covering after sessions." },
+  { id: "prod_antibacterial-wipes", name: "Antibacterial Wipes Pack", price: 6.90, image: "assets/products/antibacterial-wipes.jpg", description: "Fragrance-aware wipes for surfaces and kit bags. Chemist style." },
+  { id: "prod_liquid-bandage", name: "Liquid Bandage", price: 13.50, image: "assets/products/liquid-bandage.jpg", description: "Brush-on protective film for small healed areas needing cover." },
+  { id: "prod_ink-heal-balm", name: "Ink Heal Balm Tin", price: 22.00, image: "assets/products/ink-heal-balm.jpg", description: "Studio-favourite healing balm tin — thick, clean, fragrance-free." },
+  { id: "prod_saline-wound-wash", name: "Saline Wound Wash Spray", price: 9.50, image: "assets/products/saline-wound-wash.jpg", description: "Sterile saline spray for gentle rinsing of fresh work." }
+];
+
+function renderShopGrid(products) {
+  const shopGrid = document.getElementById("shopGrid");
+  if (!shopGrid) return;
+
+  if (!products || products.length === 0) {
+    shopGrid.innerHTML = `<p style="color: var(--text-secondary);">Check back soon for studio aftercare and merchandise!</p>`;
+    return;
+  }
+
+  shopGrid.innerHTML = products.map(prod => `
+    <div class="shop-card">
+      <div class="product-image-wrap">
+        <img src="${prod.image || "assets/products/ink-heal-balm.jpg"}" alt="${prod.name}" loading="lazy">
+      </div>
+      <div class="shop-card-content">
+        <h3>${prod.name}</h3>
+        <p>${prod.description || ""}</p>
+        <div class="shop-price">$${Number(prod.price).toFixed(2)}</div>
+        <a href="#portal/browse-shop" class="btn btn-solid" style="width: 100%; display: block; text-align: center;">ORDER FOR PICKUP</a>
+      </div>
+    </div>
+  `).join("");
+}
+
+function shopHasCuratedProducts(items) {
+  return Array.isArray(items) && items.some(p =>
+    typeof (p.image || "") === "string" && (p.image || "").includes("assets/products/")
+  );
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     // Intro Loader Dismissal
     const loader = document.getElementById('introLoader');
@@ -1291,23 +1345,14 @@ async function seedDatabaseIfNeeded() {
                 await setDoc(doc(db, "blogs", `blog_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`), b);
             }
 
-            // Seed Default Products
-            const defaultProducts = [
-                {
-                    name: "Premium Ink Balm",
-                    price: 19.99,
-                    image: "assets/tattoo_front_desk_1781911857115.png",
-                    description: "All-natural, vegan tattoo aftercare balm to soothe, hydrate, and preserve color vibrance."
-                },
-                {
-                    name: "Gentle Soap Cleanser",
-                    price: 14.50,
-                    image: "assets/tattoo_workspace_1781911831357.png",
-                    description: "Fragrance-free foaming soap, specially formulated for washing fresh tattoos safely."
-                }
-            ];
-            for (const p of defaultProducts) {
-                await setDoc(doc(db, "products", `product_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`), p);
+            // Seed Default Products (aftercare / chemist-style studio shop)
+            for (const p of defaultShopProducts) {
+                await setDoc(doc(db, "products", p.id || `product_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`), {
+                    name: p.name,
+                    price: p.price,
+                    image: p.image,
+                    description: p.description
+                });
             }
 
             // Seed Default SEO
@@ -2175,31 +2220,40 @@ window.loadClientShopProducts = async function() {
     const portalShopGrid = document.getElementById('portalShopGrid');
     if (!portalShopGrid) return;
 
-    try {
-        const snap = await getDocs(collection(db, "products"));
-        window.dbProducts = [];
-        if (snap.empty) {
+    const renderPortal = (products) => {
+        window.dbProducts = products.map(p => ({ ...p }));
+        if (!products.length) {
             portalShopGrid.innerHTML = `<p style="color: var(--text-secondary);">No shop products found.</p>`;
             return;
         }
-
-        let html = '';
-        snap.forEach(d => {
-            const prod = d.data();
-            window.dbProducts.push({ id: d.id, ...prod });
-            html += `
+        portalShopGrid.innerHTML = products.map(prod => {
+            const id = prod.id || prod.name;
+            const safeName = String(prod.name || "").replace(/'/g, "\\'");
+            return `
                 <div class="shop-card">
-                    <img src="${prod.image || 'assets/tattoo_front_desk_1781911857115.png'}" alt="${prod.name}">
+                    <div class="product-image-wrap">
+                        <img src="${prod.image || "assets/products/ink-heal-balm.jpg"}" alt="${prod.name}">
+                    </div>
                     <div class="shop-card-content">
                         <h3>${prod.name}</h3>
-                        <p>${prod.description}</p>
-                        <div class="shop-price">$${prod.price}</div>
-                        <button class="btn btn-solid" style="width: 100%;" onclick="buyProductSimulated('${d.id}', '${prod.name}')">BUY NOW</button>
+                        <p>${prod.description || ""}</p>
+                        <div class="shop-price">$${Number(prod.price).toFixed(2)}</div>
+                        <button class="btn btn-solid" style="width: 100%;" onclick="buyProductSimulated('${id}', '${safeName}')">BUY NOW</button>
                     </div>
                 </div>
             `;
-        });
-        portalShopGrid.innerHTML = html;
+        }).join("");
+    };
+
+    renderPortal(defaultShopProducts);
+
+    try {
+        const snap = await getDocs(collection(db, "products"));
+        const cmsProducts = [];
+        snap.forEach(d => cmsProducts.push({ id: d.id, ...d.data() }));
+        if (shopHasCuratedProducts(cmsProducts) && cmsProducts.length >= 8) {
+            renderPortal(cmsProducts);
+        }
     } catch (e) {
         console.error(e);
     }
@@ -2213,31 +2267,38 @@ window.loadShopWebsite = async function() {
     const shopGrid = document.getElementById('shopGrid');
     if (!shopGrid) return;
 
+    // Show curated local shop immediately
+    renderShopGrid(defaultShopProducts);
+
     try {
         const snap = await getDocs(collection(db, "products"));
-        if (snap.empty) {
-            shopGrid.innerHTML = `<p style="color: var(--text-secondary);">Check back soon for studio aftercare and merchandise!</p>`;
-            return;
-        }
+        const cmsProducts = [];
+        snap.forEach(d => cmsProducts.push({ id: d.id, ...d.data() }));
 
-        let html = '';
-        snap.forEach(d => {
-            const prod = d.data();
-            html += `
-                <div class="shop-card">
-                    <img src="${prod.image || 'assets/tattoo_front_desk_1781911857115.png'}" alt="${prod.name}">
-                    <div class="shop-card-content">
-                        <h3>${prod.name}</h3>
-                        <p>${prod.description}</p>
-                        <div class="shop-price">$${prod.price}</div>
-                        <a href="#portal/browse-shop" class="btn btn-solid" style="width: 100%; display: block; text-align: center;">ORDER FOR PICKUP</a>
-                    </div>
-                </div>
-            `;
-        });
-        shopGrid.innerHTML = html;
+        // Prefer curated product packshots when CMS still has old placeholders
+        if (shopHasCuratedProducts(cmsProducts) && cmsProducts.length >= 8) {
+            renderShopGrid(cmsProducts);
+        } else if (cmsProducts.length === 0) {
+            // Best-effort seed of local products into Firestore for portal pickup flow
+            try {
+                for (const p of defaultShopProducts) {
+                    await setDoc(doc(db, "products", p.id), {
+                        name: p.name,
+                        price: p.price,
+                        image: p.image,
+                        description: p.description
+                    }, { merge: true });
+                }
+            } catch (seedErr) {
+                console.warn("Could not seed shop products to Firestore:", seedErr);
+            }
+            renderShopGrid(defaultShopProducts);
+        } else {
+            renderShopGrid(defaultShopProducts);
+        }
     } catch (e) {
         console.error(e);
+        renderShopGrid(defaultShopProducts);
     }
 }
 
