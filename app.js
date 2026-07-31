@@ -140,20 +140,29 @@ function renderArtistsGrid(artists) {
   const artistsGrid = document.getElementById("artistsGrid");
   if (!artistsGrid) return;
   const list = artists && artists.length ? artists : defaultArtists;
-  artistsGrid.innerHTML = list.map(art => `
-    <article class="artist-card artist-profile-card" data-artist="${art.id || ""}">
-      <img src="${art.image}" alt="${art.name}">
-      <div class="artist-info">
+  artistsGrid.innerHTML = list.map((art, i) => {
+    const first = (art.name || "").split(" ")[0];
+    const badge = art.id === "steven" || /owner/i.test(art.role || "") ? "OWNER" : "ARTIST";
+    const kicker = art.id === "steven" ? "Studio Master" : "Resident Tattooist";
+    const reverse = i % 2 === 1 ? " reverse" : "";
+    return `
+    <article class="artist-row${reverse}" data-artist="${art.id || ""}">
+      <div class="artist-photo-frame">
+        <img src="${art.image}" alt="${art.name}">
+        <span class="artist-badge">${badge}</span>
+      </div>
+      <div class="artist-copy">
+        <p class="artist-kicker">${kicker}</p>
         <h3>${art.name}</h3>
         <p class="role">${art.role || ""}</p>
         ${art.bio ? `<p class="artist-bio">${art.bio}</p>` : ""}
         ${Array.isArray(art.tags) && art.tags.length ? `
           <ul class="artist-tags">${art.tags.map(t => `<li>${t}</li>`).join("")}</ul>
         ` : ""}
-        <a href="#book" class="explore">BOOK WITH ${(art.name || "").split(" ")[0]} &rarr;</a>
+        <a href="#book" class="btn btn-solid artist-book-btn">Book with ${first}</a>
       </div>
-    </article>
-  `).join("");
+    </article>`;
+  }).join("");
 }
 
 // Curated tattoo portfolio from Steven Benn / Diamond Tip Tattoo work
@@ -1219,8 +1228,6 @@ function enterPortal() {
     if (blogEl) blogEl.style.display = 'none';
     const shopEl = document.getElementById('shop');
     if (shopEl) shopEl.style.display = 'none';
-    const tryOnEl = document.getElementById('try-on');
-    if (tryOnEl) tryOnEl.style.display = 'none';
     const findUsEl = document.getElementById('find-us');
     if (findUsEl) findUsEl.style.display = 'none';
     document.getElementById('info').style.display = 'none';
@@ -1257,8 +1264,6 @@ function exitPortal() {
     if (blogEl) blogEl.style.display = 'block';
     const shopEl = document.getElementById('shop');
     if (shopEl) shopEl.style.display = 'block';
-    const tryOnEl = document.getElementById('try-on');
-    if (tryOnEl) tryOnEl.style.display = 'block';
     const findUsEl = document.getElementById('find-us');
     if (findUsEl) findUsEl.style.display = 'block';
     document.getElementById('info').style.display = 'grid';
@@ -3563,6 +3568,39 @@ window.initTattooTryOn = function initTattooTryOn() {
   const stitchBtn = document.getElementById("tryOnStitchBtn");
   const downloadBtn = document.getElementById("tryOnDownloadBtn");
   const canvas = document.getElementById("tryOnCanvas");
+  const modal = document.getElementById("tryOnModal");
+  const openBtn = document.getElementById("openTryOnBtn");
+  const closeBtn = document.getElementById("closeTryOnBtn");
+  const footerLink = document.getElementById("footerTryOnLink");
+  const bookBtn = document.getElementById("tryOnBookBtn");
+
+  const openModal = (e) => {
+    if (e) e.preventDefault();
+    if (!modal) return;
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  };
+  const closeModal = () => {
+    if (!modal) return;
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  };
+  if (openBtn) openBtn.onclick = openModal;
+  if (footerLink) footerLink.onclick = openModal;
+  if (closeBtn) closeBtn.onclick = closeModal;
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+  }
+  if (bookBtn) {
+    bookBtn.addEventListener("click", () => closeModal());
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal?.style.display === "flex") closeModal();
+  });
 
   if (!designInput || !bodyInput || !stitchBtn || !canvas) return;
 
@@ -3785,7 +3823,8 @@ window.initScrollJourneyUX = function initScrollJourneyUX() {
                 "journey-theme-roses",
                 "journey-theme-skulls",
                 "journey-theme-guns",
-                "journey-theme-smoke"
+                "journey-theme-smoke",
+                "journey-theme-diamonds"
             );
             if (theme) document.body.classList.add(`journey-theme-${theme}`);
             lastTheme = theme;
