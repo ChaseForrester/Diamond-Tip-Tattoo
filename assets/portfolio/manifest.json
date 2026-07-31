@@ -91,13 +91,6 @@
     "title": "Dragon Back"
   },
   {
-    "id": "137",
-    "category": "blackgrey",
-    "src": "assets/portfolio/blackgrey/blackgrey_hand-tattoos.jpg",
-    "alt": "Hand Tattoos",
-    "title": "Hand Tattoos"
-  },
-  {
     "id": "020",
     "category": "blackgrey",
     "src": "assets/portfolio/blackgrey/blackgrey_hooded-figure.jpg",
@@ -371,13 +364,6 @@
     "title": "Color Serpent"
   },
   {
-    "id": "062",
-    "category": "custom",
-    "src": "assets/portfolio/custom/custom_egyptian-back.jpg",
-    "alt": "Egyptian Back",
-    "title": "Egyptian Back"
-  },
-  {
     "id": "172",
     "category": "custom",
     "src": "assets/portfolio/custom/custom_egyptian-backpiece.jpg",
@@ -425,12 +411,5 @@
     "src": "assets/portfolio/custom/custom_studio-banner.jpg",
     "alt": "Studio Banner",
     "title": "Studio Banner"
-  },
-  {
-    "id": "029",
-    "category": "custom",
-    "src": "assets/portfolio/custom/custom_studio-collage.jpg",
-    "alt": "Studio Collage",
-    "title": "Studio Collage"
   }
 ]

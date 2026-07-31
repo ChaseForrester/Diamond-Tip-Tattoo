@@ -133,7 +133,6 @@ const defaultPortfolio = [
   { src: "assets/portfolio/blackgrey/blackgrey_compass-lighthouse.jpg", category: "blackgrey", alt: "Compass Lighthouse" },
   { src: "assets/portfolio/blackgrey/blackgrey_dagger-lettering.jpg", category: "blackgrey", alt: "Dagger Lettering" },
   { src: "assets/portfolio/blackgrey/blackgrey_dragon-back.jpg", category: "blackgrey", alt: "Dragon Back" },
-  { src: "assets/portfolio/blackgrey/blackgrey_hand-tattoos.jpg", category: "blackgrey", alt: "Hand Tattoos" },
   { src: "assets/portfolio/blackgrey/blackgrey_hooded-figure.jpg", category: "blackgrey", alt: "Hooded Figure" },
   { src: "assets/portfolio/blackgrey/blackgrey_memorial-clock.jpg", category: "blackgrey", alt: "Memorial Clock" },
   { src: "assets/portfolio/blackgrey/blackgrey_never-forget-clock.jpg", category: "blackgrey", alt: "Never Forget Clock" },
@@ -173,7 +172,6 @@ const defaultPortfolio = [
   { src: "assets/portfolio/realism/realism_wolf-blue-eye.jpg", category: "realism", alt: "Wolf Blue Eye" },
   { src: "assets/portfolio/realism/realism_wolf-waterfall.jpg", category: "realism", alt: "Wolf Waterfall" },
   { src: "assets/portfolio/custom/custom_color-serpent.jpg", category: "custom", alt: "Color Serpent" },
-  { src: "assets/portfolio/custom/custom_egyptian-back.jpg", category: "custom", alt: "Egyptian Back" },
   { src: "assets/portfolio/custom/custom_egyptian-backpiece.jpg", category: "custom", alt: "Egyptian Backpiece" },
   { src: "assets/portfolio/custom/custom_japanese-pagoda.jpg", category: "custom", alt: "Japanese Pagoda" },
   { src: "assets/portfolio/custom/custom_koi-watercolor.jpg", category: "custom", alt: "Koi Watercolor" },
@@ -181,7 +179,6 @@ const defaultPortfolio = [
   { src: "assets/portfolio/custom/custom_neotrad-serpent.jpg", category: "custom", alt: "Neotrad Serpent" },
   { src: "assets/portfolio/custom/custom_statue-sleeve.jpg", category: "custom", alt: "Statue Sleeve" },
   { src: "assets/portfolio/custom/custom_studio-banner.jpg", category: "custom", alt: "Studio Banner" },
-  { src: "assets/portfolio/custom/custom_studio-collage.jpg", category: "custom", alt: "Studio Collage" }
 ];
 
 const portfolioCategoryLabels = {
