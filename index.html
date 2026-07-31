@@ -13,6 +13,54 @@
 </head>
 <body>
 
+<!-- Scroll progress -->
+<div id="scrollProgress" class="scroll-progress" aria-hidden="true"><span class="scroll-progress-fill"></span></div>
+
+<!-- SVG symbol library for journey motifs -->
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+    <defs>
+        <symbol id="icon-skull" viewBox="0 0 64 64">
+            <path fill="none" stroke="currentColor" stroke-width="1.6" d="M32 6c-12 0-22 9-22 22 0 8 4 14 8 18v8h8v-4h4v4h8v-8c4-4 8-10 8-18 0-13-10-22-22-22z"/>
+            <circle cx="24" cy="28" r="4" fill="currentColor"/>
+            <circle cx="40" cy="28" r="4" fill="currentColor"/>
+            <path fill="none" stroke="currentColor" stroke-width="1.4" d="M28 40h8M26 48v4M32 48v4M38 48v4"/>
+        </symbol>
+        <symbol id="icon-rose" viewBox="0 0 64 64">
+            <path fill="none" stroke="currentColor" stroke-width="1.5" d="M32 34c-8-2-14-8-14-16 0-8 6-12 14-12s14 4 14 12c0 8-6 14-14 16z"/>
+            <path fill="none" stroke="currentColor" stroke-width="1.5" d="M22 22c2 4 6 7 10 8 4-1 8-4 10-8"/>
+            <path fill="none" stroke="currentColor" stroke-width="1.5" d="M32 34v18M32 42c-6 2-10 8-10 14M32 46c6 2 10 6 10 12"/>
+            <path fill="none" stroke="currentColor" stroke-width="1.4" d="M18 50c4-2 8 0 10 4M46 48c-4-1-8 2-10 6"/>
+        </symbol>
+        <symbol id="icon-gun" viewBox="0 0 64 64">
+            <path fill="none" stroke="currentColor" stroke-width="1.6" d="M10 28h28l6-8h10v10H48l-4 8H28"/>
+            <path fill="none" stroke="currentColor" stroke-width="1.6" d="M18 38v14h8V38M14 28v-6h8v6"/>
+            <circle cx="48" cy="24" r="2.5" fill="currentColor"/>
+            <path fill="none" stroke="currentColor" stroke-width="1.3" d="M38 20l4-6M44 18l3-5"/>
+        </symbol>
+        <symbol id="icon-smoke-curl" viewBox="0 0 64 64">
+            <path fill="none" stroke="currentColor" stroke-width="1.4" d="M20 54c0-10 8-12 8-22s-8-12-8-20 8-8 12-8 10 4 10 12-8 12-8 22 10 12 10 20"/>
+            <path fill="none" stroke="currentColor" stroke-width="1.2" opacity=".6" d="M36 54c2-8-4-12-4-20s6-10 6-18"/>
+        </symbol>
+    </defs>
+</svg>
+
+<!-- Ambient journey layer: smoke, guns, skulls, roses while scrolling -->
+<div id="journeyLayer" class="journey-layer" aria-hidden="true">
+    <div class="journey-smoke journey-smoke-a"></div>
+    <div class="journey-smoke journey-smoke-b"></div>
+    <div class="journey-smoke journey-smoke-c"></div>
+    <div class="journey-motif motif-skull m1" data-parallax="0.12"><svg><use href="#icon-skull"/></svg></div>
+    <div class="journey-motif motif-rose m2" data-parallax="-0.1"><svg><use href="#icon-rose"/></svg></div>
+    <div class="journey-motif motif-gun m3" data-parallax="0.08"><svg><use href="#icon-gun"/></svg></div>
+    <div class="journey-motif motif-smoke m4" data-parallax="-0.14"><svg><use href="#icon-smoke-curl"/></svg></div>
+    <div class="journey-motif motif-rose m5" data-parallax="0.15"><svg><use href="#icon-rose"/></svg></div>
+    <div class="journey-motif motif-skull m6" data-parallax="-0.09"><svg><use href="#icon-skull"/></svg></div>
+    <div class="journey-motif motif-gun m7" data-parallax="0.11"><svg><use href="#icon-gun"/></svg></div>
+    <div class="journey-motif motif-smoke m8" data-parallax="-0.07"><svg><use href="#icon-smoke-curl"/></svg></div>
+    <div class="journey-motif motif-rose m9" data-parallax="0.13"><svg><use href="#icon-rose"/></svg></div>
+    <div class="journey-motif motif-skull m10" data-parallax="-0.12"><svg><use href="#icon-skull"/></svg></div>
+</div>
+
 <!-- Start Intro Loader -->
 <div id="introLoader" class="intro-loader">
     <!-- Smoke particles container -->
@@ -162,25 +210,25 @@
 
 
 <div class="features-bar slide-up">
-    <div class="feature">
+    <div class="feature reveal-child">
         <span class="icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
         </span>
         <div><h4>By Appointment Only</h4><p>Private &amp; discreet</p></div>
     </div>
-    <div class="feature">
+    <div class="feature reveal-child">
         <span class="icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 21V11l4-6 4 6v10"/><path d="M8 15h8"/><path d="M12 11v10"/></svg>
         </span>
         <div><h4>Award-Winning Artists</h4><p>10+ years experience</p></div>
     </div>
-    <div class="feature">
+    <div class="feature reveal-child">
         <span class="icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
         </span>
         <div><h4>5-Star Rated Studio</h4><p>200+ verified reviews</p></div>
     </div>
-    <div class="feature">
+    <div class="feature reveal-child">
         <span class="icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
         </span>
@@ -188,7 +236,15 @@
     </div>
 </div>
 
-<section id="specialties" class="section fade-in">
+<div class="motif-divider" aria-hidden="true">
+    <span class="motif-line"></span>
+    <svg class="motif-mid motif-rose"><use href="#icon-rose"/></svg>
+    <span class="motif-line"></span>
+</div>
+
+<section id="specialties" class="section fade-in journey-section" data-journey="roses">
+    <div class="section-motif-edge left" aria-hidden="true"><svg><use href="#icon-rose"/></svg></div>
+    <div class="section-motif-edge right" aria-hidden="true"><svg><use href="#icon-skull"/></svg></div>
     <div class="section-header center">
         <p class="subtitle">OUR SPECIALTIES</p>
         <h2>Expertise in Every Style</h2>
@@ -241,7 +297,15 @@
     </div>
 </section>
 
-<section id="artists" class="section dark-bg fade-in">
+<div class="motif-divider" aria-hidden="true">
+    <span class="motif-line"></span>
+    <svg class="motif-mid motif-gun"><use href="#icon-gun"/></svg>
+    <span class="motif-line"></span>
+</div>
+
+<section id="artists" class="section dark-bg fade-in journey-section" data-journey="guns">
+    <div class="section-motif-edge left" aria-hidden="true"><svg><use href="#icon-gun"/></svg></div>
+    <div class="section-motif-edge right" aria-hidden="true"><svg><use href="#icon-smoke-curl"/></svg></div>
     <div class="section-header center">
         <p class="subtitle">OUR ARTISTS</p>
         <h2>Masters of Their Craft</h2>
@@ -278,7 +342,13 @@
     </div>
 </section>
 
-<section id="portfolio" class="section slide-up portfolio-section">
+<div class="motif-divider" aria-hidden="true">
+    <span class="motif-line"></span>
+    <svg class="motif-mid motif-skull"><use href="#icon-skull"/></svg>
+    <span class="motif-line"></span>
+</div>
+
+<section id="portfolio" class="section slide-up portfolio-section journey-section" data-journey="skulls">
     <div class="portfolio-ambient-smoke" aria-hidden="true">
         <span class="ambient-smoke"></span>
         <span class="ambient-smoke"></span>
@@ -286,6 +356,8 @@
         <span class="ambient-smoke"></span>
         <span class="ambient-smoke"></span>
     </div>
+    <div class="section-motif-edge left" aria-hidden="true"><svg><use href="#icon-skull"/></svg></div>
+    <div class="section-motif-edge right" aria-hidden="true"><svg><use href="#icon-rose"/></svg></div>
     <div class="section-header split">
         <div>
             <p class="subtitle">FEATURED PORTFOLIO</p>
@@ -336,7 +408,13 @@
     </div>
 </div>
 
-<section id="process" class="section slide-up">
+<div class="motif-divider" aria-hidden="true">
+    <span class="motif-line"></span>
+    <svg class="motif-mid motif-smoke"><use href="#icon-smoke-curl"/></svg>
+    <span class="motif-line"></span>
+</div>
+
+<section id="process" class="section slide-up journey-section" data-journey="smoke">
     <div class="process-header">
         <p class="subtitle">THE PROCESS</p>
         <h2>Intentional. Personal.<br>Collaborative.</h2>
@@ -526,7 +604,13 @@
     </div>
 </section>
 
-<section id="shop" class="section dark-bg fade-in">
+<div class="motif-divider" aria-hidden="true">
+    <span class="motif-line"></span>
+    <svg class="motif-mid motif-rose"><use href="#icon-rose"/></svg>
+    <span class="motif-line"></span>
+</div>
+
+<section id="shop" class="section dark-bg fade-in journey-section" data-journey="roses">
     <div class="section-header center">
         <p class="subtitle">TATTOO AFTERCARE &amp; STUDIO SUPPLIES</p>
         <h2>Studio Shop</h2>
@@ -538,7 +622,13 @@
 </section>
 
 <!-- AI Tattoo Try-On / Stitcher -->
-<section id="try-on" class="section fade-in try-on-section">
+<div class="motif-divider" aria-hidden="true">
+    <span class="motif-line"></span>
+    <svg class="motif-mid motif-gun"><use href="#icon-gun"/></svg>
+    <span class="motif-line"></span>
+</div>
+
+<section id="try-on" class="section fade-in try-on-section journey-section" data-journey="guns">
     <div class="section-header center">
         <p class="subtitle">AI TATTOO PREVIEW</p>
         <h2>See It On You</h2>

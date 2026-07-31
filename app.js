@@ -587,12 +587,21 @@ document.addEventListener("DOMContentLoaded", () => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('visible');
-                observer.unobserve(entry.target);
+                entry.target.classList.add('is-inview');
+                // Keep observing journey sections for theme switches; unobserve one-shot reveals
+                if (!entry.target.classList.contains('journey-section') && !entry.target.classList.contains('features-bar')) {
+                    observer.unobserve(entry.target);
+                }
+            } else {
+                entry.target.classList.remove('is-inview');
             }
         });
-    }, { threshold: 0.1 });
+    }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
 
-    document.querySelectorAll('.fade-in, .slide-up').forEach((el) => observer.observe(el));
+    document.querySelectorAll('.fade-in, .slide-up, .features-bar, .journey-section').forEach((el) => observer.observe(el));
+
+    // Scroll progress + ambient journey motifs (smoke / guns / skulls / roses)
+    initScrollJourneyUX();
 
     // Show curated specialties + portfolio + artists immediately (before Firebase responds)
     renderSpecialtiesGrid(defaultSpecialties);
@@ -1218,6 +1227,11 @@ function enterPortal() {
     document.querySelector('footer').style.display = 'none';
     document.querySelector('.features-bar').style.display = 'none';
     document.querySelector('.sterilization-bar').style.display = 'none';
+    const journeyLayer = document.getElementById('journeyLayer');
+    if (journeyLayer) journeyLayer.style.display = 'none';
+    const scrollProgress = document.getElementById('scrollProgress');
+    if (scrollProgress) scrollProgress.style.display = 'none';
+    document.querySelectorAll('.motif-divider').forEach(el => { el.style.display = 'none'; });
 
     // Hide navbar elements
     const navLinks = document.getElementById('navbarLinks');
@@ -1251,6 +1265,11 @@ function exitPortal() {
     document.querySelector('footer').style.display = 'block';
     document.querySelector('.features-bar').style.display = 'flex';
     document.querySelector('.sterilization-bar').style.display = 'flex';
+    const journeyLayer = document.getElementById('journeyLayer');
+    if (journeyLayer) journeyLayer.style.display = '';
+    const scrollProgress = document.getElementById('scrollProgress');
+    if (scrollProgress) scrollProgress.style.display = '';
+    document.querySelectorAll('.motif-divider').forEach(el => { el.style.display = ''; });
 
     // Show navbar elements
     const navLinks = document.getElementById('navbarLinks');
@@ -3680,4 +3699,107 @@ window.initTattooTryOn = function initTattooTryOn() {
       }
     });
   }
+};
+
+// =============================================
+// SCROLL JOURNEY UX — progress, parallax motifs
+// =============================================
+window.initScrollJourneyUX = function initScrollJourneyUX() {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const progressFill = document.querySelector(".scroll-progress-fill");
+    const motifs = Array.from(document.querySelectorAll(".journey-motif"));
+    const journeySections = Array.from(document.querySelectorAll(".journey-section[data-journey]"));
+    let ticking = false;
+    let lastTheme = "";
+
+    // Stagger delay for dynamically injected portfolio/shop cards
+    const applyStagger = (container) => {
+        if (!container) return;
+        Array.from(container.children).forEach((child, i) => {
+            child.style.transitionDelay = `${Math.min(i * 0.05, 0.45)}s`;
+        });
+    };
+    applyStagger(document.getElementById("portfolioGrid"));
+    applyStagger(document.getElementById("shopGrid"));
+    applyStagger(document.getElementById("specialtiesGrid"));
+    applyStagger(document.getElementById("artistsGrid"));
+
+    // Re-apply when grids re-render
+    const mo = new MutationObserver((mutations) => {
+        mutations.forEach((m) => {
+            if (m.target && m.target.id) {
+                applyStagger(m.target);
+                // ensure newly injected cards animate in if section already visible
+                const section = m.target.closest(".section, .fade-in, .slide-up");
+                if (section && (section.classList.contains("visible") || section.classList.contains("is-inview"))) {
+                    m.target.querySelectorAll(":scope > *").forEach((el) => {
+                        el.style.opacity = "1";
+                        el.style.transform = "none";
+                    });
+                }
+            }
+        });
+    });
+    ["portfolioGrid", "shopGrid", "specialtiesGrid", "artistsGrid", "blogGrid"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) mo.observe(el, { childList: true });
+    });
+
+    const update = () => {
+        ticking = false;
+        const scrollY = window.scrollY || window.pageYOffset;
+        const docH = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+        const pct = Math.min(100, Math.max(0, (scrollY / docH) * 100));
+
+        if (progressFill) {
+            progressFill.style.width = pct + "%";
+        }
+
+        // Activate motifs gradually along scroll depth
+        motifs.forEach((motif, i) => {
+            const threshold = (i / Math.max(1, motifs.length - 1)) * 85;
+            if (pct >= threshold - 5) motif.classList.add("is-active");
+            if (!reduceMotion) {
+                const speed = parseFloat(motif.dataset.parallax || "0.1");
+                const y = scrollY * speed;
+                const wobble = Math.sin((scrollY + i * 40) * 0.004) * 6;
+                motif.style.transform = `translate3d(0, ${y * 0.15 + wobble}px, 0) rotate(${wobble * 0.4}deg)`;
+            }
+        });
+
+        // Theme body class from most visible journey section
+        let best = null;
+        let bestScore = 0;
+        const vh = window.innerHeight || 1;
+        journeySections.forEach((sec) => {
+            const r = sec.getBoundingClientRect();
+            const visible = Math.min(r.bottom, vh) - Math.max(r.top, 0);
+            if (visible > bestScore) {
+                bestScore = visible;
+                best = sec;
+            }
+        });
+        const theme = best?.dataset?.journey || "";
+        if (theme !== lastTheme) {
+            document.body.classList.remove(
+                "journey-theme-roses",
+                "journey-theme-skulls",
+                "journey-theme-guns",
+                "journey-theme-smoke"
+            );
+            if (theme) document.body.classList.add(`journey-theme-${theme}`);
+            lastTheme = theme;
+        }
+    };
+
+    const onScroll = () => {
+        if (!ticking) {
+            ticking = true;
+            requestAnimationFrame(update);
+        }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    update();
 };
