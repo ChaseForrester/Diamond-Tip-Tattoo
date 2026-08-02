@@ -273,13 +273,8 @@ function renderPortfolioGrid(items, filter = "all") {
     return;
   }
 
-  portfolioGrid.innerHTML = visible.map((item, index) => `
-    <figure class="portfolio-item" data-category="${item.category}" style="--smoke-delay: ${(index % 6) * 0.35}s">
-      <div class="portfolio-smoke" aria-hidden="true">
-        <span class="p-smoke"></span>
-        <span class="p-smoke"></span>
-        <span class="p-smoke"></span>
-      </div>
+  portfolioGrid.innerHTML = visible.map((item) => `
+    <figure class="portfolio-item" data-category="${item.category}">
       <img src="${item.src}" alt="${item.alt}" loading="lazy">
       <figcaption class="portfolio-caption">
         <span class="portfolio-cat-tag">${portfolioCategoryLabels[item.category] || item.category}</span>
@@ -1033,7 +1028,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Scroll progress + ambient journey motifs (smoke / guns / skulls / roses)
-    initScrollJourneyUX();
+    // Journey motif animations disabled — keep scroll progress/motifs off the public site
 
     // Show curated specialties + portfolio + artists immediately (before Firebase responds)
     renderSpecialtiesGrid(defaultSpecialties);

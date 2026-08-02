@@ -75,9 +75,6 @@
 <body class="page-ready">
 <a class="skip-link" href="#book">Skip to book consultation</a>
 
-<!-- Scroll progress -->
-<div id="scrollProgress" class="scroll-progress" aria-hidden="true"><span class="scroll-progress-fill"></span></div>
-
 <!-- SVG symbol library — human skull, rose, diamond, tattoo machine, smoke -->
 <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
     <defs>
@@ -128,9 +125,6 @@
     </defs>
 </svg>
 
-<!-- Ambient journey: smoke, human skulls, roses, diamonds, tattoo guns -->
-<div id="journeyLayer" class="journey-layer" aria-hidden="true">
-    <div class="journey-smoke journey-smoke-a"></div>
     <div class="journey-smoke journey-smoke-b"></div>
     <div class="journey-smoke journey-smoke-c"></div>
     <div class="journey-motif motif-skull m1" data-parallax="0.1"><svg viewBox="0 0 64 64"><use href="#icon-skull"/></svg></div>
@@ -150,8 +144,7 @@
 <nav class="navbar">
     <div class="nav-left-group">
         <a href="#home" class="logo" aria-label="Diamond Tip Tattoo Home">
-            <img src="assets/logo/diamond-tip-logo.png" alt="Diamond Tip Tattoo" class="logo-img">
-            <img src="assets/logo/diamond-tip-wordmark.png" alt="" class="logo-wordmark">
+            <img src="assets/logo/diamond-tip-wordmark.png" alt="Diamond Tip Tattoo" class="logo-wordmark logo-wordmark-only">
         </a>
         <span class="nav-location-tag">Dapto, NSW, Australia</span>
     </div>
@@ -361,15 +354,8 @@
     </div>
 </section>
 
-<div class="motif-divider" aria-hidden="true">
-    <span class="motif-line"></span>
-    <svg class="motif-mid motif-rose" viewBox="0 0 64 64"><use href="#icon-rose"/></svg>
-    <span class="motif-line"></span>
-</div>
-
 <section id="specialties" class="section fade-in journey-section" data-journey="roses">
-    <div class="section-motif-edge left" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#icon-rose"/></svg></div>
-    <div class="section-motif-edge right" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#icon-skull"/></svg></div>
+
     <div class="section-header center">
         <p class="subtitle">OUR SPECIALTIES</p>
         <h2>Expertise in Every Style</h2>
@@ -379,7 +365,6 @@
         <div class="card spec-card">
             <div class="spec-image-wrap">
                 <img src="assets/specialties/fineline.jpg" alt="Fine Line tattoo">
-                <div class="spec-smoke" aria-hidden="true"><span></span><span></span><span></span></div>
             </div>
             <div class="card-content">
                 <h3>FINE LINE</h3>
@@ -390,7 +375,6 @@
         <div class="card spec-card">
             <div class="spec-image-wrap">
                 <img src="assets/specialties/blackgrey.jpg" alt="Black and Grey tattoo">
-                <div class="spec-smoke" aria-hidden="true"><span></span><span></span><span></span></div>
             </div>
             <div class="card-content">
                 <h3>BLACK &amp; GREY</h3>
@@ -401,7 +385,6 @@
         <div class="card spec-card">
             <div class="spec-image-wrap">
                 <img src="assets/specialties/realism.jpg" alt="Realism tattoo">
-                <div class="spec-smoke" aria-hidden="true"><span></span><span></span><span></span></div>
             </div>
             <div class="card-content">
                 <h3>REALISM</h3>
@@ -412,7 +395,6 @@
         <div class="card spec-card">
             <div class="spec-image-wrap">
                 <img src="assets/specialties/custom.jpg" alt="Custom Design tattoo">
-                <div class="spec-smoke" aria-hidden="true"><span></span><span></span><span></span></div>
             </div>
             <div class="card-content">
                 <h3>CUSTOM DESIGN</h3>
@@ -423,15 +405,8 @@
     </div>
 </section>
 
-<div class="motif-divider" aria-hidden="true">
-    <span class="motif-line"></span>
-    <svg class="motif-mid motif-gun" viewBox="0 0 64 64"><use href="#icon-gun"/></svg>
-    <span class="motif-line"></span>
-</div>
-
 <section id="artists" class="section dark-bg fade-in journey-section" data-journey="diamonds">
-    <div class="section-motif-edge left" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#icon-diamond"/></svg></div>
-    <div class="section-motif-edge right" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#icon-gun"/></svg></div>
+
     <div class="section-header center">
         <p class="subtitle">OUR ARTISTS</p>
         <h2>Masters of Their Craft</h2>
@@ -476,22 +451,7 @@
     </div>
 </section>
 
-<div class="motif-divider" aria-hidden="true">
-    <span class="motif-line"></span>
-    <svg class="motif-mid motif-skull" viewBox="0 0 64 64"><use href="#icon-skull"/></svg>
-    <span class="motif-line"></span>
-</div>
-
 <section id="portfolio" class="section slide-up portfolio-section journey-section" data-journey="skulls">
-    <div class="portfolio-ambient-smoke" aria-hidden="true">
-        <span class="ambient-smoke"></span>
-        <span class="ambient-smoke"></span>
-        <span class="ambient-smoke"></span>
-        <span class="ambient-smoke"></span>
-        <span class="ambient-smoke"></span>
-    </div>
-    <div class="section-motif-edge left" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#icon-skull"/></svg></div>
-    <div class="section-motif-edge right" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#icon-rose"/></svg></div>
     <div class="section-header split">
         <div>
             <p class="subtitle">FEATURED PORTFOLIO</p>
@@ -540,12 +500,6 @@
             <p>Full barrier protection for<br>your safety and ours.</p>
         </div>
     </div>
-</div>
-
-<div class="motif-divider" aria-hidden="true">
-    <span class="motif-line"></span>
-    <svg class="motif-mid motif-smoke" viewBox="0 0 64 64"><use href="#icon-smoke-curl"/></svg>
-    <span class="motif-line"></span>
 </div>
 
 <section id="process" class="section slide-up journey-section" data-journey="smoke">
@@ -808,12 +762,6 @@
     </div>
 </section>
 
-<div class="motif-divider" aria-hidden="true">
-    <span class="motif-line"></span>
-    <svg class="motif-mid motif-rose" viewBox="0 0 64 64"><use href="#icon-rose"/></svg>
-    <span class="motif-line"></span>
-</div>
-
 <section id="shop" class="section dark-bg fade-in journey-section" data-journey="roses">
     <div class="section-header center">
         <p class="subtitle">TATTOO AFTERCARE &amp; STUDIO SUPPLIES</p>
@@ -871,17 +819,17 @@
         </div>
     </div>
     
-    <div class="info-col box aftercare-box" style="background-image: linear-gradient(rgba(17,17,17,0.8), rgba(17,17,17,0.9)), url('assets/tattoo_front_desk_1781911857115.png'); background-size: cover; background-position: center;">
+    <div class="info-col box aftercare-box" style="background-image: linear-gradient(rgba(10,10,10,0.78), rgba(10,10,10,0.88)), url('assets/brand/aftercare-essentials.jpg'); background-size: cover; background-position: center;">
         <h3>AFTERCARE</h3>
         <p>Proper aftercare ensures<br>your tattoo heals perfectly.</p>
         <button type="button" class="explore aftercare-open-btn" id="openAftercareBtn">VIEW AFTERCARE GUIDE &rarr;</button>
         <a href="#shop" class="explore" style="display:block;margin-top:0.75rem;">Shop aftercare supplies &rarr;</a>
     </div>
 
-    <div class="info-col box studio-box" style="background-image: linear-gradient(rgba(17,17,17,0.8), rgba(17,17,17,0.9)), url('assets/tattoo_workspace_1781911831357.png'); background-size: cover; background-position: center;">
+    <div class="info-col box studio-box" style="background-image: linear-gradient(rgba(10,10,10,0.72), rgba(10,10,10,0.88)), url('assets/brand/studio-parlour.jpg'); background-size: cover; background-position: center;">
         <h3>STUDIO</h3>
         <p>Shop 5/37–39 Baan Baan St<br>Dapto NSW 2530</p>
-        <p class="mt-1">By appointment only<br>Tue – Sat · 10AM – 6PM</p>
+        <p class="mt-1">By appointment only<br>Tue – Sat · mornings</p>
         <p class="note mt-1">Private entrance. Discreet service.</p>
         <a href="tel:+61242614311" class="explore mt-1" data-track="cta_studio_call">Call (02) 4261 4311 &rarr;</a>
     </div>
@@ -917,7 +865,7 @@
 <footer>
     <div class="footer-top">
         <div class="footer-brand">
-            <img src="assets/logo/diamond-tip-wordmark.png" alt="Diamond Tip Tattoo" class="footer-wordmark">
+            <img src="assets/logo/diamond-tip-circle.png" alt="Diamond Tip Tattoo" class="footer-seal">
             <p class="footer-tagline">Private ink. Timeless craft. · Dapto NSW</p>
         </div>
         <div class="footer-links">
@@ -952,11 +900,8 @@
                 <span class="contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4h3l2 5-2 1a12 12 0 0 0 5 5l1-2 5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 4 6a2 2 0 0 1 2-2z"/></svg></span>
                 <a href="tel:+61242614311">(02) 4261 4311</a>
             </p>
-            <p class="contact-line contact-hours">Tue–Sat · 10AM–6PM · Appointment only</p>
+            <p class="contact-line contact-hours">Tue–Sat · mornings · Appointment only</p>
             <a href="#book" class="btn btn-solid footer-book-btn" data-track="cta_footer_book">Book consultation</a>
-        </div>
-        <div class="footer-badge">
-            <img src="assets/logo/diamond-tip-circle.png" alt="Diamond Tip Tattoo seal" class="footer-seal">
         </div>
     </div>
     <div class="footer-bottom">

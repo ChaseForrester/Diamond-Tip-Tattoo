@@ -209,21 +209,19 @@ p {
 }
 
 .logo-wordmark {
-    height: 34px;
+    height: 36px;
     width: auto;
-    max-width: 160px;
+    max-width: min(200px, 48vw);
     object-fit: contain;
     display: block;
 }
 
-.logo-text {
-    white-space: nowrap;
+.logo-wordmark-only {
+    height: 38px;
 }
 
-@media (max-width: 640px) {
-    .logo-wordmark {
-        display: none;
-    }
+.logo-text {
+    white-space: nowrap;
 }
 
 .footer-logo {
@@ -243,18 +241,22 @@ p {
 }
 
 .footer-tagline {
-    margin: 0;
+    margin: 0.75rem 0 0;
     color: var(--text-secondary);
     font-size: 0.9rem;
     line-height: 1.5;
 }
 
 .footer-seal {
-    width: 100px;
-    height: 100px;
+    width: 88px;
+    height: 88px;
     object-fit: contain;
     display: block;
     border-radius: 50%;
+}
+
+.footer-brand .footer-seal {
+    margin-bottom: 0.25rem;
 }
 
 .shop-intro {
@@ -1485,7 +1487,7 @@ footer {
 
 .footer-top {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr;
+    grid-template-columns: 1.3fr 1fr 1fr 1.4fr;
     gap: 2rem;
     margin-bottom: 4rem;
 }
