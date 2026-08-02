@@ -715,15 +715,71 @@ window.initShopCart = function initShopCart() {
         source: "website_shop"
       };
 
+      // Open Messenger during click gesture for shop orders too
+      try {
+        window.__pendingMessengerWindow = window.open("about:blank", "dtt_messenger");
+      } catch (_) {
+        window.__pendingMessengerWindow = null;
+      }
+
       try {
         await setDoc(doc(db, "orders", orderId), orderPayload);
+
+        // Full order details (incl. email) → Messenger + email backup
+        const orderText = formatOrderMessageForMessenger(orderPayload);
+        try {
+          await sendFormDataToMessenger(orderText, {
+            win: window.__pendingMessengerWindow,
+            open: true
+          });
+        } catch (mErr) {
+          console.warn("Order messenger handoff failed:", mErr);
+        }
+        try {
+          await addDoc(collection(db, "mail"), {
+            to: STUDIO_NOTIFY_EMAILS,
+            message: {
+              subject: `New shop pickup order — ${name} ($${Number(total).toFixed(2)})`,
+              text: orderText
+            },
+            createdAt: new Date().toISOString(),
+            type: "shop_order",
+            orderId,
+            messengerUrl: STUDIO_MESSENGER_URL,
+            status: "pending"
+          });
+        } catch (mailErr) {
+          console.warn("Order mail queue failed:", mailErr);
+        }
+        try {
+          await fetch("https://formsubmit.co/ajax/hello@diamondtiptattoo.com", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({
+              _subject: `New shop pickup order — ${name}`,
+              _template: "table",
+              _captcha: "false",
+              _replyto: email,
+              name,
+              email,
+              phone,
+              pickupWindow,
+              notes,
+              orderId,
+              total,
+              message: orderText,
+              messenger: STUDIO_MESSENGER_URL
+            })
+          });
+        } catch (_) { /* optional backup */ }
 
         if (typeof window.trackConversion === "function") {
           window.trackConversion("purchase", {
             transaction_id: orderId,
             value: total,
             currency: "AUD",
-            items: items.length
+            items: items.length,
+            notify: "facebook_messenger"
           });
         }
 
@@ -740,7 +796,7 @@ window.initShopCart = function initShopCart() {
         if (formEl) formEl.hidden = true;
         if (successEl) successEl.hidden = false;
         if (msg) {
-          msg.textContent = `Thanks ${name}. We’ll confirm when your pickup is ready at Diamond Tip Tattoo, Dapto.`;
+          msg.textContent = `Thanks ${name}. Order details (including ${email}) were prepared for Facebook Messenger. Paste into the chat if it opened.`;
         }
         if (oid) oid.textContent = `Order ref: ${orderId}`;
       } catch (err) {
@@ -1396,6 +1452,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            // Open Messenger tab immediately (must be in user gesture) so form data can be pasted/sent
+            try {
+                window.__pendingMessengerWindow = window.open("about:blank", "dtt_messenger");
+            } catch (_) {
+                window.__pendingMessengerWindow = null;
+            }
+
             try {
                 // 1. Create a Booking ID first
                 const bookingRef = doc(collection(db, "bookings"));
@@ -1511,11 +1574,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 uploadProgressLabel.textContent = 'Saving to CRM & notifying studio...';
                 uploadProgressFill.style.width = '95%';
 
-                // Email studio + CRM lead mirror (non-blocking for user if email fails)
+                // Messenger (primary) + email + CRM notify
                 try {
-                    await notifyStudioOfBooking(bookingData);
+                    uploadProgressLabel.textContent = "Sending to Facebook Messenger…";
+                    await notifyStudioOfBooking(bookingData, {
+                        messengerWin: window.__pendingMessengerWindow,
+                        openMessenger: true
+                    });
                 } catch (notifyErr) {
                     console.warn("Studio notify failed:", notifyErr);
+                    // Still try to open Messenger with a basic message
+                    try {
+                        const fallbackText = formatBookingMessageForMessenger(bookingData);
+                        await sendFormDataToMessenger(fallbackText, {
+                            win: window.__pendingMessengerWindow,
+                            open: true
+                        });
+                        updateMessengerSuccessUI({ copied: true, text: fallbackText });
+                    } catch (_) { /* ignore */ }
                 }
                 uploadProgressFill.style.width = '100%';
 
@@ -1526,19 +1602,22 @@ document.addEventListener("DOMContentLoaded", () => {
                         preferredArtist,
                         has_refs: uploadedUrls.length > 0,
                         has_try_on: !!tryOnPayload,
-                        source
+                        source,
+                        notify: "facebook_messenger"
                     });
                 }
 
-                // Success State — in-page confirmation (better UX than alert)
+                // Success State — in-page confirmation + Messenger handoff
                 bookingForm.reset();
                 bookingForm.hidden = true;
                 const successEl = document.getElementById("bookingSuccess");
                 if (successEl) {
                     successEl.hidden = false;
+                    const emailEl = document.getElementById("messengerClientEmail");
+                    if (emailEl) emailEl.textContent = email || "—";
                     successEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
                 } else {
-                    alert("Thank you! Your consultation request has been submitted. We'll reply within 1–2 business days.");
+                    alert("Thank you! Your consultation request was saved. Open Facebook Messenger to send your details to the studio.");
                 }
                 selectedBookingFiles = [];
                 const previewGrid = document.getElementById('filePreviewGrid');
@@ -1564,6 +1643,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
             } catch (err) {
                 console.error("Booking submission failed: ", err);
+                // Close unused messenger placeholder tab
+                try {
+                    if (window.__pendingMessengerWindow && !window.__pendingMessengerWindow.closed) {
+                        window.__pendingMessengerWindow.close();
+                    }
+                } catch (_) { /* ignore */ }
+                window.__pendingMessengerWindow = null;
                 alert("Failed to submit booking: " + err.message);
             } finally {
                 bookingSubmitBtn.disabled = false;
@@ -4375,52 +4461,193 @@ async function uploadDataUrlOrBlobToStorage(dataUrlOrHttp, storagePath) {
   return getDownloadURL(fileRef);
 }
 
-/** Notify studio by email + CRM mail queue (best-effort, never blocks booking) */
-async function notifyStudioOfBooking(bookingData) {
-  const studioEmails = [
-    "hello@diamondtiptattoo.com",
-    "stormychaseforrester@gmail.com"
-  ];
-  const subject = `New booking request — ${bookingData.name} (${bookingData.date} ${bookingData.time})`;
+/** Diamond Tip Facebook Page Messenger — all form summaries go here */
+const STUDIO_MESSENGER_URL = "https://m.me/diamondtiptattoo";
+const STUDIO_MESSENGER_PAGE = "https://www.facebook.com/diamondtiptattoo";
+const STUDIO_NOTIFY_EMAILS = [
+  "hello@diamondtiptattoo.com",
+  "stormychaseforrester@gmail.com"
+];
+
+/** Last form message prepared for Messenger (booking / shop / other) */
+window.__lastMessengerFormText = "";
+window.__pendingMessengerWindow = null;
+
+function formatBookingMessageForMessenger(bookingData) {
   const lines = [
-    `New consultation request from diamondtiptattoo website`,
-    ``,
-    `Name: ${bookingData.name}`,
-    `Email: ${bookingData.email}`,
+    "NEW CONSULTATION REQUEST — Diamond Tip Tattoo website",
+    "",
+    `Name: ${bookingData.name || "—"}`,
+    `Email: ${bookingData.email || "—"}`,
     `Phone: ${bookingData.phone || "—"}`,
-    `Preferred date: ${bookingData.date}`,
-    `Preferred time: ${bookingData.time}`,
-    `Style: ${bookingData.style}`,
+    `Preferred date: ${bookingData.date || "—"}`,
+    `Preferred time: ${bookingData.time || "—"}`,
+    `Style: ${bookingData.style || "—"}`,
     `Preferred artist: ${bookingData.preferredArtist || "—"}`,
     `Source: ${bookingData.source || "website"}`,
-    ``,
-    `Idea:`,
+    "",
+    "Idea:",
     bookingData.idea || "—",
-    ``,
+    "",
     bookingData.tryOn
-      ? `Try-on: placement=${bookingData.tryOn.placement}, size=${bookingData.tryOn.scale}%, rotation=${bookingData.tryOn.rotation}°, wrap=${bookingData.tryOn.wrap}%`
-      : `Try-on: none`,
-    ``,
+      ? `Try-on: placement=${bookingData.tryOn.placement || "—"}, size=${bookingData.tryOn.scale ?? "—"}%, rotation=${bookingData.tryOn.rotation ?? "—"}°, wrap=${bookingData.tryOn.wrap ?? "—"}%`
+      : "Try-on: none",
+    "",
     `Reference images: ${(bookingData.referenceImages || []).length}`,
     ...(bookingData.referenceImages || []).map((u, i) => `  ${i + 1}. ${u}`),
-    ``,
-    `Booking ID: ${bookingData.id}`,
-    `Created: ${bookingData.createdAt}`
+    "",
+    `Booking ID: ${bookingData.id || "—"}`,
+    `Created: ${bookingData.createdAt || new Date().toISOString()}`
   ];
-  const text = lines.join("\n");
+  return lines.join("\n");
+}
+
+function formatOrderMessageForMessenger(order) {
+  const itemLines = (order.items || []).map(
+    (i) => `  • ${i.name} × ${i.qty} — $${Number(i.lineTotal).toFixed(2)}`
+  );
+  return [
+    "NEW STUDIO PICKUP ORDER — Diamond Tip Tattoo website",
+    "",
+    `Name: ${order.name || "—"}`,
+    `Email: ${order.email || "—"}`,
+    `Phone: ${order.phone || "—"}`,
+    `Pickup window: ${order.pickupWindow || "—"}`,
+    `Notes: ${order.notes || "—"}`,
+    "",
+    "Items:",
+    ...(itemLines.length ? itemLines : ["  (none)"]),
+    "",
+    `Total: $${Number(order.total || 0).toFixed(2)} AUD`,
+    `Payment: pay at studio`,
+    `Order ID: ${order.id || "—"}`,
+    `Created: ${order.createdAt || new Date().toISOString()}`
+  ].join("\n");
+}
+
+async function copyTextToClipboard(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (_) { /* fall through */ }
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  } catch (_) {
+    return false;
+  }
+}
+
+/**
+ * Send form data to Facebook Messenger (Page: diamondtiptattoo).
+ * Meta does not allow silent POSTs into Messenger without a bot + Page token.
+ * We copy the full message (incl. email) and open the Page Messenger chat so
+ * the client (or studio) can paste/send in one step.
+ *
+ * @param {string} text - full form summary including email
+ * @param {{ win?: Window|null, open?: boolean }} opts
+ */
+async function sendFormDataToMessenger(text, opts = {}) {
+  const message = String(text || "").trim();
+  window.__lastMessengerFormText = message;
+  let copied = false;
+  if (message) copied = await copyTextToClipboard(message);
+
+  const openChat = opts.open !== false;
+  let win = opts.win || window.__pendingMessengerWindow;
+  window.__pendingMessengerWindow = null;
+
+  if (openChat) {
+    try {
+      if (win && !win.closed) {
+        win.location.href = STUDIO_MESSENGER_URL;
+      } else {
+        win = window.open(STUDIO_MESSENGER_URL, "_blank", "noopener,noreferrer");
+      }
+    } catch (_) {
+      win = null;
+    }
+  }
+
+  try {
+    if (typeof window.trackEvent === "function") {
+      window.trackEvent("form_to_messenger", {
+        copied,
+        opened: !!(win && !win.closed),
+        chars: message.length
+      });
+    }
+  } catch (_) { /* ignore */ }
+
+  return { copied, opened: !!(win && !win.closed), url: STUDIO_MESSENGER_URL };
+}
+
+window.sendFormDataToMessenger = sendFormDataToMessenger;
+window.openStudioMessenger = function openStudioMessenger() {
+  const text = window.__lastMessengerFormText || "";
+  return sendFormDataToMessenger(text, { open: true });
+};
+
+function updateMessengerSuccessUI({ copied, text }) {
+  const status = document.getElementById("messengerCopyStatus");
+  const preview = document.getElementById("messengerMessagePreview");
+  if (status) {
+    status.textContent = copied
+      ? "Form details (including email) copied — paste into Messenger and send."
+      : "Open Messenger, then tap “Copy details” and paste into the chat.";
+  }
+  if (preview && text) {
+    preview.value = text;
+    preview.hidden = false;
+  }
+  const emailLine = document.getElementById("messengerClientEmail");
+  if (emailLine) {
+    const m = String(text).match(/^Email:\s*(.+)$/m);
+    emailLine.textContent = m ? m[1].trim() : "—";
+  }
+}
+
+/** Notify studio by Messenger handoff + email + CRM (best-effort) */
+async function notifyStudioOfBooking(bookingData, opts = {}) {
+  const subject = `New booking request — ${bookingData.name} (${bookingData.date} ${bookingData.time})`;
+  const text = formatBookingMessageForMessenger(bookingData);
   const html = `<pre style="font-family:system-ui,sans-serif;white-space:pre-wrap;line-height:1.45">${text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")}</pre>`;
 
+  // 0) Facebook Messenger handoff — primary path for studio inbox
+  let messengerResult = { copied: false, opened: false };
+  try {
+    messengerResult = await sendFormDataToMessenger(text, {
+      win: opts.messengerWin || window.__pendingMessengerWindow,
+      open: opts.openMessenger !== false
+    });
+    updateMessengerSuccessUI({ copied: messengerResult.copied, text });
+  } catch (e) {
+    console.warn("Messenger handoff failed:", e);
+  }
+
   // 1) Firestore mail queue — works with Firebase "Trigger Email" extension
   try {
     await addDoc(collection(db, "mail"), {
-      to: studioEmails,
+      to: STUDIO_NOTIFY_EMAILS,
       message: { subject, text, html },
       createdAt: new Date().toISOString(),
       type: "booking_request",
       bookingId: bookingData.id,
-      status: "pending"
+      status: "pending",
+      messengerUrl: STUDIO_MESSENGER_URL,
+      channel: "messenger_and_email"
     });
   } catch (e) {
     console.warn("mail queue write failed:", e);
@@ -4431,13 +4658,15 @@ async function notifyStudioOfBooking(bookingData) {
     await setDoc(doc(db, "leads", bookingData.id), {
       ...bookingData,
       type: "booking_consultation",
+      notifyChannel: "facebook_messenger",
+      messengerUrl: STUDIO_MESSENGER_URL,
       updatedAt: new Date().toISOString()
     }, { merge: true });
   } catch (e) {
     console.warn("leads write failed:", e);
   }
 
-  // 3) FormSubmit email (no API key) — best-effort external notify
+  // 3) FormSubmit email backup (includes client email + full message)
   try {
     await fetch("https://formsubmit.co/ajax/hello@diamondtiptattoo.com", {
       method: "POST",
@@ -4449,6 +4678,7 @@ async function notifyStudioOfBooking(bookingData) {
         _subject: subject,
         _template: "table",
         _captcha: "false",
+        _replyto: bookingData.email || "",
         name: bookingData.name,
         email: bookingData.email,
         phone: bookingData.phone || "",
@@ -4460,12 +4690,15 @@ async function notifyStudioOfBooking(bookingData) {
         bookingId: bookingData.id,
         tryOn: bookingData.tryOn ? JSON.stringify(bookingData.tryOn) : "",
         references: (bookingData.referenceImages || []).join("\n"),
+        messenger: STUDIO_MESSENGER_URL,
         message: text
       })
     });
   } catch (e) {
     console.warn("FormSubmit notify failed:", e);
   }
+
+  return messengerResult;
 }
 
 /**
@@ -5629,6 +5862,41 @@ window.initMarketingUX = function initMarketingUX() {
       if (form) {
         form.hidden = false;
         form.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  }
+
+  // Messenger handoff buttons (form data incl. email → Page chat)
+  const openMessengerBtn = document.getElementById("openMessengerBtn");
+  if (openMessengerBtn) {
+    openMessengerBtn.addEventListener("click", async () => {
+      const result = await sendFormDataToMessenger(window.__lastMessengerFormText || "", { open: true });
+      updateMessengerSuccessUI({
+        copied: result.copied,
+        text: window.__lastMessengerFormText || ""
+      });
+      if (!result.opened) {
+        window.location.href = STUDIO_MESSENGER_URL;
+      }
+    });
+  }
+  const copyMessengerDetailsBtn = document.getElementById("copyMessengerDetailsBtn");
+  if (copyMessengerDetailsBtn) {
+    copyMessengerDetailsBtn.addEventListener("click", async () => {
+      const text = window.__lastMessengerFormText || "";
+      const ok = text ? await copyTextToClipboard(text) : false;
+      const status = document.getElementById("messengerCopyStatus");
+      if (status) {
+        status.textContent = ok
+          ? "Copied again — paste into Facebook Messenger and send."
+          : "Could not copy automatically — select the text in the box below and copy manually.";
+      }
+      const preview = document.getElementById("messengerMessagePreview");
+      if (preview && text) {
+        preview.value = text;
+        preview.hidden = false;
+        preview.focus();
+        preview.select();
       }
     });
   }

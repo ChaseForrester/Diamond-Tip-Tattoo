@@ -827,18 +827,30 @@
 
             <div class="form-footer">
                 <button type="submit" id="bookingSubmitBtn" class="btn btn-solid" data-track="cta_form_submit">REQUEST FREE CONSULTATION</button>
-                <span class="privacy-note">Goes straight to the studio CRM. We only use your details for this booking. <a href="#privacy" class="inline-legal">Privacy</a></span>
+                <span class="privacy-note">Your details (including email) go to our CRM and are prepared for <strong>Facebook Messenger</strong> to the studio page. <a href="#privacy" class="inline-legal">Privacy</a></span>
             </div>
-            <p class="booking-reassure">Prefer to talk first? Call <a href="tel:+61242614311">(02) 4261 4311</a> · Tue–Sat 10am–6pm · or message us on <a href="https://www.facebook.com/diamondtiptattoo" target="_blank" rel="noopener noreferrer">Facebook</a> / <a href="https://www.instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener noreferrer">Instagram</a>.</p>
+            <p class="booking-reassure">Prefer to talk first? Call <a href="tel:+61242614311">(02) 4261 4311</a> · or message us on <a href="https://m.me/diamondtiptattoo" target="_blank" rel="noopener noreferrer">Facebook Messenger</a> / <a href="https://www.instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener noreferrer">Instagram</a>.</p>
         </form>
         <div id="bookingSuccess" class="booking-success" hidden>
             <div class="booking-success-icon" aria-hidden="true">✓</div>
             <h3>Request received</h3>
-            <p>Thanks — your details are in our studio CRM. We’ll reply within <strong>1–2 business days</strong> (check email + spam).</p>
+            <p>Thanks — your consultation is saved. We’ve prepared your form for <strong>Facebook Messenger</strong> (page: Diamond Tip Tattoo).</p>
+            <p class="messenger-email-line">Your email on this request: <strong id="messengerClientEmail">—</strong></p>
+            <p id="messengerCopyStatus" class="messenger-copy-status">Open Messenger and paste your details into the chat if they aren’t already there.</p>
+            <textarea id="messengerMessagePreview" class="messenger-message-preview" readonly hidden rows="8" aria-label="Message prepared for Messenger"></textarea>
+            <div class="booking-success-actions messenger-actions">
+                <button type="button" class="btn btn-solid" id="openMessengerBtn" data-track="cta_open_messenger">
+                    Open Facebook Messenger
+                </button>
+                <button type="button" class="btn btn-outline" id="copyMessengerDetailsBtn" data-track="cta_copy_messenger">
+                    Copy details again
+                </button>
+            </div>
             <div class="booking-success-actions">
                 <a href="#portfolio" class="btn btn-outline">Browse more work</a>
-                <button type="button" class="btn btn-solid" id="bookingSuccessClose">Book another idea</button>
+                <button type="button" class="btn btn-outline" id="bookingSuccessClose">Book another idea</button>
             </div>
+            <p class="messenger-help">Studio chat: <a href="https://m.me/diamondtiptattoo" target="_blank" rel="noopener noreferrer">m.me/diamondtiptattoo</a> · Page: <a href="https://www.facebook.com/diamondtiptattoo" target="_blank" rel="noopener noreferrer">facebook.com/diamondtiptattoo</a></p>
         </div>
     </div>
 </section>

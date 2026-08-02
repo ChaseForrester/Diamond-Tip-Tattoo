@@ -445,6 +445,7 @@ body.nav-open {
     opacity: 0;
     transform: translateY(15px);
     transition: opacity 0.8s ease, transform 0.8s ease;
+    animation: fadeInUp 0.8s ease 0.4s forwards;
 }
 
 .slider-main-title {
@@ -459,6 +460,7 @@ body.nav-open {
     opacity: 0;
     transform: translateY(25px);
     transition: opacity 0.8s ease 0.15s, transform 0.8s ease 0.15s;
+    animation: fadeInUp 0.85s ease 0.55s forwards;
 }
 
 .slider-action-links {
@@ -469,6 +471,7 @@ body.nav-open {
     opacity: 0;
     transform: translateY(15px);
     transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+    animation: fadeInUp 0.85s ease 0.7s forwards;
 }
 
 .slider-link-btn {
@@ -514,6 +517,7 @@ body.nav-open {
     opacity: 0;
     transform: translateY(10px);
     transition: opacity 0.8s ease 0.45s, transform 0.8s ease 0.45s;
+    animation: fadeInUp 0.85s ease 0.9s forwards;
 }
 
 .slider-scroll-indicator span {
@@ -543,6 +547,12 @@ body.nav-open {
     opacity: 0;
     transform: scale(0.95);
     transition: opacity 1s cubic-bezier(0.19, 1, 0.22, 1), transform 1s cubic-bezier(0.19, 1, 0.22, 1);
+    animation: sliderFrameReveal 1s cubic-bezier(0.19, 1, 0.22, 1) 0.5s forwards;
+}
+
+@keyframes sliderFrameReveal {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
 }
 
 .main-slide-img {
@@ -566,6 +576,12 @@ body.nav-open {
     opacity: 0;
     transform: translateX(30px);
     transition: opacity 1s cubic-bezier(0.19, 1, 0.22, 1), transform 1s cubic-bezier(0.19, 1, 0.22, 1);
+    animation: teaserReveal 1s cubic-bezier(0.19, 1, 0.22, 1) 0.65s forwards;
+}
+
+@keyframes teaserReveal {
+    from { opacity: 0; transform: translateX(30px); }
+    to   { opacity: 1; transform: translateX(0); }
 }
 
 .teaser-header {
@@ -727,26 +743,32 @@ body.nav-open {
 .slide-in .studio-location-tag {
     opacity: 1;
     transform: translateY(0);
+    animation: none;
 }
 .slide-in .slider-main-title {
     opacity: 1;
     transform: translateY(0);
+    animation: none;
 }
 .slide-in .slider-action-links {
     opacity: 1;
     transform: translateY(0);
+    animation: none;
 }
 .slide-in .slider-scroll-indicator {
     opacity: 1;
     transform: translateY(0);
+    animation: none;
 }
 .slide-in .slider-center-frame {
     opacity: 1;
     transform: scale(1);
+    animation: none;
 }
 .slide-in .slider-right-teaser {
     opacity: 1;
     transform: translateX(0);
+    animation: none;
 }
 .slide-in .bg-outline-text {
     opacity: 1;
@@ -1754,27 +1776,47 @@ footer {
     }
 }
 
-/* Animations */
+/* Animations — Enhanced with CSS-only fallback:
+   Content auto-reveals via keyframe if JS never fires.
+   JS adds .visible class for a smooth scroll-triggered reveal instead. */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .fade-in {
     opacity: 0;
     transform: translateY(30px);
-    transition: opacity 1.2s cubic-bezier(0.19, 1, 0.22, 1), transform 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+    transition: opacity 1.1s cubic-bezier(0.19, 1, 0.22, 1), transform 1.1s cubic-bezier(0.19, 1, 0.22, 1);
+    /* CSS-only fallback: auto-reveal after 0.8s if JS hasn't fired */
+    animation: fadeInUp 1.1s cubic-bezier(0.19, 1, 0.22, 1) 0.8s forwards;
 }
 
 .fade-in.visible {
     opacity: 1;
     transform: translateY(0);
+    animation: none; /* JS took over, cancel the CSS fallback */
 }
 
 .slide-up {
     opacity: 0;
     transform: translateY(50px);
-    transition: opacity 1.2s cubic-bezier(0.19, 1, 0.22, 1), transform 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+    transition: opacity 1.1s cubic-bezier(0.19, 1, 0.22, 1), transform 1.1s cubic-bezier(0.19, 1, 0.22, 1);
+    /* CSS-only fallback: auto-reveal after 0.9s */
+    animation: fadeInUp 1.1s cubic-bezier(0.19, 1, 0.22, 1) 0.9s forwards;
 }
 
 .slide-up.visible {
     opacity: 1;
     transform: translateY(0);
+    animation: none; /* JS took over, cancel the CSS fallback */
 }
 
 /* Responsive */
@@ -5534,6 +5576,43 @@ form .form-row .field {
     flex-wrap: wrap;
     gap: 0.65rem;
     justify-content: center;
+}
+.messenger-email-line {
+    margin: 0.5rem 0 0.35rem !important;
+    font-size: 0.9rem !important;
+    color: var(--text-primary) !important;
+}
+.messenger-copy-status {
+    margin: 0.35rem auto 0.85rem !important;
+    max-width: 28rem;
+    font-size: 0.85rem !important;
+    color: var(--text-secondary) !important;
+    line-height: 1.5 !important;
+}
+.messenger-message-preview {
+    display: block;
+    width: 100%;
+    max-width: 28rem;
+    margin: 0 auto 1rem;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.35);
+    color: var(--text-secondary);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.72rem;
+    line-height: 1.45;
+    resize: vertical;
+}
+.messenger-actions {
+    margin-bottom: 0.65rem;
+}
+.messenger-help {
+    margin: 1rem auto 0 !important;
+    font-size: 0.78rem !important;
+    color: var(--text-secondary) !important;
+}
+.messenger-help a {
+    color: var(--accent);
 }
 
 /* —— Booking full width + reviews band below —— */
