@@ -551,17 +551,17 @@
         <p class="subtitle">OUR ARTISTS</p>
         <h2>Masters of Their Craft</h2>
     </div>
-    <div class="artists-roster" id="artistsGrid">
-        <article class="artist-row" data-artist="steven">
-            <div class="artist-photo-frame">
-                <img src="assets/artists/steven-benn.jpg" alt="Steven Benn, Owner of Diamond Tip Tattoo">
+    <div class="artists-duo" id="artistsGrid">
+        <article class="artist-card-pro" data-artist="steven">
+            <div class="artist-card-photo">
+                <img src="assets/artists/steven-benn.jpg" alt="Steven Benn, Owner of Diamond Tip Tattoo" width="600" height="750" loading="lazy">
                 <span class="artist-badge">OWNER</span>
             </div>
-            <div class="artist-copy">
+            <div class="artist-card-body">
                 <p class="artist-kicker">Studio Master</p>
                 <h3>Steven Benn</h3>
                 <p class="role">Owner · Diamond Tip Tattoo</p>
-                <p class="artist-bio">Owner of Diamond Tip Tattoo in Dapto. Decades of custom ink across realism, black &amp; grey, and full custom pieces — portraits, animals, and work built to last.</p>
+                <p class="artist-bio">Decades of custom ink across realism, black &amp; grey, and full custom pieces — portraits, animals, and work built to last.</p>
                 <ul class="artist-tags">
                     <li>Realism</li>
                     <li>Black &amp; Grey</li>
@@ -570,16 +570,16 @@
                 <a href="#book" class="btn btn-solid artist-book-btn" data-artist-pref="Steven Benn" data-track="cta_book_steven">Book with Steven</a>
             </div>
         </article>
-        <article class="artist-row reverse" data-artist="scotty">
-            <div class="artist-photo-frame">
-                <img src="assets/artists/scotty.png" alt="Scotty, Tattooist">
+        <article class="artist-card-pro" data-artist="scotty">
+            <div class="artist-card-photo">
+                <img src="assets/artists/scotty.png" alt="Scotty, Tattooist at Diamond Tip Tattoo" width="600" height="750" loading="lazy">
                 <span class="artist-badge">ARTIST</span>
             </div>
-            <div class="artist-copy">
+            <div class="artist-card-body">
                 <p class="artist-kicker">Resident Tattooist</p>
                 <h3>Scotty</h3>
                 <p class="role">Tattooist · Diamond Tip Tattoo</p>
-                <p class="artist-bio">Resident tattooist with clean linework, bold blackwork, and custom designs. Steady hand, professional studio approach, and solid collaboration on every piece.</p>
+                <p class="artist-bio">Clean linework, bold blackwork, and custom designs. Steady hand, professional studio approach, and solid collaboration on every piece.</p>
                 <ul class="artist-tags">
                     <li>Blackwork</li>
                     <li>Custom</li>
@@ -701,8 +701,8 @@
     </div>
 </section>
 
-<section id="book" class="section split-section slide-up">
-    <div class="booking-form box">
+<section id="book" class="section slide-up book-section">
+    <div class="booking-form box booking-form-full">
         <p class="subtitle">FREE CONSULTATION · NO OBLIGATION</p>
         <h2>BOOK YOUR PRIVATE SESSION</h2>
         <p class="booking-lead">Tell us what you want. We’ll confirm availability and a clear price range — usually within <strong>1–2 business days</strong>.</p>
@@ -837,132 +837,72 @@
             </div>
         </div>
     </div>
-    <div class="reviews box" id="reviews" itemscope itemtype="https://schema.org/TattooParlor">
+</section>
+
+<!-- Reviews — full-width band under booking (not side-by-side) -->
+<section class="section reviews-section fade-in" id="reviews" aria-labelledby="reviewsHeading">
+    <div class="reviews-band box" itemscope itemtype="https://schema.org/TattooParlor">
         <meta itemprop="name" content="Diamond Tip Tattoo">
-        <p class="subtitle">CLIENT REVIEWS</p>
-        <h2>Rated across Google, Facebook &amp; local listings</h2>
-        <p class="reviews-kicker">Diamond Tip Tattooing · Shop 5/37–39 Baan Baan St, Dapto NSW 2530</p>
-
-        <div class="google-rating-panel" itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">
-            <div class="google-rating-score">
-                <span class="google-rating-value" itemprop="ratingValue">4.6</span>
-                <meta itemprop="bestRating" content="5">
-                <meta itemprop="worstRating" content="1">
-                <div class="google-rating-stars" aria-label="4.6 out of 5 stars">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="var(--accent)" aria-hidden="true" style="opacity:0.55"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                </div>
-                <p class="google-rating-count"><span itemprop="reviewCount">64</span> Google reviews</p>
+        <div class="reviews-band-left">
+            <p class="subtitle">CLIENT REVIEWS</p>
+            <h2 id="reviewsHeading">Trusted on Google &amp; more</h2>
+            <p class="reviews-blurb">Illawarra clients rate Diamond Tip Tattooing for custom realism, fine line and a calm private studio in Dapto.</p>
+            <ul class="reviews-trust-row" aria-label="What clients value">
+                <li>Custom detail</li>
+                <li>Relaxed crew</li>
+                <li>Local favourite</li>
+            </ul>
+        </div>
+        <div class="reviews-band-mid" itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">
+            <span class="reviews-score-num" itemprop="ratingValue">4.6</span>
+            <meta itemprop="bestRating" content="5">
+            <meta itemprop="worstRating" content="1">
+            <div class="reviews-stars" aria-label="4.6 out of 5 stars">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="var(--accent)" aria-hidden="true" style="opacity:.5"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
             </div>
-            <div class="google-rating-copy">
-                <p class="google-rating-lead">Clients across Dapto, Wollongong and the Illawarra rate Diamond Tip Tattoo for custom work, realism, fine line and a relaxed private-studio experience. Find us as <strong>Diamond Tip Tattooing</strong> on Google, Facebook, Yellow Pages, Fresha, MapQuest and more.</p>
-                <p class="google-rating-source">
-                    <img class="platform-logo-inline" src="assets/brand/platforms/google.svg" width="20" height="20" alt="" aria-hidden="true">
-                    Verified rating from Google Business · Diamond Tip Tattooing
-                </p>
-                <div class="google-rating-actions">
-                    <a class="btn btn-solid" href="https://share.google/JKVBw34Gp9C69H5kq" target="_blank" rel="noopener noreferrer" data-track="cta_google_reviews_read">Read Google reviews</a>
-                    <a class="btn btn-outline" href="https://www.facebook.com/diamondtiptattoo/reviews" target="_blank" rel="noopener noreferrer" data-track="cta_facebook_reviews">Facebook reviews</a>
-                    <a class="btn btn-outline" href="https://search.google.com/local/writereview?placeid=ChIJmTGjcL4RE2sRIfxgvMLRXLM" target="_blank" rel="noopener noreferrer" data-track="cta_google_reviews_write">Write a review</a>
-                </div>
+            <p class="reviews-score-count"><span itemprop="reviewCount">64</span> Google reviews</p>
+            <p class="reviews-score-brand">
+                <img src="assets/brand/platforms/google.svg" width="16" height="16" alt="" aria-hidden="true">
+                Diamond Tip Tattooing
+            </p>
+            <div class="reviews-score-actions">
+                <a class="btn btn-solid reviews-btn" href="https://share.google/JKVBw34Gp9C69H5kq" target="_blank" rel="noopener noreferrer" data-track="cta_google_reviews_read">Read reviews</a>
+                <a class="btn btn-outline reviews-btn" href="https://search.google.com/local/writereview?placeid=ChIJmTGjcL4RE2sRIfxgvMLRXLM" target="_blank" rel="noopener noreferrer" data-track="cta_google_reviews_write">Write a review</a>
             </div>
         </div>
-
-        <div class="review-platforms" aria-label="Where to find Diamond Tip Tattoo reviews and listings">
-            <a class="review-platform-card" href="https://share.google/JKVBw34Gp9C69H5kq" target="_blank" rel="noopener noreferrer" data-track="platform_google">
-                <img class="review-platform-logo" src="assets/brand/platforms/google.svg" width="36" height="36" alt="Google" loading="lazy">
-                <span class="review-platform-name">Google</span>
-                <span class="review-platform-meta"><strong>4.6★</strong> · 64 reviews</span>
-            </a>
-            <a class="review-platform-card" href="https://www.facebook.com/diamondtiptattoo" target="_blank" rel="noopener noreferrer" data-track="platform_facebook">
-                <img class="review-platform-logo" src="assets/brand/platforms/facebook.svg" width="36" height="36" alt="Facebook" loading="lazy">
-                <span class="review-platform-name">Facebook</span>
-                <span class="review-platform-meta">@diamondtiptattoo · reviews &amp; posts</span>
-            </a>
-            <a class="review-platform-card" href="https://www.yellowpages.com.au/dapto-nsw/bpp/diamond-tip-tattooing-579691714" target="_blank" rel="noopener noreferrer" data-track="platform_yellowpages">
-                <img class="review-platform-logo" src="assets/brand/platforms/yellowpages.svg" width="36" height="36" alt="Yellow Pages" loading="lazy">
-                <span class="review-platform-name">Yellow Pages AU</span>
-                <span class="review-platform-meta">Tattooing · Dapto NSW 2530</span>
-            </a>
-            <a class="review-platform-card" href="https://www.fresha.com/lvp/diamond-tip-tattooing-baan-baan-street-dapto-PVneYJ" target="_blank" rel="noopener noreferrer" data-track="platform_fresha">
-                <img class="review-platform-logo" src="assets/brand/platforms/fresha.svg" width="36" height="36" alt="Fresha" loading="lazy">
-                <span class="review-platform-name">Fresha</span>
-                <span class="review-platform-meta">Baan Baan St · Wollongong area</span>
-            </a>
-            <a class="review-platform-card" href="https://www.mapquest.com/au/new-south-wales/diamond-tip-tattooing-760122110" target="_blank" rel="noopener noreferrer" data-track="platform_mapquest">
-                <img class="review-platform-logo" src="assets/brand/platforms/mapquest.svg" width="36" height="36" alt="MapQuest" loading="lazy">
-                <span class="review-platform-name">MapQuest</span>
-                <span class="review-platform-meta">Award-winning Dapto studio</span>
-            </a>
-            <a class="review-platform-card" href="https://www.instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener noreferrer" data-track="platform_instagram">
-                <img class="review-platform-logo" src="assets/brand/platforms/instagram.svg" width="36" height="36" alt="Instagram" loading="lazy">
-                <span class="review-platform-name">Instagram</span>
-                <span class="review-platform-meta">@diamondtiptattoodapto</span>
-            </a>
-            <a class="review-platform-card" href="https://www.tiktok.com/@diamondtiptattoo" target="_blank" rel="noopener noreferrer" data-track="platform_tiktok">
-                <img class="review-platform-logo" src="assets/brand/platforms/tiktok.svg" width="36" height="36" alt="TikTok" loading="lazy">
-                <span class="review-platform-name">TikTok</span>
-                <span class="review-platform-meta">@diamondtiptattoo · Steven Benn</span>
-            </a>
-            <a class="review-platform-card" href="https://gobeauty.au/site/new-south-wales-diamond-tip-tattooing" target="_blank" rel="noopener noreferrer" data-track="platform_gobeauty">
-                <img class="review-platform-logo" src="assets/brand/platforms/gobeauty.svg" width="36" height="36" alt="GoBeauty" loading="lazy">
-                <span class="review-platform-name">GoBeauty</span>
-                <span class="review-platform-meta">Tattoo &amp; piercing · Dapto</span>
-            </a>
+        <div class="reviews-band-right">
+            <p class="reviews-find-label">Find us on</p>
+            <div class="reviews-platform-strip" aria-label="Reviews and social listings">
+                <a class="reviews-chip" href="https://share.google/JKVBw34Gp9C69H5kq" target="_blank" rel="noopener noreferrer" title="Google" data-track="platform_google">
+                    <img src="assets/brand/platforms/google.svg" width="22" height="22" alt="Google" loading="lazy"><span>Google</span>
+                </a>
+                <a class="reviews-chip" href="https://www.facebook.com/diamondtiptattoo" target="_blank" rel="noopener noreferrer" title="Facebook" data-track="platform_facebook">
+                    <img src="assets/brand/platforms/facebook.svg" width="22" height="22" alt="Facebook" loading="lazy"><span>Facebook</span>
+                </a>
+                <a class="reviews-chip" href="https://www.instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener noreferrer" title="Instagram" data-track="platform_instagram">
+                    <img src="assets/brand/platforms/instagram.svg" width="22" height="22" alt="Instagram" loading="lazy"><span>Instagram</span>
+                </a>
+                <a class="reviews-chip" href="https://www.tiktok.com/@diamondtiptattoo" target="_blank" rel="noopener noreferrer" title="TikTok" data-track="platform_tiktok">
+                    <img src="assets/brand/platforms/tiktok.svg" width="22" height="22" alt="TikTok" loading="lazy"><span>TikTok</span>
+                </a>
+                <a class="reviews-chip" href="https://www.yellowpages.com.au/dapto-nsw/bpp/diamond-tip-tattooing-579691714" target="_blank" rel="noopener noreferrer" title="Yellow Pages" data-track="platform_yellowpages">
+                    <img src="assets/brand/platforms/yellowpages.svg" width="22" height="22" alt="Yellow Pages" loading="lazy"><span>Yellow Pages</span>
+                </a>
+                <a class="reviews-chip" href="https://www.fresha.com/lvp/diamond-tip-tattooing-baan-baan-street-dapto-PVneYJ" target="_blank" rel="noopener noreferrer" title="Fresha" data-track="platform_fresha">
+                    <img src="assets/brand/platforms/fresha.svg" width="22" height="22" alt="Fresha" loading="lazy"><span>Fresha</span>
+                </a>
+                <a class="reviews-chip" href="https://www.mapquest.com/au/new-south-wales/diamond-tip-tattooing-760122110" target="_blank" rel="noopener noreferrer" title="MapQuest" data-track="platform_mapquest">
+                    <img src="assets/brand/platforms/mapquest.svg" width="22" height="22" alt="MapQuest" loading="lazy"><span>MapQuest</span>
+                </a>
+                <a class="reviews-chip" href="https://gobeauty.au/site/new-south-wales-diamond-tip-tattooing" target="_blank" rel="noopener noreferrer" title="GoBeauty" data-track="platform_gobeauty">
+                    <img src="assets/brand/platforms/gobeauty.svg" width="22" height="22" alt="GoBeauty" loading="lazy"><span>GoBeauty</span>
+                </a>
+            </div>
         </div>
-
-        <div class="google-review-highlights" aria-label="What clients value">
-            <article class="google-highlight box-inner">
-                <div class="stars" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--accent)"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--accent)"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--accent)"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--accent)"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--accent)"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                </div>
-                <h3 class="google-highlight-title">Custom detail</h3>
-                <p>Realism, portraits, lettering and cover-ups — reviewers highlight careful design work before the needle starts.</p>
-                <p class="google-highlight-via">Themes from Google reviews</p>
-            </article>
-            <article class="google-highlight box-inner">
-                <div class="stars" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--accent)"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--accent)"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--accent)"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--accent)"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--accent)"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                </div>
-                <h3 class="google-highlight-title">Relaxed crew</h3>
-                <p>Easygoing artists who take time to get the design right — suited to first tattoos and detailed custom pieces.</p>
-                <p class="google-highlight-via">Themes from Google reviews</p>
-            </article>
-            <article class="google-highlight box-inner">
-                <div class="stars" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--accent)"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--accent)"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--accent)"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--accent)"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--accent)"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                </div>
-                <h3 class="google-highlight-title">Local favourite</h3>
-                <p>Long-standing Dapto studio on Baan Baan St — tattooing and piercing for the wider Illawarra community.</p>
-                <p class="google-highlight-via">Themes from Google &amp; local listings</p>
-            </article>
-        </div>
-
-        <p class="google-reviews-footer">
-            Official listings:
-            <a href="https://share.google/JKVBw34Gp9C69H5kq" target="_blank" rel="noopener noreferrer">Google reviews</a>
-            ·
-            <a href="https://www.facebook.com/diamondtiptattoo" target="_blank" rel="noopener noreferrer">Facebook</a>
-            ·
-            <a href="https://www.yellowpages.com.au/dapto-nsw/bpp/diamond-tip-tattooing-579691714" target="_blank" rel="noopener noreferrer">Yellow Pages</a>
-            ·
-            <a href="https://www.google.com/maps?cid=12924435664960814113" target="_blank" rel="noopener noreferrer">Maps</a>
-        </p>
     </div>
 </section>
 
@@ -984,43 +924,42 @@
         <h2>Facebook, Instagram &amp; TikTok</h2>
         <p class="shop-intro">Fresh work, studio life and updates from Diamond Tip Tattooing — Dapto NSW.</p>
     </div>
-    <div class="social-feed-layout">
-        <div class="fb-page-wrap">
-            <div id="fb-root"></div>
-            <div
-                class="fb-page"
-                data-href="https://www.facebook.com/diamondtiptattoo"
-                data-tabs="timeline"
-                data-width="500"
-                data-height="520"
-                data-small-header="false"
-                data-adapt-container-width="true"
-                data-hide-cover="false"
-                data-show-facepile="true">
-                <blockquote cite="https://www.facebook.com/diamondtiptattoo" class="fb-xfbml-parse-ignore">
-                    <a href="https://www.facebook.com/diamondtiptattoo">Diamond Tip Tattoo on Facebook</a>
-                </blockquote>
+    <div class="social-gallery">
+        <a class="social-hero" href="https://www.facebook.com/diamondtiptattoo" target="_blank" rel="noopener noreferrer" data-track="social_fb_hero">
+            <img src="assets/brand/studio-parlour.jpg" alt="Diamond Tip Tattoo private studio parlour in Dapto" width="1200" height="700" loading="lazy">
+            <div class="social-hero-overlay">
+                <img class="social-hero-logo" src="assets/brand/platforms/facebook.svg" width="28" height="28" alt="">
+                <span>Follow on Facebook</span>
+                <p>@diamondtiptattoo · studio updates &amp; client work</p>
             </div>
-        </div>
-        <div class="social-fallback">
-            <a class="social-tile" href="https://www.facebook.com/diamondtiptattoo" target="_blank" rel="noopener noreferrer" data-track="social_fb_studio">
-                <img src="assets/brand/studio-parlour.jpg" alt="Diamond Tip studio floor" loading="lazy">
-                <span>Studio floor</span>
-            </a>
+        </a>
+        <div class="social-side-grid">
             <a class="social-tile" href="https://www.instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener noreferrer" data-track="social_ig_work">
-                <img src="assets/brand/blog-placement.jpg" alt="Recent tattoo work on Instagram" loading="lazy">
-                <span>Instagram work</span>
+                <img src="assets/brand/blog-placement.jpg" alt="Tattoo placement and work on Instagram" width="600" height="400" loading="lazy">
+                <span class="social-tile-badge"><img src="assets/brand/platforms/instagram.svg" width="18" height="18" alt=""> Instagram</span>
+                <span class="social-tile-label">@diamondtiptattoodapto</span>
             </a>
             <a class="social-tile" href="https://www.tiktok.com/@diamondtiptattoo" target="_blank" rel="noopener noreferrer" data-track="social_tt_awards">
-                <img src="assets/brand/awards.png" alt="Studio awards wall" loading="lazy">
-                <span>TikTok · Steven Benn</span>
+                <img src="assets/brand/awards.png" alt="Diamond Tip Tattoo awards wall" width="600" height="400" loading="lazy">
+                <span class="social-tile-badge"><img src="assets/brand/platforms/tiktok.svg" width="18" height="18" alt=""> TikTok</span>
+                <span class="social-tile-label">@diamondtiptattoo · Steven Benn</span>
             </a>
-            <div class="social-follow-row">
-                <a class="btn btn-solid social-follow-btn" href="https://www.facebook.com/diamondtiptattoo" target="_blank" rel="noopener noreferrer" data-track="social_fb_follow">Facebook</a>
-                <a class="btn btn-outline social-follow-btn" href="https://www.instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener noreferrer" data-track="social_ig_follow">Instagram</a>
-                <a class="btn btn-outline social-follow-btn" href="https://www.tiktok.com/@diamondtiptattoo" target="_blank" rel="noopener noreferrer" data-track="social_tt_follow">TikTok</a>
-            </div>
+            <a class="social-tile" href="https://www.facebook.com/diamondtiptattoo" target="_blank" rel="noopener noreferrer" data-track="social_fb_work">
+                <img src="assets/portfolio/realism/realism_tiger-portrait.jpg" alt="Realism tattoo work from Diamond Tip" width="600" height="400" loading="lazy">
+                <span class="social-tile-badge"><img src="assets/brand/platforms/facebook.svg" width="18" height="18" alt=""> Facebook</span>
+                <span class="social-tile-label">See more finished work</span>
+            </a>
+            <a class="social-tile" href="https://www.instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener noreferrer" data-track="social_ig_studio">
+                <img src="assets/portfolio/fineline/fineline_butterfly-florals.jpg" alt="Fine line floral tattoo" width="600" height="400" loading="lazy">
+                <span class="social-tile-badge"><img src="assets/brand/platforms/instagram.svg" width="18" height="18" alt=""> Instagram</span>
+                <span class="social-tile-label">Fine line &amp; florals</span>
+            </a>
         </div>
+    </div>
+    <div class="social-follow-row">
+        <a class="btn btn-solid" href="https://www.facebook.com/diamondtiptattoo" target="_blank" rel="noopener noreferrer" data-track="social_fb_follow">Facebook</a>
+        <a class="btn btn-outline" href="https://www.instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener noreferrer" data-track="social_ig_follow">Instagram</a>
+        <a class="btn btn-outline" href="https://www.tiktok.com/@diamondtiptattoo" target="_blank" rel="noopener noreferrer" data-track="social_tt_follow">TikTok</a>
     </div>
 </section>
 
@@ -1172,11 +1111,30 @@
             <a href="#book" class="btn btn-solid footer-book-btn" data-track="cta_footer_book">Book consultation</a>
         </div>
     </div>
+    <div class="footer-powered">
+        <a class="tech-aid-badge" href="https://www.techaidaustralia.com.au" target="_blank" rel="noopener noreferrer" aria-label="Powered by Tech Aid Australia" data-track="credit_tech_aid">
+            <img class="tech-aid-badge__mark" src="assets/brand/tech-aid-logo.png" alt="Tech Aid Australia logo" width="48" height="48" decoding="async" loading="lazy">
+            <span class="tech-aid-badge__text">
+                <span class="tech-aid-badge__kicker">Powered by</span>
+                <span class="tech-aid-badge__name">Tech Aid Australia</span>
+            </span>
+        </a>
+    </div>
     <div class="footer-bottom">
-        <p>&copy; 2026 Diamond Tip Tattoo · Dapto NSW. All rights reserved.</p>
-        <div class="legal-links">
-            <a href="#privacy" id="privacyLink">Privacy Policy</a>
-            <a href="#terms" id="termsLink">Terms of Service</a>
+        <div class="footer-bottom-left">
+            <p>&copy; 2026 Diamond Tip Tattoo · Dapto NSW. All rights reserved.</p>
+            <div class="legal-links">
+                <a href="#privacy" id="privacyLink">Privacy Policy</a>
+                <a href="#terms" id="termsLink">Terms of Service</a>
+            </div>
+        </div>
+        <div class="footer-credits">
+            <span>Developed by <a href="https://www.linkedin.com/in/chaseforrester/" target="_blank" rel="noopener noreferrer" data-track="credit_chase">Chase Forrester</a></span>
+            <span class="footer-credits__sep" aria-hidden="true">·</span>
+            <a class="footer-credits__tech-aid" href="https://www.techaidaustralia.com.au" target="_blank" rel="noopener noreferrer" data-track="credit_tech_aid_text">
+                <img src="assets/brand/tech-aid-logo.png" alt="" width="22" height="22" decoding="async" loading="lazy">
+                <span>Powered by <strong>Tech Aid Australia</strong></span>
+            </a>
         </div>
     </div>
 </footer>

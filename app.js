@@ -3193,31 +3193,19 @@ window.loadBlogWebsite = async function() {
             const safeTitle = String(blog.title || "").replace(/"/g, "&quot;").replace(/`/g, "'");
             const excerpt = String(blog.excerpt || blog.content || "").substring(0, 130);
             const slug = blogSlug(blog);
-            const shareUrl = blogShareUrl(blog);
-            const shares = shareLinksFor(shareUrl, blog.title || "Diamond Tip Tattoo");
             const idAttr = String(blog.id || slug).replace(/'/g, "\\'");
             return `
                 <article class="blog-card" data-blog-id="${idAttr}">
                     <a href="blog/${slug}.html" class="blog-card-image-link" data-blog-open="${idAttr}">
-                        <img src="${image}" alt="${safeTitle}" loading="lazy"
+                        <img src="${image}" alt="${safeTitle}" width="640" height="400" loading="lazy"
                              onerror="this.onerror=null;this.src='assets/brand/studio-parlour.jpg';">
                     </a>
                     <div class="blog-card-content">
-                        <div class="blog-meta">${dateStr} | BY ${blog.author || "Diamond Tip"}</div>
+                        <div class="blog-meta">${dateStr} · ${blog.author || "Diamond Tip"}</div>
                         <h3><a href="blog/${slug}.html" data-blog-open="${idAttr}">${safeTitle}</a></h3>
                         <p>${excerpt}${excerpt.length >= 130 ? "…" : ""}</p>
                         <div class="blog-card-actions">
                             <a href="blog/${slug}.html" class="explore" data-blog-open="${idAttr}">Read article →</a>
-                            <a href="#book" class="explore blog-card-book">Book consult →</a>
-                        </div>
-                        <div class="blog-share-row" aria-label="Share ${safeTitle}">
-                            <span class="blog-share-label">Share</span>
-                            <a href="${shares.facebook}" target="_blank" rel="noopener noreferrer" class="blog-share-icon" title="Share on Facebook" data-track="blog_share_fb" onclick="event.stopPropagation()">
-                                <img src="assets/brand/platforms/facebook.svg" width="22" height="22" alt="Facebook">
-                            </a>
-                            <a href="${shares.twitter}" target="_blank" rel="noopener noreferrer" class="blog-share-icon" title="Share on X" data-track="blog_share_x" onclick="event.stopPropagation()">X</a>
-                            <a href="${shares.whatsapp}" target="_blank" rel="noopener noreferrer" class="blog-share-icon" title="Share on WhatsApp" data-track="blog_share_wa" onclick="event.stopPropagation()">WA</a>
-                            <a href="blog/${slug}.html" class="blog-share-icon" title="Open full page for sharing" onclick="event.stopPropagation()">Link</a>
                         </div>
                     </div>
                 </article>`;
