@@ -1195,40 +1195,53 @@ document.addEventListener("DOMContentLoaded", () => {
     initSlider();
 
 
-    // Looser thresholds on mobile so short sections don't stay invisible (no "gaps")
+    // Scroll animations BOTH directions: re-trigger when scrolling up or down
+    // (do not unobserve — keep watching enter/leave)
     const isNarrow = window.matchMedia("(max-width: 820px)").matches;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const setInView = (el, on) => {
+        if (on) {
+            el.classList.add("visible", "is-inview");
+            // also reveal any delayed children in this section
+            el.querySelectorAll(".reveal-on-scroll").forEach((child) => {
+                child.classList.add("is-visible");
+            });
+        } else if (!reduceMotion) {
+            el.classList.remove("visible", "is-inview");
+            el.querySelectorAll(".reveal-on-scroll").forEach((child) => {
+                child.classList.remove("is-visible");
+            });
+        }
+    };
+
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-                entry.target.classList.add('is-inview');
-                // Keep observing journey sections for theme switches; unobserve one-shot reveals
-                if (!entry.target.classList.contains('journey-section') && !entry.target.classList.contains('features-bar')) {
-                    observer.unobserve(entry.target);
-                }
-            } else {
-                entry.target.classList.remove('is-inview');
-            }
+        entries.forEach((entry) => {
+            setInView(entry.target, entry.isIntersecting);
         });
     }, {
-        threshold: isNarrow ? 0.05 : 0.12,
-        rootMargin: isNarrow ? "0px 0px -2% 0px" : "0px 0px -8% 0px"
+        threshold: isNarrow ? [0, 0.08, 0.2] : [0, 0.12, 0.25],
+        rootMargin: isNarrow ? "0px 0px -4% 0px" : "0px 0px -6% 0px"
     });
 
-    document.querySelectorAll(
-      '.fade-in, .slide-up, .features-bar, .sterilization-bar, .journey-section, .section, .conversion-strip, .reviews-section, .social-feed-section, .book-section'
-    ).forEach((el) => observer.observe(el));
+    const scrollAnimTargets = document.querySelectorAll(
+      ".fade-in, .slide-up, .features-bar, .sterilization-bar, .journey-section, .section, .conversion-strip, .reviews-section, .social-feed-section, .book-section"
+    );
+    scrollAnimTargets.forEach((el) => observer.observe(el));
 
-    // Safety: force-reveal anything already in/near viewport after layout settles
-    requestAnimationFrame(() => {
-        document.querySelectorAll('.fade-in, .slide-up, .features-bar, .sterilization-bar, .journey-section, .section, .conversion-strip').forEach((el) => {
+    // Initial paint: reveal what's already on screen
+    const syncInView = () => {
+        const vh = window.innerHeight || 1;
+        scrollAnimTargets.forEach((el) => {
             const r = el.getBoundingClientRect();
-            const vh = window.innerHeight || 1;
-            if (r.top < vh * 0.95 && r.bottom > 0) {
-                el.classList.add('visible', 'is-inview');
-            }
+            const on = r.top < vh * 0.92 && r.bottom > vh * 0.08;
+            setInView(el, on);
         });
-    });
+    };
+    requestAnimationFrame(syncInView);
+    window.addEventListener("resize", () => {
+        requestAnimationFrame(syncInView);
+    }, { passive: true });
 
     // Scroll progress + ambient journey motifs (smoke / guns / skulls / roses)
     // Journey motif animations disabled — keep scroll progress/motifs off the public site

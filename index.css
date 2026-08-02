@@ -5719,108 +5719,178 @@ form .form-row .field {
     margin-right: auto;
 }
 .reviews-section-head {
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.15rem;
+}
+.reviews-section-head .shop-intro {
+    display: none;
 }
 .reviews-stack {
     display: grid;
-    grid-template-columns: minmax(0, 1.65fr) minmax(240px, 0.85fr);
-    gap: 1.25rem;
+    grid-template-columns: minmax(0, 1.7fr) minmax(220px, 0.8fr);
+    gap: 1rem;
     align-items: stretch;
 }
 .fb-reviews-hero {
-    padding: clamp(1.35rem, 3vw, 2rem);
+    padding: 1.25rem 1.35rem 1.35rem;
     background:
-        linear-gradient(145deg, rgba(24, 119, 242, 0.14), rgba(0, 0, 0, 0.35)),
+        linear-gradient(145deg, rgba(24, 119, 242, 0.16), rgba(0, 0, 0, 0.4)),
         var(--bg-box);
-    border-color: rgba(24, 119, 242, 0.35);
+    border: 1px solid rgba(24, 119, 242, 0.4);
 }
 .fb-reviews-hero-top {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: 0.85rem;
+    margin-bottom: 0.9rem;
+}
+/* Brand logos: full-bleed tiles, no white letterboxing */
+.fb-reviews-logo,
+.platform-logo,
+.reviews-chip img,
+.google-reviews-side-head img,
+.reviews-score-brand img,
+.google-g-badge {
+    display: block;
+    object-fit: cover;
+    object-position: center;
+    flex-shrink: 0;
+    background: transparent !important;
+    box-shadow: none;
 }
 .fb-reviews-logo {
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
     border-radius: 12px;
-    background: #fff;
-    flex-shrink: 0;
+}
+.google-reviews-side-head img {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+}
+.reviews-chip {
+    gap: 0.45rem;
+    padding: 0.35rem 0.55rem 0.35rem 0.35rem;
+}
+.reviews-chip img,
+.reviews-chip .platform-logo {
+    width: 22px !important;
+    height: 22px !important;
+    border-radius: 6px;
 }
 .fb-reviews-kicker {
-    margin: 0 0 0.2rem;
-    font-size: 0.72rem;
+    margin: 0 0 0.15rem;
+    font-size: 0.7rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #4c9aff;
+    color: #7ab3ff;
 }
 .fb-reviews-title {
     margin: 0;
     font-family: var(--font-heading);
-    font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+    font-size: clamp(1.35rem, 2.4vw, 1.7rem);
     color: #fff;
+    line-height: 1.15;
 }
 .fb-reviews-handle {
-    margin: 0.25rem 0 0;
-    font-size: 0.82rem;
+    margin: 0.2rem 0 0;
+    font-size: 0.8rem;
     color: var(--text-secondary);
+}
+
+/* Big FB stats: 96% · 291 */
+.fb-stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0;
+    margin: 0 0 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.28);
+}
+.fb-stat {
+    flex: 1 1 0;
+    min-width: 5.5rem;
+    padding: 0.85rem 0.75rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.2rem;
+}
+.fb-stat-wide {
+    flex: 1.15 1 0;
+}
+.fb-stat-value {
+    font-family: var(--font-display);
+    font-size: clamp(1.85rem, 4vw, 2.55rem);
+    line-height: 1;
+    color: #fff;
+    letter-spacing: 0.02em;
+}
+.fb-stat-stars {
+    font-size: 1.15rem !important;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+}
+.fb-stat-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+.fb-stat-divider {
+    width: 1px;
+    background: rgba(255, 255, 255, 0.12);
+    align-self: stretch;
 }
 .fb-reviews-lead {
-    margin: 0 0 1rem;
-    font-size: 0.98rem;
-    line-height: 1.6;
-    color: var(--text-primary);
-    max-width: 40rem;
-}
-.fb-reviews-points {
-    margin: 0 0 1.25rem;
-    padding-left: 1.15rem;
+    margin: 0 0 0.95rem;
+    font-size: 0.92rem;
+    line-height: 1.5;
     color: var(--text-secondary);
-    font-size: 0.9rem;
-    line-height: 1.55;
-}
-.fb-reviews-points li {
-    margin-bottom: 0.35rem;
 }
 .fb-reviews-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.65rem;
+    gap: 0.55rem;
 }
 .google-reviews-side {
-    padding: 1.25rem 1.15rem;
+    padding: 1.1rem 1rem;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.65rem;
 }
 .google-reviews-side-head {
     display: flex;
     align-items: center;
-    gap: 0.65rem;
-}
-.google-reviews-side-head img {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    background: #fff;
+    gap: 0.6rem;
 }
 .google-side-name {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     color: #fff;
     font-weight: 500;
 }
 .google-reviews-side-score {
     display: flex;
     align-items: center;
-    gap: 0.85rem;
+    gap: 0.75rem;
 }
 .google-reviews-side-score .reviews-score-num {
-    font-size: 2.4rem;
+    font-size: 2.25rem;
+}
+.google-reviews-side .reviews-find-label {
+    margin: 0.15rem 0 0;
+}
+.google-reviews-side .reviews-platform-strip {
+    gap: 0.35rem;
 }
 @media (max-width: 860px) {
     .reviews-stack {
         grid-template-columns: 1fr;
+    }
+    .fb-stat {
+        min-width: 30%;
     }
 }
 .reviews-score-num {
