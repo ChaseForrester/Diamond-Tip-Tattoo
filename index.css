@@ -3487,7 +3487,7 @@ body.journey-theme-skulls .journey-motif.motif-skull {
     margin: 0 auto;
 }
 
-/* Visual frame */
+/* Visual frame — live canvas preview */
 .tryon-home-visual {
     width: 100%;
     display: flex;
@@ -3496,74 +3496,36 @@ body.journey-theme-skulls .journey-motif.motif-skull {
 }
 .tryon-frame {
     position: relative;
-    width: min(100%, 420px);
+    width: min(100%, 400px);
     aspect-ratio: 4 / 5;
     border: 1px solid var(--border);
     background: #0a0a0a;
     overflow: hidden;
     box-shadow:
         0 0 0 1px rgba(255,255,255,0.03) inset,
-        0 24px 64px rgba(0,0,0,0.5);
+        0 28px 70px rgba(0,0,0,0.55);
 }
-.tryon-frame-body {
+.tryon-frame canvas {
     width: 100%;
     height: 100%;
+    display: block;
     object-fit: cover;
-    object-position: center top;
-    display: block;
-    filter: saturate(0.92) contrast(1.05);
-}
-.tryon-frame-shade {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.55) 100%);
-    pointer-events: none;
-}
-.tryon-frame-design {
-    position: absolute;
-    left: 50%;
-    top: 42%;
-    width: 28%;
-    height: 28%;
-    transform: translate(-50%, -50%);
-    color: rgba(12, 12, 12, 0.88);
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
-    animation: tryonDesignSettle 7s ease-in-out infinite;
-    pointer-events: none;
-}
-.tryon-frame-design svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-    stroke-width: 1.6;
+    background: #0a0a0a;
 }
 .tryon-frame-badge {
     position: absolute;
-    left: 0.85rem;
-    bottom: 0.85rem;
+    left: 0.75rem;
+    bottom: 0.75rem;
+    z-index: 2;
     font-size: 0.65rem;
-    letter-spacing: 1.5px;
+    letter-spacing: 1.4px;
     text-transform: uppercase;
-    padding: 0.35rem 0.6rem;
-    background: rgba(0,0,0,0.65);
-    border: 1px solid rgba(230,57,70,0.45);
+    padding: 0.4rem 0.7rem;
+    background: rgba(0,0,0,0.72);
+    border: 1px solid rgba(230,57,70,0.5);
     color: #fff;
-    backdrop-filter: blur(6px);
-}
-
-@keyframes tryonDesignSettle {
-    0%, 12% {
-        opacity: 0;
-        transform: translate(-50%, -42%) scale(0.72);
-    }
-    28%, 70% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-    }
-    82%, 100% {
-        opacity: 0.92;
-        transform: translate(-48%, -52%) scale(1.04);
-    }
+    backdrop-filter: blur(8px);
+    pointer-events: none;
 }
 
 /* Step row */
@@ -3642,13 +3604,7 @@ body.journey-theme-skulls .journey-motif.motif-skull {
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .tryon-frame-design {
-        animation: none !important;
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-    }
-}
+/* reduced-motion handled in JS demo (static frame) */
 
 /* Hero secondary CTA as button */
 button.slider-link-btn {

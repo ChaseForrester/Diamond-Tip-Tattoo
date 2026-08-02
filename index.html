@@ -344,17 +344,11 @@
             <p class="tryon-home-lead">Upload your design + a photo. Place it, size it, wrap it — then send the preview with your consultation.</p>
         </header>
 
-        <div class="tryon-home-visual" aria-hidden="true">
+        <div class="tryon-home-visual">
             <div class="tryon-frame">
-                <img class="tryon-frame-body" src="assets/tattoo_model_main.png" alt="" loading="lazy">
-                <div class="tryon-frame-shade"></div>
-                <!-- Design “sticker” that fades in and settles — simple, premium -->
-                <div class="tryon-frame-design">
-                    <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
-                        <use href="#icon-rose"/>
-                    </svg>
-                </div>
-                <div class="tryon-frame-badge">Live preview</div>
+                <!-- Canvas demo uses real body photo + tattoo flash, same rotate/wrap engine as the try-on tool -->
+                <canvas id="tryonHomeCanvas" width="720" height="900" aria-label="Animated tattoo try-on preview: design rotates and wraps onto a clean forearm"></canvas>
+                <div class="tryon-frame-badge" id="tryonHomeBadge">1 · Design</div>
             </div>
         </div>
 

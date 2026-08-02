@@ -1051,6 +1051,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
     initPortfolioFilters();
     initTattooTryOn();
+    if (typeof window.initTryonHomeDemo === "function") window.initTryonHomeDemo();
     // Studio shop cart + catalogue (must work without login)
     if (typeof window.initShopCart === "function") window.initShopCart();
     if (typeof window.loadShopWebsite === "function") window.loadShopWebsite();
@@ -4117,6 +4118,42 @@ async function notifyStudioOfBooking(bookingData) {
 }
 
 /**
+ * Convert flash-style art (black ink on white) into transparent ink for realistic skin overlay.
+ */
+function prepareInkCanvas(img, w, h) {
+  const src = document.createElement("canvas");
+  src.width = w;
+  src.height = h;
+  const sctx = src.getContext("2d");
+  sctx.clearRect(0, 0, w, h);
+  sctx.drawImage(img, 0, 0, w, h);
+  try {
+    const id = sctx.getImageData(0, 0, w, h);
+    const d = id.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], g = d[i + 1], b = d[i + 2];
+      const lum = (r + g + b) / 3;
+      // Near-white paper → transparent
+      if (lum > 236) {
+        d[i + 3] = 0;
+      } else {
+        // Ink darkness drives alpha; force near-black pigment
+        const ink = 255 - lum;
+        const a = Math.min(255, ink * 1.25);
+        d[i] = 18;
+        d[i + 1] = 16;
+        d[i + 2] = 16;
+        d[i + 3] = a;
+      }
+    }
+    sctx.putImageData(id, 0, 0);
+  } catch (_) {
+    // Cross-origin / security — leave as drawn
+  }
+  return src;
+}
+
+/**
  * Draw design with optional cylindrical wrap (bends around limb/torso).
  * amount: 0 = flat, 1 = strong wrap
  */
@@ -4125,23 +4162,19 @@ function drawWrappedDesign(ctx, img, cx, cy, destW, destH, rotRad, amount, opaci
   const h = Math.max(2, Math.round(destH));
   const amp = clampNumber(amount, 0, 1);
 
-  // Rasterize design to offscreen at target size (full image, aspect preserved already in w/h)
-  const src = document.createElement("canvas");
-  src.width = w;
-  src.height = h;
-  const sctx = src.getContext("2d");
-  sctx.clearRect(0, 0, w, h);
-  sctx.drawImage(img, 0, 0, w, h);
+  // Full design, white flash bg stripped → real black ink on skin
+  const src = prepareInkCanvas(img, w, h);
 
   if (amp < 0.02) {
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(rotRad);
     ctx.globalAlpha = opacity;
-    ctx.globalCompositeOperation = "multiply";
-    ctx.drawImage(src, -w / 2, -h / 2, w, h);
     ctx.globalCompositeOperation = "source-over";
-    ctx.globalAlpha = Math.min(0.45, opacity * 0.4);
+    ctx.drawImage(src, -w / 2, -h / 2, w, h);
+    // soft multiply pass for skin blend
+    ctx.globalCompositeOperation = "multiply";
+    ctx.globalAlpha = Math.min(0.55, opacity * 0.5);
     ctx.drawImage(src, -w / 2, -h / 2, w, h);
     ctx.restore();
     return { w, h };
@@ -4182,8 +4215,9 @@ function drawWrappedDesign(ctx, img, cx, cy, destW, destH, rotRad, amount, opaci
     ctx.restore();
   };
 
-  paintLayer(Math.min(1, opacity), "multiply");
-  paintLayer(Math.min(0.4, opacity * 0.35), "source-over");
+  // Source-over first (true ink alpha), light multiply for skin bite
+  paintLayer(Math.min(1, opacity), "source-over");
+  paintLayer(Math.min(0.35, opacity * 0.35), "multiply");
   return { w, h };
 }
 
@@ -4837,15 +4871,197 @@ window.initTattooTryOn = function initTattooTryOn() {
 
   updateTryOnSteps();
 
-  // Home step highlight — calm cycle, no gimmicky motion
-  const demoSteps = document.querySelectorAll("#tryonDemoSteps > li");
-  if (demoSteps.length) {
-    let di = 0;
-    setInterval(() => {
-      demoSteps.forEach((s, i) => s.classList.toggle("is-active", i === di));
-      di = (di + 1) % demoSteps.length;
-    }, 2800);
+  // Home canvas demo — real body + tattoo flash, rotate + wrap via same engine
+  if (typeof window.initTryonHomeDemo === "function") {
+    window.initTryonHomeDemo();
   }
+};
+
+/**
+ * Home-page live preview: clean forearm + real rose flash,
+ * animated with the same rotate + body-wrap renderer as the try-on tool.
+ */
+window.initTryonHomeDemo = function initTryonHomeDemo() {
+  const canvas = document.getElementById("tryonHomeCanvas");
+  if (!canvas || window.__tryonHomeDemoStarted) return;
+  window.__tryonHomeDemoStarted = true;
+
+  const ctx = canvas.getContext("2d");
+  const cw = canvas.width;
+  const ch = canvas.height;
+  const badge = document.getElementById("tryonHomeBadge");
+  const stepEls = document.querySelectorAll("#tryonDemoSteps > li");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const bodyImg = new Image();
+  const designImg = new Image();
+  bodyImg.decoding = "async";
+  designImg.decoding = "async";
+  bodyImg.src = "assets/tryon/body-forearm-clean.jpg";
+  designImg.src = "assets/tryon/design-rose-flash.jpg";
+
+  const loadImg = (img) =>
+    new Promise((resolve, reject) => {
+      if (img.complete && img.naturalWidth) return resolve(img);
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Failed to load try-on demo asset"));
+    });
+
+  const setStep = (index) => {
+    stepEls.forEach((el, i) => el.classList.toggle("is-active", i === index));
+    if (badge) {
+      const labels = ["1 · Design", "2 · Body photo", "3 · Rotate & wrap", "4 · Book ready"];
+      badge.textContent = labels[index] || labels[0];
+    }
+  };
+
+  const drawBodyContain = (img, zoom = 1) => {
+    ctx.fillStyle = "#0a0a0a";
+    ctx.fillRect(0, 0, cw, ch);
+    const br = img.naturalWidth / img.naturalHeight;
+    const cr = cw / ch;
+    let baseW, baseH;
+    if (br > cr) {
+      baseW = cw;
+      baseH = cw / br;
+    } else {
+      baseH = ch;
+      baseW = ch * br;
+    }
+    const dw = baseW * zoom;
+    const dh = baseH * zoom;
+    const dx = (cw - dw) / 2;
+    const dy = (ch - dh) / 2;
+    ctx.drawImage(img, dx, dy, dw, dh);
+  };
+
+  const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+  const clamp01 = (t) => Math.max(0, Math.min(1, t));
+  // smoothstep between a..b
+  const seg = (t, a, b) => clamp01((t - a) / (b - a));
+
+  const renderFrame = (phase) => {
+    // phase 0..1 over full loop
+    drawBodyContain(bodyImg, 1.05);
+
+    // Timeline:
+    // 0.00–0.18 body only
+    // 0.18–0.38 design fades in flat
+    // 0.38–0.62 rotate
+    // 0.62–0.82 wrap increases
+    // 0.82–1.00 hold settled
+    let opacity = 0;
+    let scale = 0.32;
+    let rotDeg = -28;
+    let wrap = 0;
+    let cx = 0.52 * cw;
+    let cy = 0.48 * ch;
+    let step = 0;
+
+    if (phase < 0.18) {
+      step = 1;
+      opacity = 0;
+    } else if (phase < 0.38) {
+      step = 1;
+      const u = easeInOut(seg(phase, 0.18, 0.38));
+      opacity = u * 0.92;
+      scale = 0.22 + u * 0.14;
+      rotDeg = -28;
+      wrap = 0;
+    } else if (phase < 0.62) {
+      step = 2;
+      const u = easeInOut(seg(phase, 0.38, 0.62));
+      opacity = 0.92;
+      scale = 0.36;
+      rotDeg = -28 + u * 40; // -28 → +12
+      wrap = u * 0.15;
+      cy = (0.48 - u * 0.02) * ch;
+    } else if (phase < 0.82) {
+      step = 2;
+      const u = easeInOut(seg(phase, 0.62, 0.82));
+      opacity = 0.92;
+      scale = 0.36 + u * 0.04;
+      rotDeg = 12 - u * 6; // settle toward ~6°
+      wrap = 0.15 + u * 0.55; // bend around forearm
+      cy = 0.46 * ch;
+    } else {
+      step = 3;
+      opacity = 0.92;
+      scale = 0.4;
+      rotDeg = 6;
+      wrap = 0.7;
+      cy = 0.46 * ch;
+    }
+
+    setStep(step);
+
+    if (opacity > 0.02 && designImg.naturalWidth) {
+      const maxSide = Math.min(cw, ch) * scale;
+      const ir = designImg.naturalWidth / designImg.naturalHeight;
+      let iw, ih;
+      if (ir >= 1) {
+        iw = maxSide;
+        ih = maxSide / ir;
+      } else {
+        ih = maxSide;
+        iw = maxSide * ir;
+      }
+      const rad = (rotDeg * Math.PI) / 180;
+      drawWrappedDesign(ctx, designImg, cx, cy, iw, ih, rad, wrap, opacity);
+    }
+
+    // soft vignette
+    const g = ctx.createLinearGradient(0, ch * 0.55, 0, ch);
+    g.addColorStop(0, "rgba(0,0,0,0)");
+    g.addColorStop(1, "rgba(0,0,0,0.45)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, cw, ch);
+  };
+
+  Promise.all([loadImg(bodyImg), loadImg(designImg)])
+    .then(() => {
+      if (reduceMotion) {
+        // Static settled frame
+        drawBodyContain(bodyImg, 1.05);
+        const maxSide = Math.min(cw, ch) * 0.4;
+        const ir = designImg.naturalWidth / designImg.naturalHeight;
+        let iw, ih;
+        if (ir >= 1) {
+          iw = maxSide;
+          ih = maxSide / ir;
+        } else {
+          ih = maxSide;
+          iw = maxSide * ir;
+        }
+        drawWrappedDesign(ctx, designImg, 0.52 * cw, 0.46 * ch, iw, ih, (6 * Math.PI) / 180, 0.7, 0.92);
+        setStep(3);
+        return;
+      }
+
+      let start = performance.now();
+      const LOOP_MS = 9000;
+
+      const tick = (now) => {
+        // Pause animation when section far off-screen
+        const section = document.getElementById("see-it-on-you");
+        if (section) {
+          const r = section.getBoundingClientRect();
+          const visible = r.bottom > 0 && r.top < (window.innerHeight || 0) + 80;
+          if (!visible) {
+            requestAnimationFrame(tick);
+            return;
+          }
+        }
+        const phase = ((now - start) % LOOP_MS) / LOOP_MS;
+        renderFrame(phase);
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    })
+    .catch((err) => {
+      console.warn("Try-on home demo assets failed:", err);
+      if (badge) badge.textContent = "Try it on";
+    });
 };
 
 // =============================================
