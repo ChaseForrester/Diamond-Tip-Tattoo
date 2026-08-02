@@ -250,7 +250,7 @@
             <p class="hero-subline" id="heroSubline">Appointment-only custom work — realism, fine line &amp; black &amp; grey. Free consultation. We reply within 1–2 business days.</p>
             <div class="slider-action-links">
                 <a href="#book" class="slider-link-btn primary-cta" id="sliderAction1" data-track="cta_hero_book">BOOK FREE CONSULTATION</a>
-                <a href="#portfolio" class="slider-link-btn" id="sliderAction2" data-track="cta_hero_portfolio">VIEW REAL WORK</a>
+                <button type="button" class="slider-link-btn open-try-on-btn" id="sliderAction2" data-track="cta_hero_tryon">SEE IT ON YOU</button>
             </div>
             <ul class="hero-proof" aria-label="Why book with us">
                 <li>By appointment only</li>
@@ -334,6 +334,47 @@
         <div><h4>Medical-Grade Hygiene</h4><p>Single-use needles always</p></div>
     </div>
 </div>
+
+<!-- See It On You — home showcase (how-to + open try-on) -->
+<section id="see-it-on-you" class="section tryon-home fade-in journey-section" data-journey="diamonds">
+    <div class="tryon-home-grid">
+        <div class="tryon-home-copy">
+            <p class="subtitle">VIRTUAL TRY-ON</p>
+            <h2>See your tattoo on you — before you book</h2>
+            <p class="tryon-home-lead">Upload a design and a photo of the body area. Drag, resize, rotate, and wrap it around the limb — then send the preview straight into your consultation.</p>
+            <ol class="tryon-home-list">
+                <li><strong>1 · Design</strong> — sketch, flash, or reference image</li>
+                <li><strong>2 · Your photo</strong> — arm, chest, leg… any size photo works</li>
+                <li><strong>3 · Adjust</strong> — move, size, rotate, body wrap</li>
+                <li><strong>4 · Book</strong> — preview lands in our studio CRM</li>
+            </ol>
+            <div class="tryon-home-actions">
+                <button type="button" class="btn btn-solid open-try-on-btn" data-track="cta_home_tryon_primary">Open try-on tool</button>
+                <a href="#book" class="btn btn-outline" data-track="cta_home_tryon_book">Or book a consult</a>
+            </div>
+            <p class="tryon-home-note">Private · free · no account needed · preview only (not a final stencil)</p>
+        </div>
+
+        <div class="tryon-home-demo" aria-hidden="true">
+            <div class="tryon-demo-device">
+                <div class="tryon-demo-screen">
+                    <div class="tryon-demo-stage">
+                        <div class="tryon-demo-body"></div>
+                        <div class="tryon-demo-ink"></div>
+                        <div class="tryon-demo-hand"></div>
+                    </div>
+                    <div class="tryon-demo-steps" id="tryonDemoSteps">
+                        <span class="is-active">Upload design</span>
+                        <span>Add body photo</span>
+                        <span>Wrap &amp; place</span>
+                        <span>Book idea</span>
+                    </div>
+                </div>
+            </div>
+            <p class="tryon-demo-caption">How it works — 15 seconds</p>
+        </div>
+    </div>
+</section>
 
 <div class="motif-divider" aria-hidden="true">
     <span class="motif-line"></span>

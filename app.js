@@ -837,9 +837,9 @@ document.addEventListener("DOMContentLoaded", () => {
         teaserImg: "assets/tattoo_model_secondary.png",
         location: "Private studio · Dapto, Illawarra NSW",
         actionText1: "BOOK FREE CONSULTATION",
-        actionText2: "VIEW REAL WORK",
+        actionText2: "SEE IT ON YOU",
         actionLink1: "#book",
-        actionLink2: "#portfolio"
+        action2: "try-on"
       },
       {
         title: "FINE LINE<br>& REALISM",
@@ -848,9 +848,9 @@ document.addEventListener("DOMContentLoaded", () => {
         teaserImg: "assets/portfolio/fineline/fineline_butterfly-florals.jpg",
         location: "Steven Benn & Scotty · Dapto",
         actionText1: "BOOK THIS STYLE",
-        actionText2: "MEET THE ARTISTS",
+        actionText2: "SEE IT ON YOU",
         actionLink1: "#book",
-        actionLink2: "#artists"
+        action2: "try-on"
       },
       {
         title: "YOUR IDEA.<br>OUR CRAFT.",
@@ -859,20 +859,20 @@ document.addEventListener("DOMContentLoaded", () => {
         teaserImg: "assets/portfolio/custom/custom_japanese-pagoda.jpg",
         location: "Free consult · clear pricing",
         actionText1: "START CONSULTATION",
-        actionText2: "SEE THE PROCESS",
+        actionText2: "TRY YOUR DESIGN",
         actionLink1: "#book",
-        actionLink2: "#process"
+        action2: "try-on"
       },
       {
         title: "PRIVATE.<br>HYGIENIC. PRECISE.",
         bgText: "STUDIO",
         mainImg: "assets/portfolio/realism/realism_joker-clown-faces.jpg",
         teaserImg: "assets/portfolio/blackgrey/blackgrey_skull-backpiece.jpg",
-        location: "Appointment only · Tue–Sat",
+        location: "Appointment only · mornings",
         actionText1: "BOOK YOUR SESSION",
-        actionText2: "FIND THE STUDIO",
+        actionText2: "SEE IT ON YOU",
         actionLink1: "#book",
-        actionLink2: "#find-us"
+        action2: "try-on"
       }
     ];
 
@@ -961,11 +961,15 @@ document.addEventListener("DOMContentLoaded", () => {
             
             if (sliderAction1) {
                 sliderAction1.textContent = slide.actionText1;
-                sliderAction1.href = slide.actionLink1;
+                if (sliderAction1.tagName === "A") sliderAction1.href = slide.actionLink1 || "#book";
             }
             if (sliderAction2) {
-                sliderAction2.textContent = slide.actionText2;
-                sliderAction2.href = slide.actionLink2;
+                sliderAction2.textContent = slide.actionText2 || "SEE IT ON YOU";
+                // Secondary hero CTA opens try-on (button or link)
+                sliderAction2.classList.add("open-try-on-btn");
+                if (sliderAction2.tagName === "A") {
+                    sliderAction2.href = "#see-it-on-you";
+                }
             }
 
             // Update counter
@@ -1733,6 +1737,10 @@ function enterPortal() {
     if (shopEl) shopEl.style.display = 'none';
     const findUsEl = document.getElementById('find-us');
     if (findUsEl) findUsEl.style.display = 'none';
+    const tryonHome = document.getElementById('see-it-on-you');
+    if (tryonHome) tryonHome.style.display = 'none';
+    const bookEl = document.getElementById('book');
+    if (bookEl) bookEl.style.display = 'none';
     document.getElementById('info').style.display = 'none';
     document.querySelector('footer').style.display = 'none';
     document.querySelector('.features-bar').style.display = 'none';
@@ -1743,11 +1751,8 @@ function enterPortal() {
     if (scrollProgress) scrollProgress.style.display = 'none';
     document.querySelectorAll('.motif-divider').forEach(el => { el.style.display = 'none'; });
 
-    // Hide navbar elements
-    const navLinks = document.getElementById('navbarLinks');
-    if (navLinks) navLinks.style.display = 'none';
-    const bookNavBtn = document.getElementById('bookNavBtn');
-    if (bookNavBtn) bookNavBtn.style.display = 'none';
+    // Keep site navbar visible (portal has its own back control)
+    // Do not hide navLinks with display:none — it breaks the mobile drawer permanently
 
     // Show Portal
     document.getElementById('portalSection').style.display = 'block';
@@ -1758,32 +1763,36 @@ function enterPortal() {
 
 function exitPortal() {
     // Show standard site sections
-    document.getElementById('home').style.display = 'block';
-    document.getElementById('specialties').style.display = 'block';
-    document.getElementById('artists').style.display = 'block';
-    document.getElementById('portfolio').style.display = 'block';
-    document.getElementById('process').style.display = 'block';
+    document.getElementById('home').style.display = '';
+    document.getElementById('specialties').style.display = '';
+    document.getElementById('artists').style.display = '';
+    document.getElementById('portfolio').style.display = '';
+    document.getElementById('process').style.display = '';
     const blogEl = document.getElementById('blog');
-    if (blogEl) blogEl.style.display = 'block';
+    if (blogEl) blogEl.style.display = '';
     const shopEl = document.getElementById('shop');
-    if (shopEl) shopEl.style.display = 'block';
+    if (shopEl) shopEl.style.display = '';
     const findUsEl = document.getElementById('find-us');
-    if (findUsEl) findUsEl.style.display = 'block';
-    document.getElementById('info').style.display = 'grid';
-    document.querySelector('footer').style.display = 'block';
-    document.querySelector('.features-bar').style.display = 'flex';
-    document.querySelector('.sterilization-bar').style.display = 'flex';
+    if (findUsEl) findUsEl.style.display = '';
+    const tryonHome = document.getElementById('see-it-on-you');
+    if (tryonHome) tryonHome.style.display = '';
+    const bookEl = document.getElementById('book');
+    if (bookEl) bookEl.style.display = '';
+    document.getElementById('info').style.display = '';
+    document.querySelector('footer').style.display = '';
+    document.querySelector('.features-bar').style.display = '';
+    document.querySelector('.sterilization-bar').style.display = '';
     const journeyLayer = document.getElementById('journeyLayer');
     if (journeyLayer) journeyLayer.style.display = '';
     const scrollProgress = document.getElementById('scrollProgress');
     if (scrollProgress) scrollProgress.style.display = '';
     document.querySelectorAll('.motif-divider').forEach(el => { el.style.display = ''; });
 
-    // Show navbar elements
+    // Restore drawer styles if anything left inline
     const navLinks = document.getElementById('navbarLinks');
-    if (navLinks) navLinks.style.display = 'flex';
+    if (navLinks) navLinks.style.display = '';
     const bookNavBtn = document.getElementById('bookNavBtn');
-    if (bookNavBtn) bookNavBtn.style.display = 'block';
+    if (bookNavBtn) bookNavBtn.style.display = '';
 
     // Hide Portal
     document.getElementById('portalSection').style.display = 'none';
@@ -4489,8 +4498,12 @@ window.initTattooTryOn = function initTattooTryOn() {
     document.body.classList.remove("modal-open");
   };
 
-  if (openBtn) openBtn.onclick = openModal;
-  if (footerLink) footerLink.onclick = openModal;
+  // Single delegated open — works for nav, hero, home section, footer
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest(".open-try-on-btn, #openTryOnBtn, #footerTryOnLink, #sliderAction2");
+    if (!t) return;
+    openModal(e);
+  });
   if (closeBtn) closeBtn.onclick = closeModal;
   if (modal) {
     modal.addEventListener("click", (e) => {
@@ -4823,6 +4836,16 @@ window.initTattooTryOn = function initTattooTryOn() {
   if (mobileDownload) mobileDownload.onclick = doDownload;
 
   updateTryOnSteps();
+
+  // Home demo step animation captions
+  const demoSteps = document.querySelectorAll("#tryonDemoSteps span");
+  if (demoSteps.length) {
+    let di = 0;
+    setInterval(() => {
+      demoSteps.forEach((s, i) => s.classList.toggle("is-active", i === di));
+      di = (di + 1) % demoSteps.length;
+    }, 2200);
+  }
 };
 
 // =============================================
