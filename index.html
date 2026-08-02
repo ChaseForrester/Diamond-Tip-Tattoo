@@ -1107,12 +1107,36 @@
                 <div class="try-on-control-block">
                     <div class="try-on-control-head">
                         <label for="tryOnScale">Size</label>
-                        <span class="try-on-scale-value" id="tryOnScaleLabel">Medium</span>
+                        <span class="try-on-scale-value" id="tryOnScaleLabel">35%</span>
                     </div>
                     <div class="try-on-slider-wrap">
-                        <span class="try-on-slider-end">S</span>
-                        <input type="range" id="tryOnScale" min="15" max="70" value="35" aria-valuetext="Medium">
-                        <span class="try-on-slider-end">L</span>
+                        <button type="button" class="try-on-nudge-btn" id="tryOnScaleDown" aria-label="Make smaller">−</button>
+                        <input type="range" id="tryOnScale" min="8" max="120" value="35" step="1" aria-valuetext="35 percent">
+                        <button type="button" class="try-on-nudge-btn" id="tryOnScaleUp" aria-label="Make bigger">+</button>
+                    </div>
+                    <div class="try-on-slider-ends-row" aria-hidden="true">
+                        <span>Smaller</span>
+                        <span>Bigger</span>
+                    </div>
+                </div>
+
+                <div class="try-on-control-block">
+                    <div class="try-on-control-head">
+                        <label for="tryOnRotation">Rotate</label>
+                        <span class="try-on-scale-value" id="tryOnRotationLabel">0°</span>
+                    </div>
+                    <div class="try-on-slider-wrap">
+                        <button type="button" class="try-on-nudge-btn" id="tryOnRotateLeft" aria-label="Rotate left">↺</button>
+                        <input type="range" id="tryOnRotation" min="-180" max="180" value="0" step="1" aria-valuetext="0 degrees">
+                        <button type="button" class="try-on-nudge-btn" id="tryOnRotateRight" aria-label="Rotate right">↻</button>
+                    </div>
+                    <div class="try-on-rotate-presets" role="group" aria-label="Quick rotate">
+                        <button type="button" class="try-on-chip try-on-rotate-preset" data-rotate="-90">−90°</button>
+                        <button type="button" class="try-on-chip try-on-rotate-preset" data-rotate="-15">−15°</button>
+                        <button type="button" class="try-on-chip try-on-rotate-preset" data-rotate="0">0°</button>
+                        <button type="button" class="try-on-chip try-on-rotate-preset" data-rotate="15">+15°</button>
+                        <button type="button" class="try-on-chip try-on-rotate-preset" data-rotate="90">+90°</button>
+                        <button type="button" class="try-on-chip try-on-rotate-preset" data-rotate="180">180°</button>
                     </div>
                 </div>
 

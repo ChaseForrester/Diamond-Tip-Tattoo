@@ -3907,6 +3907,48 @@ body.modal-open { overflow: hidden; }
     accent-color: var(--accent);
     height: 28px;
 }
+.try-on-nudge-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    color: #fff;
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    user-select: none;
+}
+.try-on-nudge-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.try-on-nudge-btn:active {
+    background: rgba(230,57,70,0.12);
+}
+.try-on-slider-ends-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.25rem;
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.4px;
+    padding: 0 2.5rem;
+}
+.try-on-rotate-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.55rem;
+}
+.try-on-rotate-presets .try-on-chip {
+    min-height: 32px;
+    padding: 0.35rem 0.55rem;
+    font-size: 0.72rem;
+}
 
 .try-on-notes-block textarea {
     width: 100%;

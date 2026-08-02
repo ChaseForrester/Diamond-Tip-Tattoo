@@ -3890,6 +3890,7 @@ let tryOnDesignImg = null;
 let tryOnBodyImg = null;
 let tryOnDragging = false;
 let tryOnOffset = { x: 0.5, y: 0.45 }; // normalized placement center
+let tryOnRotationDeg = 0; // design rotation in degrees
 let tryOnLastPreviewUrl = null;
 
 const TRYON_PLACEMENT_DEFAULTS = {
@@ -3931,10 +3932,7 @@ function previewFileInLabel(file, previewEl) {
 }
 
 function scaleLabelFromValue(v) {
-  if (v < 28) return "Small";
-  if (v < 45) return "Medium";
-  if (v < 58) return "Large";
-  return "XL";
+  return `${Math.round(v)}%`;
 }
 
 function opacityLabelFromValue(v) {
@@ -3942,6 +3940,36 @@ function opacityLabelFromValue(v) {
   if (v < 75) return "Natural";
   if (v < 90) return "Bold";
   return "Solid";
+}
+
+function rotationLabelFromValue(v) {
+  const n = Math.round(Number(v) || 0);
+  return `${n}°`;
+}
+
+function clampNumber(n, min, max) {
+  return Math.max(min, Math.min(max, n));
+}
+
+function setTryOnRotation(deg, { redraw = true } = {}) {
+  tryOnRotationDeg = clampNumber(Number(deg) || 0, -180, 180);
+  const rotInput = document.getElementById("tryOnRotation");
+  const rotLabel = document.getElementById("tryOnRotationLabel");
+  if (rotInput) rotInput.value = String(Math.round(tryOnRotationDeg));
+  if (rotLabel) rotLabel.textContent = rotationLabelFromValue(tryOnRotationDeg);
+  if (redraw && tryOnBodyImg && tryOnDesignImg) drawTryOnPreview();
+}
+
+function setTryOnScale(val, { redraw = true } = {}) {
+  const scale = document.getElementById("tryOnScale");
+  const scaleLabel = document.getElementById("tryOnScaleLabel");
+  const v = clampNumber(Number(val) || 35, 8, 120);
+  if (scale) {
+    scale.value = String(v);
+    scale.setAttribute("aria-valuetext", scaleLabelFromValue(v));
+  }
+  if (scaleLabel) scaleLabel.textContent = scaleLabelFromValue(v);
+  if (redraw && tryOnBodyImg && tryOnDesignImg) drawTryOnPreview();
 }
 
 function updateTryOnSteps() {
@@ -4020,6 +4048,8 @@ function drawTryOnPreview() {
   if (tryOnDesignImg) {
     const scalePct = Number(document.getElementById("tryOnScale")?.value || 35) / 100;
     const opacity = Number(document.getElementById("tryOnOpacity")?.value || 88) / 100;
+    const rotInput = document.getElementById("tryOnRotation");
+    if (rotInput) tryOnRotationDeg = Number(rotInput.value) || 0;
     const maxSide = Math.min(cw, ch) * scalePct;
     const ir = tryOnDesignImg.width / tryOnDesignImg.height;
     let iw, ih;
@@ -4032,24 +4062,31 @@ function drawTryOnPreview() {
     }
     const cx = Math.max(0, Math.min(1, tryOnOffset.x)) * cw;
     const cy = Math.max(0, Math.min(1, tryOnOffset.y)) * ch;
+    const rad = (tryOnRotationDeg * Math.PI) / 180;
 
-    ctx.save();
+    const drawDesignAt = (alpha, composite) => {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(rad);
+      ctx.globalAlpha = alpha;
+      ctx.globalCompositeOperation = composite;
+      ctx.drawImage(tryOnDesignImg, -iw / 2, -ih / 2, iw, ih);
+      ctx.restore();
+    };
+
     // Soft blend so ink sits on skin
-    ctx.globalAlpha = Math.min(1, opacity);
-    ctx.globalCompositeOperation = "multiply";
-    ctx.drawImage(tryOnDesignImg, cx - iw / 2, cy - ih / 2, iw, ih);
-    ctx.globalCompositeOperation = "source-over";
-    ctx.globalAlpha = Math.min(0.45, opacity * 0.4);
-    ctx.drawImage(tryOnDesignImg, cx - iw / 2, cy - ih / 2, iw, ih);
-    ctx.restore();
+    drawDesignAt(Math.min(1, opacity), "multiply");
+    drawDesignAt(Math.min(0.45, opacity * 0.4), "source-over");
 
-    // Subtle placement guide (only while dragging)
+    // Subtle placement guide (only while dragging / adjusting)
     if (tryOnDragging) {
       ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(rad);
       ctx.strokeStyle = "rgba(230,57,70,0.65)";
       ctx.lineWidth = 1.5;
       ctx.setLineDash([5, 4]);
-      ctx.strokeRect(cx - iw / 2 - 4, cy - ih / 2 - 4, iw + 8, ih + 8);
+      ctx.strokeRect(-iw / 2 - 4, -ih / 2 - 4, iw + 8, ih + 8);
       ctx.restore();
     }
   }
@@ -4077,6 +4114,7 @@ window.initTattooTryOn = function initTattooTryOn() {
   const placement = document.getElementById("tryOnPlacement");
   const scale = document.getElementById("tryOnScale");
   const opacity = document.getElementById("tryOnOpacity");
+  const rotation = document.getElementById("tryOnRotation");
   const stitchBtn = document.getElementById("tryOnStitchBtn");
   const resetBtn = document.getElementById("tryOnResetBtn");
   const downloadBtn = document.getElementById("tryOnDownloadBtn");
@@ -4091,6 +4129,11 @@ window.initTattooTryOn = function initTattooTryOn() {
   const chips = document.getElementById("tryOnPlacementChips");
   const scaleLabel = document.getElementById("tryOnScaleLabel");
   const opacityLabel = document.getElementById("tryOnOpacityLabel");
+  const rotationLabel = document.getElementById("tryOnRotationLabel");
+  const scaleUp = document.getElementById("tryOnScaleUp");
+  const scaleDown = document.getElementById("tryOnScaleDown");
+  const rotateLeft = document.getElementById("tryOnRotateLeft");
+  const rotateRight = document.getElementById("tryOnRotateRight");
 
   const syncScaleLabel = () => {
     const v = Number(scale?.value || 35);
@@ -4100,6 +4143,12 @@ window.initTattooTryOn = function initTattooTryOn() {
   const syncOpacityLabel = () => {
     const v = Number(opacity?.value || 88);
     if (opacityLabel) opacityLabel.textContent = opacityLabelFromValue(v);
+  };
+  const syncRotationLabel = () => {
+    const v = Number(rotation?.value || tryOnRotationDeg || 0);
+    tryOnRotationDeg = v;
+    if (rotationLabel) rotationLabel.textContent = rotationLabelFromValue(v);
+    if (rotation) rotation.setAttribute("aria-valuetext", rotationLabelFromValue(v));
   };
 
   const openModal = (e) => {
@@ -4236,6 +4285,40 @@ window.initTattooTryOn = function initTattooTryOn() {
       if (tryOnBodyImg && tryOnDesignImg) drawTryOnPreview();
     };
   }
+  if (scaleUp) {
+    scaleUp.onclick = () => {
+      setTryOnScale(Number(scale?.value || 35) + 5);
+    };
+  }
+  if (scaleDown) {
+    scaleDown.onclick = () => {
+      setTryOnScale(Number(scale?.value || 35) - 5);
+    };
+  }
+
+  if (rotation) {
+    syncRotationLabel();
+    rotation.oninput = () => {
+      syncRotationLabel();
+      if (tryOnBodyImg && tryOnDesignImg) drawTryOnPreview();
+    };
+  }
+  if (rotateLeft) {
+    rotateLeft.onclick = () => {
+      setTryOnRotation(tryOnRotationDeg - 15);
+    };
+  }
+  if (rotateRight) {
+    rotateRight.onclick = () => {
+      setTryOnRotation(tryOnRotationDeg + 15);
+    };
+  }
+  document.querySelectorAll(".try-on-rotate-preset").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const deg = Number(btn.getAttribute("data-rotate") || 0);
+      setTryOnRotation(deg);
+    });
+  });
 
   if (opacity) {
     syncOpacityLabel();
@@ -4281,17 +4364,20 @@ window.initTattooTryOn = function initTattooTryOn() {
       tryOnBodyImg = null;
       tryOnLastPreviewUrl = null;
       tryOnOffset = { x: 0.5, y: 0.5 };
+      tryOnRotationDeg = 0;
       tryOnDragging = false;
       if (designInput) designInput.value = "";
       if (bodyInput) bodyInput.value = "";
       if (scale) scale.value = "35";
       if (opacity) opacity.value = "88";
+      if (rotation) rotation.value = "0";
       const notes = document.getElementById("tryOnNotes");
       if (notes) notes.value = "";
       clearUploadCard("tryOnDesignCard", designPreview, "tryOnDesignLabel", "Sketch, flash, or reference");
       clearUploadCard("tryOnBodyCard", bodyPreview, "tryOnBodyLabel", "Arm, chest, leg — well lit");
       syncScaleLabel();
       syncOpacityLabel();
+      syncRotationLabel();
       const ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       document.getElementById("tryOnPlaceholder")?.classList.remove("is-hidden");
