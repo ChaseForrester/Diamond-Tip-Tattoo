@@ -159,7 +159,7 @@ function renderArtistsGrid(artists) {
         ${Array.isArray(art.tags) && art.tags.length ? `
           <ul class="artist-tags">${art.tags.map(t => `<li>${t}</li>`).join("")}</ul>
         ` : ""}
-        <a href="#book" class="btn btn-solid artist-book-btn">Book with ${first}</a>
+        <a href="#book" class="btn btn-solid artist-book-btn" data-artist-pref="${art.name || first}" data-track="cta_book_${art.id || first.toLowerCase()}">Book with ${first}</a>
       </div>
     </article>`;
   }).join("");
@@ -419,48 +419,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const heroSlides = [
       {
-        title: "EXPERT TATTOOS<br>& PIERCINGS",
+        title: "CUSTOM TATTOOS<br>BUILT TO LAST",
         bgText: "TATTOOS",
         mainImg: "assets/tattoo_model_main.png",
         teaserImg: "assets/tattoo_model_secondary.png",
-        location: "Diamond Tip Tattoo, Dapto",
-        actionText1: "SCHEDULE AN APPOINTMENT",
-        actionText2: "OUR SERVICES",
+        location: "Private studio · Dapto, Illawarra NSW",
+        actionText1: "BOOK FREE CONSULTATION",
+        actionText2: "VIEW REAL WORK",
         actionLink1: "#book",
-        actionLink2: "#specialties"
+        actionLink2: "#portfolio"
       },
       {
         title: "FINE LINE<br>& REALISM",
         bgText: "FINE LINE",
         mainImg: "assets/portfolio/realism/realism_bear-wolf-landscape.jpg",
         teaserImg: "assets/portfolio/fineline/fineline_butterfly-florals.jpg",
-        location: "Masters of Fine Line",
-        actionText1: "MEET OUR ARTISTS",
-        actionText2: "VIEW PORTFOLIO",
-        actionLink1: "#artists",
-        actionLink2: "#portfolio"
+        location: "Steven Benn & Scotty · Dapto",
+        actionText1: "BOOK THIS STYLE",
+        actionText2: "MEET THE ARTISTS",
+        actionLink1: "#book",
+        actionLink2: "#artists"
       },
       {
-        title: "CUSTOM INK<br>& DESIGNS",
-        bgText: "CUSTOM INK",
+        title: "YOUR IDEA.<br>OUR CRAFT.",
+        bgText: "CUSTOM",
         mainImg: "assets/portfolio/custom/custom_neotrad-oni.jpg",
         teaserImg: "assets/portfolio/custom/custom_japanese-pagoda.jpg",
-        location: "Unique To You",
-        actionText1: "BOOK CONSULTATION",
-        actionText2: "READ OUR PROCESS",
+        location: "Free consult · clear pricing",
+        actionText1: "START CONSULTATION",
+        actionText2: "SEE THE PROCESS",
         actionLink1: "#book",
         actionLink2: "#process"
       },
       {
-        title: "UNCOMPROMISING<br>QUALITY",
+        title: "PRIVATE.<br>HYGIENIC. PRECISE.",
         bgText: "STUDIO",
         mainImg: "assets/portfolio/realism/realism_joker-clown-faces.jpg",
         teaserImg: "assets/portfolio/blackgrey/blackgrey_skull-backpiece.jpg",
-        location: "Diamond Tip Tattoo",
-        actionText1: "SHOP AFTERCARE",
-        actionText2: "VISIT OUR BLOG",
-        actionLink1: "#shop",
-        actionLink2: "#blog"
+        location: "Appointment only · Tue–Sat",
+        actionText1: "BOOK YOUR SESSION",
+        actionText2: "FIND THE STUDIO",
+        actionLink1: "#book",
+        actionLink2: "#find-us"
       }
     ];
 
@@ -950,11 +950,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const time = document.getElementById('bookingTime').value;
             const style = document.getElementById('bookingStyle').value;
             const idea = document.getElementById('bookingIdea').value;
+            const preferredArtist = document.getElementById('bookingArtist')?.value || "Either / No preference";
 
             if (!date || !time) {
                 alert("Please select a preferred date and available time slot on the calendar.");
                 bookingSubmitBtn.disabled = false;
-                bookingSubmitBtn.textContent = "REQUEST CONSULTATION";
+                bookingSubmitBtn.textContent = "REQUEST FREE CONSULTATION";
                 return;
             }
 
@@ -1018,19 +1019,37 @@ document.addEventListener("DOMContentLoaded", () => {
                     time,
                     style,
                     idea,
+                    preferredArtist,
                     referenceImages: uploadedUrls,
                     createdAt: new Date().toISOString(),
                     status: "Pending",
-                    assignedArtist: "Unassigned",
-                    internalNotes: "",
-                    userId: currentUser ? currentUser.uid : null
+                    assignedArtist: preferredArtist && preferredArtist !== "Either / No preference" ? preferredArtist : "Unassigned",
+                    internalNotes: preferredArtist ? `Client preferred: ${preferredArtist}` : "",
+                    userId: currentUser ? currentUser.uid : null,
+                    source: "website_booking_form"
                 };
 
                 await setDoc(bookingRef, bookingData);
 
-                // Success State
-                alert("Thank you! Your private consultation request has been submitted. We will review and contact you shortly.");
+                // Conversion tracking (GA4 / Meta if loaded)
+                if (typeof window.trackConversion === "function") {
+                    window.trackConversion("booking_request", {
+                        style,
+                        preferredArtist,
+                        has_refs: uploadedUrls.length > 0
+                    });
+                }
+
+                // Success State — in-page confirmation (better UX than alert)
                 bookingForm.reset();
+                bookingForm.hidden = true;
+                const successEl = document.getElementById("bookingSuccess");
+                if (successEl) {
+                    successEl.hidden = false;
+                    successEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                } else {
+                    alert("Thank you! Your consultation request has been submitted. We'll reply within 1–2 business days.");
+                }
                 selectedBookingFiles = [];
                 const previewGrid = document.getElementById('filePreviewGrid');
                 if (previewGrid) previewGrid.innerHTML = '';
@@ -1058,7 +1077,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert("Failed to submit booking: " + err.message);
             } finally {
                 bookingSubmitBtn.disabled = false;
-                bookingSubmitBtn.textContent = "REQUEST CONSULTATION";
+                bookingSubmitBtn.textContent = "REQUEST FREE CONSULTATION";
             }
         };
     }
@@ -3862,3 +3881,168 @@ window.initScrollJourneyUX = function initScrollJourneyUX() {
     window.addEventListener("resize", onScroll, { passive: true });
     update();
 };
+
+// =============================================
+// MARKETING / CONVERSION UX
+// Analytics hooks, sticky CTA, artist preselect, legal modals
+// =============================================
+
+/** Fire GA4 + Meta events when scripts are present (safe no-ops otherwise) */
+window.trackEvent = function trackEvent(name, params = {}) {
+  try {
+    if (typeof window.gtag === "function") {
+      window.gtag("event", name, params);
+    }
+    if (typeof window.fbq === "function") {
+      // Map key events to Meta standard names when possible
+      if (name === "booking_request" || name === "generate_lead") {
+        window.fbq("track", "Lead", params);
+      } else if (name === "cta_click") {
+        window.fbq("trackCustom", "CTAClick", params);
+      } else {
+        window.fbq("trackCustom", name, params);
+      }
+    }
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: name, ...params });
+  } catch (e) {
+    /* ignore analytics errors */
+  }
+};
+
+window.trackConversion = function trackConversion(name, params = {}) {
+  window.trackEvent(name, { ...params, transport_type: "beacon" });
+  // GA4 recommended lead event alias
+  if (name === "booking_request") {
+    window.trackEvent("generate_lead", params);
+  }
+};
+
+window.initMarketingUX = function initMarketingUX() {
+  // Optional GA4 bootstrap if measurement ID exists and gtag not already loaded
+  const measurementId = "G-SXX8SXNZHD";
+  if (measurementId && !window.gtag) {
+    const s = document.createElement("script");
+    s.async = true;
+    s.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag("js", new Date());
+    window.gtag("config", measurementId, { anonymize_ip: true });
+  }
+
+  // CTA / outbound click tracking
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest("[data-track]");
+    if (!el) return;
+    window.trackEvent("cta_click", {
+      cta_id: el.getAttribute("data-track"),
+      href: el.getAttribute("href") || null
+    });
+  });
+
+  // Artist "Book with X" → preselect preferred artist
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-artist-pref]");
+    if (!btn) return;
+    const pref = btn.getAttribute("data-artist-pref");
+    const select = document.getElementById("bookingArtist");
+    if (select && pref) {
+      const match = Array.from(select.options).find((o) => o.value === pref || o.value.includes(pref));
+      if (match) select.value = match.value;
+      else {
+        // try first name match
+        const first = pref.split(" ")[0];
+        const m2 = Array.from(select.options).find((o) => o.value.includes(first));
+        if (m2) select.value = m2.value;
+      }
+    }
+  });
+
+  // Sticky mobile book bar — show after scroll, hide on booking section / modals
+  const sticky = document.getElementById("stickyBookBar");
+  const bookSection = document.getElementById("book");
+  if (sticky) {
+    const updateSticky = () => {
+      const scrolled = window.scrollY > 420;
+      const bookVisible = bookSection && (() => {
+        const r = bookSection.getBoundingClientRect();
+        return r.top < window.innerHeight * 0.75 && r.bottom > 80;
+      })();
+      const modalOpen = document.body.classList.contains("modal-open");
+      sticky.hidden = !scrolled || bookVisible || modalOpen;
+    };
+    window.addEventListener("scroll", updateSticky, { passive: true });
+    window.addEventListener("resize", updateSticky, { passive: true });
+    updateSticky();
+  }
+
+  // Booking success → book another
+  const successClose = document.getElementById("bookingSuccessClose");
+  if (successClose) {
+    successClose.addEventListener("click", () => {
+      const form = document.getElementById("bookingForm");
+      const success = document.getElementById("bookingSuccess");
+      if (success) success.hidden = true;
+      if (form) {
+        form.hidden = false;
+        form.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  }
+
+  // Modal helpers
+  const openModal = (id) => {
+    const m = document.getElementById(id);
+    if (!m) return;
+    m.style.display = "flex";
+    m.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  };
+  const closeModal = (id) => {
+    const m = document.getElementById(id);
+    if (!m) return;
+    m.style.display = "none";
+    m.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  };
+
+  const wireModal = (openIds, modalId, closeIds) => {
+    (Array.isArray(openIds) ? openIds : [openIds]).forEach((oid) => {
+      const o = document.getElementById(oid);
+      if (o) o.addEventListener("click", (e) => { e.preventDefault(); openModal(modalId); });
+    });
+    (Array.isArray(closeIds) ? closeIds : [closeIds]).forEach((cid) => {
+      const c = document.getElementById(cid);
+      if (c) c.addEventListener("click", () => closeModal(modalId));
+    });
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal(modalId);
+      });
+    }
+  };
+
+  wireModal("openAftercareBtn", "aftercareModal", ["closeAftercareBtn", "aftercareDoneBtn"]);
+  wireModal("privacyLink", "privacyModal", "closePrivacyBtn");
+  wireModal("termsLink", "termsModal", "closeTermsBtn");
+
+  const aftercareToShop = document.getElementById("aftercareToShop");
+  if (aftercareToShop) {
+    aftercareToShop.addEventListener("click", () => closeModal("aftercareModal"));
+  }
+
+  // Footer try-on already handled elsewhere; ensure messenger link works on mobile
+  // Hash open for privacy/terms
+  if (location.hash === "#privacy") openModal("privacyModal");
+  if (location.hash === "#terms") openModal("termsModal");
+};
+
+// Boot marketing UX after main DOM ready (module loads after parse)
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => window.initMarketingUX());
+} else {
+  window.initMarketingUX();
+}
