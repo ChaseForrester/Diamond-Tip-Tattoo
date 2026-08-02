@@ -613,6 +613,10 @@
     <div class="portfolio-grid" id="portfolioGrid">
         <!-- Populated by app.js from curated tattoo portfolio -->
     </div>
+    <div class="show-more-wrap" id="portfolioShowMoreWrap" hidden>
+        <p class="show-more-meta" id="portfolioShowMoreMeta"></p>
+        <button type="button" class="btn btn-outline show-more-btn" id="portfolioShowMoreBtn">Show more artwork</button>
+    </div>
 </section>
 
 <div class="sterilization-bar slide-up">
@@ -855,68 +859,72 @@
     </div>
 </section>
 
-<!-- Reviews — full-width band under booking (not side-by-side) -->
+<!-- Reviews — Facebook recommendations lead (larger local social proof), Google secondary -->
 <section class="section reviews-section fade-in" id="reviews" aria-labelledby="reviewsHeading">
-    <div class="reviews-band box" itemscope itemtype="https://schema.org/TattooParlor">
-        <meta itemprop="name" content="Diamond Tip Tattoo">
-        <div class="reviews-band-left">
-            <p class="subtitle">CLIENT REVIEWS</p>
-            <h2 id="reviewsHeading">Trusted on Google &amp; more</h2>
-            <p class="reviews-blurb">Illawarra clients rate Diamond Tip Tattooing for custom realism, fine line and a calm private studio in Dapto.</p>
-            <ul class="reviews-trust-row" aria-label="What clients value">
-                <li>Custom detail</li>
-                <li>Relaxed crew</li>
-                <li>Local favourite</li>
+    <div class="section-header center reviews-section-head">
+        <p class="subtitle">CLIENT REVIEWS</p>
+        <h2 id="reviewsHeading">Loved on Facebook &amp; Google</h2>
+        <p class="shop-intro">Facebook recommendations and Google reviews for Diamond Tip Tattooing — Dapto NSW. Facebook is where Illawarra clients leave the longest, most personal stories.</p>
+    </div>
+
+    <div class="reviews-stack">
+        <!-- Primary: Facebook recommendations (larger) -->
+        <div class="fb-reviews-hero box">
+            <div class="fb-reviews-hero-top">
+                <img src="assets/brand/platforms/facebook.svg" width="48" height="48" alt="Facebook" class="fb-reviews-logo">
+                <div>
+                    <p class="fb-reviews-kicker">Facebook Page recommendations</p>
+                    <h3 class="fb-reviews-title">Diamond Tip Tattoo</h3>
+                    <p class="fb-reviews-handle">@diamondtiptattoo · Shop 5/37–39 Baan Baan St, Dapto</p>
+                </div>
+            </div>
+            <p class="fb-reviews-lead">Facebook recommendations are often the longest client write-ups for local tattoo studios — real stories about custom work, first tattoos, cover-ups and the studio vibe. That’s why we feature Facebook first.</p>
+            <ul class="fb-reviews-points">
+                <li>Personal recommendations from people who visited the Dapto studio</li>
+                <li>Photos &amp; posts of finished work mixed with Page reviews</li>
+                <li>Easy to message the studio after you read recommendations</li>
             </ul>
-        </div>
-        <div class="reviews-band-mid" itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">
-            <span class="reviews-score-num" itemprop="ratingValue">4.6</span>
-            <meta itemprop="bestRating" content="5">
-            <meta itemprop="worstRating" content="1">
-            <div class="reviews-stars" aria-label="4.6 out of 5 stars">
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="var(--accent)" aria-hidden="true" style="opacity:.5"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
+            <div class="fb-reviews-actions">
+                <a class="btn btn-solid" href="https://www.facebook.com/diamondtiptattoo/reviews" target="_blank" rel="noopener noreferrer" data-track="cta_fb_reviews_read">Read Facebook reviews</a>
+                <a class="btn btn-outline" href="https://www.facebook.com/diamondtiptattoo" target="_blank" rel="noopener noreferrer" data-track="cta_fb_page">Open Facebook Page</a>
+                <a class="btn btn-outline" href="https://m.me/diamondtiptattoo" target="_blank" rel="noopener noreferrer" data-track="cta_fb_message">Message on Messenger</a>
             </div>
-            <p class="reviews-score-count"><span itemprop="reviewCount">64</span> Google reviews</p>
-            <p class="reviews-score-brand">
-                <img src="assets/brand/platforms/google.svg" width="16" height="16" alt="" aria-hidden="true">
-                Diamond Tip Tattooing
-            </p>
+        </div>
+
+        <!-- Secondary: Google rating (compact) -->
+        <div class="google-reviews-side box" itemscope itemtype="https://schema.org/TattooParlor">
+            <meta itemprop="name" content="Diamond Tip Tattoo">
+            <div class="google-reviews-side-head">
+                <img src="assets/brand/platforms/google.svg" width="28" height="28" alt="Google">
+                <div>
+                    <p class="reviews-find-label">Google Business</p>
+                    <p class="google-side-name">Diamond Tip Tattooing</p>
+                </div>
+            </div>
+            <div class="google-reviews-side-score" itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">
+                <span class="reviews-score-num" itemprop="ratingValue">4.6</span>
+                <meta itemprop="bestRating" content="5">
+                <meta itemprop="worstRating" content="1">
+                <div>
+                    <div class="reviews-stars" aria-label="4.6 out of 5 stars">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="var(--accent)" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="var(--accent)" aria-hidden="true" style="opacity:.5"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.5 7.2 18l.9-5.4L4.2 8.7l5.4-.8L12 3z"/></svg>
+                    </div>
+                    <p class="reviews-score-count"><span itemprop="reviewCount">64</span> Google reviews</p>
+                </div>
+            </div>
             <div class="reviews-score-actions">
-                <a class="btn btn-solid reviews-btn" href="https://share.google/JKVBw34Gp9C69H5kq" target="_blank" rel="noopener noreferrer" data-track="cta_google_reviews_read">Read reviews</a>
-                <a class="btn btn-outline reviews-btn" href="https://search.google.com/local/writereview?placeid=ChIJmTGjcL4RE2sRIfxgvMLRXLM" target="_blank" rel="noopener noreferrer" data-track="cta_google_reviews_write">Write a review</a>
+                <a class="btn btn-outline reviews-btn" href="https://share.google/JKVBw34Gp9C69H5kq" target="_blank" rel="noopener noreferrer" data-track="cta_google_reviews_read">Read Google</a>
+                <a class="btn btn-outline reviews-btn" href="https://search.google.com/local/writereview?placeid=ChIJmTGjcL4RE2sRIfxgvMLRXLM" target="_blank" rel="noopener noreferrer" data-track="cta_google_reviews_write">Write review</a>
             </div>
-        </div>
-        <div class="reviews-band-right">
-            <p class="reviews-find-label">Find us on</p>
-            <div class="reviews-platform-strip" aria-label="Reviews and social listings">
-                <a class="reviews-chip" href="https://share.google/JKVBw34Gp9C69H5kq" target="_blank" rel="noopener noreferrer" title="Google" data-track="platform_google">
-                    <img src="assets/brand/platforms/google.svg" width="22" height="22" alt="Google" loading="lazy"><span>Google</span>
-                </a>
-                <a class="reviews-chip" href="https://www.facebook.com/diamondtiptattoo" target="_blank" rel="noopener noreferrer" title="Facebook" data-track="platform_facebook">
-                    <img src="assets/brand/platforms/facebook.svg" width="22" height="22" alt="Facebook" loading="lazy"><span>Facebook</span>
-                </a>
-                <a class="reviews-chip" href="https://www.instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener noreferrer" title="Instagram" data-track="platform_instagram">
-                    <img src="assets/brand/platforms/instagram.svg" width="22" height="22" alt="Instagram" loading="lazy"><span>Instagram</span>
-                </a>
-                <a class="reviews-chip" href="https://www.tiktok.com/@diamondtiptattoo" target="_blank" rel="noopener noreferrer" title="TikTok" data-track="platform_tiktok">
-                    <img src="assets/brand/platforms/tiktok.svg" width="22" height="22" alt="TikTok" loading="lazy"><span>TikTok</span>
-                </a>
-                <a class="reviews-chip" href="https://www.yellowpages.com.au/dapto-nsw/bpp/diamond-tip-tattooing-579691714" target="_blank" rel="noopener noreferrer" title="Yellow Pages" data-track="platform_yellowpages">
-                    <img src="assets/brand/platforms/yellowpages.svg" width="22" height="22" alt="Yellow Pages" loading="lazy"><span>Yellow Pages</span>
-                </a>
-                <a class="reviews-chip" href="https://www.fresha.com/lvp/diamond-tip-tattooing-baan-baan-street-dapto-PVneYJ" target="_blank" rel="noopener noreferrer" title="Fresha" data-track="platform_fresha">
-                    <img src="assets/brand/platforms/fresha.svg" width="22" height="22" alt="Fresha" loading="lazy"><span>Fresha</span>
-                </a>
-                <a class="reviews-chip" href="https://www.mapquest.com/au/new-south-wales/diamond-tip-tattooing-760122110" target="_blank" rel="noopener noreferrer" title="MapQuest" data-track="platform_mapquest">
-                    <img src="assets/brand/platforms/mapquest.svg" width="22" height="22" alt="MapQuest" loading="lazy"><span>MapQuest</span>
-                </a>
-                <a class="reviews-chip" href="https://gobeauty.au/site/new-south-wales-diamond-tip-tattooing" target="_blank" rel="noopener noreferrer" title="GoBeauty" data-track="platform_gobeauty">
-                    <img src="assets/brand/platforms/gobeauty.svg" width="22" height="22" alt="GoBeauty" loading="lazy"><span>GoBeauty</span>
-                </a>
+            <p class="reviews-find-label" style="margin-top:1rem;">Also listed on</p>
+            <div class="reviews-platform-strip">
+                <a class="reviews-chip" href="https://www.instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener noreferrer"><img src="assets/brand/platforms/instagram.svg" width="20" height="20" alt=""><span>Instagram</span></a>
+                <a class="reviews-chip" href="https://www.tiktok.com/@diamondtiptattoo" target="_blank" rel="noopener noreferrer"><img src="assets/brand/platforms/tiktok.svg" width="20" height="20" alt=""><span>TikTok</span></a>
+                <a class="reviews-chip" href="https://www.yellowpages.com.au/dapto-nsw/bpp/diamond-tip-tattooing-579691714" target="_blank" rel="noopener noreferrer"><img src="assets/brand/platforms/yellowpages.svg" width="20" height="20" alt=""><span>Yellow Pages</span></a>
             </div>
         </div>
     </div>
@@ -986,12 +994,23 @@
         <p class="shop-intro">Healing staples &amp; studio essentials — order online for <strong>in-studio pickup</strong>. Pay at Diamond Tip when you collect (cash or card). No shipping.</p>
         <p class="shop-pickup-note">Tue–Sat · 10AM–6PM · Shop 5/37–39 Baan Baan St, Dapto</p>
     </div>
+    <div class="shop-filters" id="shopFilters" role="tablist" aria-label="Shop categories">
+        <button type="button" class="shop-filter-btn active" data-shop-filter="all">All</button>
+        <button type="button" class="shop-filter-btn" data-shop-filter="aftercare">Aftercare</button>
+        <button type="button" class="shop-filter-btn" data-shop-filter="cleansing">Cleansing</button>
+        <button type="button" class="shop-filter-btn" data-shop-filter="wraps">Wraps &amp; dressings</button>
+        <button type="button" class="shop-filter-btn" data-shop-filter="studio">Studio essentials</button>
+    </div>
     <div class="shop-toolbar">
         <p id="shopProductCount" class="shop-product-count"></p>
         <button type="button" class="btn btn-outline" id="shopOpenCartBtn" data-track="cta_shop_view_cart">View cart</button>
     </div>
     <div id="shopGrid" class="shop-grid">
         <!-- Dynamic Products -->
+    </div>
+    <div class="show-more-wrap" id="shopShowMoreWrap" hidden>
+        <p class="show-more-meta" id="shopShowMoreMeta"></p>
+        <button type="button" class="btn btn-outline show-more-btn" id="shopShowMoreBtn">Show more products</button>
     </div>
     <p id="shopLoadError" class="shop-load-error" hidden>Couldn’t refresh products — showing studio catalogue offline.</p>
 </section>

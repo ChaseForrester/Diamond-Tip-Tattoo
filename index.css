@@ -1143,12 +1143,23 @@ body.nav-open {
     box-shadow: 0 0 18px rgba(230, 57, 70, 0.35);
 }
 
-/* Portfolio grid of tattoo work */
+/* Portfolio grid — max 4 across on desktop */
 .portfolio-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1.25rem;
-    padding-bottom: 1rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.15rem;
+    padding-bottom: 0.5rem;
+}
+@media (max-width: 1024px) {
+    .portfolio-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+@media (max-width: 720px) {
+    .portfolio-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
 }
 
 .portfolio-empty {
@@ -2387,11 +2398,87 @@ footer {
     margin-left: auto;
     margin-right: auto;
 }
+/* Shop — max 4 across */
 .shop-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.15rem;
+    margin-top: 1.25rem;
+}
+@media (max-width: 1024px) {
+    .shop-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+@media (max-width: 720px) {
+    .shop-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.85rem;
+    }
+}
+
+.shop-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin: 0 0 1rem;
+    justify-content: center;
+}
+.shop-filter-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 0.55rem 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.25s, color 0.25s, background 0.25s;
+}
+.shop-filter-btn:hover {
+    border-color: var(--accent);
+    color: #fff;
+}
+.shop-filter-btn.active {
+    border-color: var(--accent);
+    color: #111;
+    background: var(--accent);
+}
+.shop-card-cat {
+    position: absolute;
+    top: 0.65rem;
+    left: 0.65rem;
+    z-index: 2;
+    padding: 0.28rem 0.5rem;
+    background: rgba(0,0,0,0.72);
+    border: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #eee;
+}
+.product-image-wrap {
+    position: relative;
+}
+
+.show-more-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding-top: 0.5rem;
+}
+.show-more-meta {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.04em;
+}
+.show-more-btn {
+    min-width: 220px;
+    min-height: 46px;
 }
 
 .blog-card {
@@ -5627,32 +5714,114 @@ form .form-row .field {
 }
 
 .reviews-section {
-    padding-top: 0 !important;
     max-width: 1100px;
     margin-left: auto;
     margin-right: auto;
 }
-.reviews-band {
+.reviews-section-head {
+    margin-bottom: 1.75rem;
+}
+.reviews-stack {
     display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(200px, 0.7fr) minmax(0, 1fr);
-    gap: 1.5rem 2rem;
+    grid-template-columns: minmax(0, 1.65fr) minmax(240px, 0.85fr);
+    gap: 1.25rem;
+    align-items: stretch;
+}
+.fb-reviews-hero {
+    padding: clamp(1.35rem, 3vw, 2rem);
+    background:
+        linear-gradient(145deg, rgba(24, 119, 242, 0.14), rgba(0, 0, 0, 0.35)),
+        var(--bg-box);
+    border-color: rgba(24, 119, 242, 0.35);
+}
+.fb-reviews-hero-top {
+    display: flex;
     align-items: center;
-    padding: clamp(1.25rem, 3vw, 1.75rem) clamp(1.15rem, 3vw, 2rem);
-    background: linear-gradient(145deg, rgba(212, 175, 55, 0.07), rgba(0, 0, 0, 0.28));
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
-.reviews-band-left h2 {
-    margin: 0 0 0.55rem;
-    font-size: clamp(1.35rem, 2.5vw, 1.7rem) !important;
-    line-height: 1.25;
+.fb-reviews-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #fff;
+    flex-shrink: 0;
 }
-.reviews-band-left .subtitle {
+.fb-reviews-kicker {
+    margin: 0 0 0.2rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #4c9aff;
+}
+.fb-reviews-title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+    color: #fff;
+}
+.fb-reviews-handle {
+    margin: 0.25rem 0 0;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+.fb-reviews-lead {
+    margin: 0 0 1rem;
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    max-width: 40rem;
+}
+.fb-reviews-points {
+    margin: 0 0 1.25rem;
+    padding-left: 1.15rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+.fb-reviews-points li {
     margin-bottom: 0.35rem;
 }
-.reviews-band-mid {
-    text-align: center;
-    padding: 1rem 0.75rem;
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
+.fb-reviews-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+}
+.google-reviews-side {
+    padding: 1.25rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.google-reviews-side-head {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+.google-reviews-side-head img {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: #fff;
+}
+.google-side-name {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #fff;
+    font-weight: 500;
+}
+.google-reviews-side-score {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+.google-reviews-side-score .reviews-score-num {
+    font-size: 2.4rem;
+}
+@media (max-width: 860px) {
+    .reviews-stack {
+        grid-template-columns: 1fr;
+    }
 }
 .reviews-score-num {
     display: block;
@@ -6898,5 +7067,128 @@ body.cart-open {
 @media (max-width: 480px) {
     .feature {
         flex: 1 1 100%;
+    }
+}
+
+/* =========================================================
+   SCROLL ANIMATIONS — every section
+   ========================================================= */
+.section.fade-in,
+.section.slide-up,
+.features-bar.slide-up,
+.sterilization-bar.slide-up {
+    opacity: 0;
+    transform: translateY(36px);
+    transition:
+        opacity 0.85s cubic-bezier(0.19, 1, 0.22, 1),
+        transform 0.85s cubic-bezier(0.19, 1, 0.22, 1);
+    will-change: opacity, transform;
+}
+.section.fade-in.is-inview,
+.section.fade-in.visible,
+.section.slide-up.is-inview,
+.section.slide-up.visible,
+.features-bar.slide-up.is-inview,
+.features-bar.slide-up.visible,
+.sterilization-bar.slide-up.is-inview,
+.sterilization-bar.slide-up.visible {
+    opacity: 1;
+    transform: none;
+}
+
+/* Stagger children inside sections when section enters view */
+.section.is-inview .section-header,
+.section.visible .section-header {
+    animation: dttRiseIn 0.7s cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+.section.is-inview .artists-grid > *,
+.section.visible .artists-grid > *,
+.section.is-inview .grid-4 > *,
+.section.visible .grid-4 > *,
+.section.is-inview .features-bar .feature,
+.section.is-inview .sterilization-item,
+.features-bar.is-inview .feature,
+.sterilization-bar.is-inview .sterilization-item {
+    animation: dttRiseIn 0.7s cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+.section.is-inview .artists-grid > *:nth-child(1) { animation-delay: 0.05s; }
+.section.is-inview .artists-grid > *:nth-child(2) { animation-delay: 0.14s; }
+.section.is-inview .grid-4 > *:nth-child(1),
+.features-bar.is-inview .feature:nth-child(1) { animation-delay: 0.05s; }
+.section.is-inview .grid-4 > *:nth-child(2),
+.features-bar.is-inview .feature:nth-child(2) { animation-delay: 0.1s; }
+.section.is-inview .grid-4 > *:nth-child(3),
+.features-bar.is-inview .feature:nth-child(3) { animation-delay: 0.15s; }
+.section.is-inview .grid-4 > *:nth-child(4),
+.features-bar.is-inview .feature:nth-child(4) { animation-delay: 0.2s; }
+
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+    transition:
+        opacity 0.55s cubic-bezier(0.19, 1, 0.22, 1),
+        transform 0.55s cubic-bezier(0.19, 1, 0.22, 1);
+    transition-delay: calc(var(--reveal-i, 0) * 0.05s);
+}
+.reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: none;
+}
+
+.fb-reviews-hero,
+.google-reviews-side,
+.reviews-band,
+.booking-form,
+.social-gallery > *,
+.map-wrap {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.75s cubic-bezier(0.19, 1, 0.22, 1), transform 0.75s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.section.is-inview .fb-reviews-hero,
+.section.is-inview .google-reviews-side,
+.section.is-inview .reviews-band,
+.section.is-inview .booking-form,
+.section.is-inview .social-gallery > *,
+.section.is-inview .map-wrap,
+.section.visible .fb-reviews-hero,
+.section.visible .google-reviews-side,
+.section.visible .booking-form,
+.section.visible .social-gallery > *,
+.section.visible .map-wrap {
+    opacity: 1;
+    transform: none;
+}
+.section.is-inview .fb-reviews-hero { transition-delay: 0.05s; }
+.section.is-inview .google-reviews-side { transition-delay: 0.15s; }
+.section.is-inview .social-gallery > *:nth-child(1) { transition-delay: 0.05s; }
+.section.is-inview .social-gallery > *:nth-child(2) { transition-delay: 0.12s; }
+
+@keyframes dttRiseIn {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .section.fade-in,
+    .section.slide-up,
+    .features-bar.slide-up,
+    .sterilization-bar.slide-up,
+    .reveal-on-scroll,
+    .fb-reviews-hero,
+    .google-reviews-side,
+    .booking-form,
+    .social-gallery > *,
+    .map-wrap {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+        animation: none !important;
     }
 }

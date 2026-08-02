@@ -5,7 +5,8 @@
     "price": 18.5,
     "image": "assets/products/spf50-sunscreen.jpg",
     "description": "Broad-spectrum face & body sunscreen for healing ink. Chemist Warehouse / Coles style staple.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "aftercare"
   },
   {
     "id": "prod_nitrile-gloves",
@@ -13,7 +14,8 @@
     "price": 24.0,
     "image": "assets/products/nitrile-gloves.jpg",
     "description": "Powder-free black nitrile gloves \u2014 studio hygiene essential.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "studio"
   },
   {
     "id": "prod_gentle-soap",
@@ -21,7 +23,8 @@
     "price": 8.9,
     "image": "assets/products/gentle-soap.jpg",
     "description": "Gentle pH-balanced cleanser for washing fresh tattoos safely.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "cleansing"
   },
   {
     "id": "prod_healing-ointment",
@@ -29,7 +32,8 @@
     "price": 12.5,
     "image": "assets/products/healing-ointment.jpg",
     "description": "Thick protective ointment for the first days of tattoo aftercare. Chemist-aisle favourite.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "aftercare"
   },
   {
     "id": "prod_aloe-vera-gel",
@@ -37,7 +41,8 @@
     "price": 9.9,
     "image": "assets/products/aloe-vera-gel.jpg",
     "description": "Cooling pure aloe gel to soothe irritated skin during healing.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "aftercare"
   },
   {
     "id": "prod_hand-sanitizer",
@@ -45,7 +50,8 @@
     "price": 7.5,
     "image": "assets/products/hand-sanitizer.jpg",
     "description": "Moisturising hand sanitiser for clients and studio use.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "studio"
   },
   {
     "id": "prod_gauze-roll",
@@ -53,7 +59,8 @@
     "price": 5.5,
     "image": "assets/products/gauze-roll.jpg",
     "description": "Medical-grade gauze for aftercare wraps and blotting.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "wraps"
   },
   {
     "id": "prod_moisturising-cream",
@@ -61,7 +68,8 @@
     "price": 14.9,
     "image": "assets/products/moisturising-cream.jpg",
     "description": "Rich cream for dry healing skin once the tattoo has settled.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "aftercare"
   },
   {
     "id": "prod_micropore-tape",
@@ -69,7 +77,8 @@
     "price": 6.2,
     "image": "assets/products/micropore-tape.jpg",
     "description": "Breathable paper tape for securing wraps without tearing skin.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "wraps"
   },
   {
     "id": "prod_cotton-pads",
@@ -77,7 +86,8 @@
     "price": 4.5,
     "image": "assets/products/cotton-pads.jpg",
     "description": "Soft cotton pads for gentle cleansing \u2014 Coles / Woolies aisle.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "wraps"
   },
   {
     "id": "prod_lip-balm",
@@ -85,7 +95,8 @@
     "price": 5.0,
     "image": "assets/products/lip-balm.jpg",
     "description": "Fragrance-free balm for lip tattoos and general dryness.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "aftercare"
   },
   {
     "id": "prod_antiseptic-liquid",
@@ -93,7 +104,8 @@
     "price": 11.9,
     "image": "assets/products/antiseptic-liquid.jpg",
     "description": "Pharmacy antiseptic for studio prep and minor skin care.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "cleansing"
   },
   {
     "id": "prod_vitamin-e-cream",
@@ -101,7 +113,8 @@
     "price": 10.5,
     "image": "assets/products/vitamin-e-cream.jpg",
     "description": "Vitamin E cream to support soft, hydrated healed skin.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "aftercare"
   },
   {
     "id": "prod_paper-towels",
@@ -109,7 +122,8 @@
     "price": 4.2,
     "image": "assets/products/paper-towels.jpg",
     "description": "Lint-conscious paper towels for studio and home aftercare.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "studio"
   },
   {
     "id": "prod_cling-wrap",
@@ -117,7 +131,8 @@
     "price": 3.8,
     "image": "assets/products/cling-wrap.jpg",
     "description": "Food-grade cling wrap for initial tattoo covering after sessions.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "wraps"
   },
   {
     "id": "prod_antibacterial-wipes",
@@ -125,7 +140,8 @@
     "price": 6.9,
     "image": "assets/products/antibacterial-wipes.jpg",
     "description": "Fragrance-aware wipes for surfaces and kit bags. Chemist style.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "cleansing"
   },
   {
     "id": "prod_liquid-bandage",
@@ -133,7 +149,8 @@
     "price": 13.5,
     "image": "assets/products/liquid-bandage.jpg",
     "description": "Brush-on protective film for small healed areas needing cover.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "aftercare"
   },
   {
     "id": "prod_ink-heal-balm",
@@ -141,7 +158,8 @@
     "price": 22.0,
     "image": "assets/products/ink-heal-balm.jpg",
     "description": "Studio-favourite healing balm tin \u2014 thick, clean, fragrance-free.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "aftercare"
   },
   {
     "id": "prod_saline-wound-wash",
@@ -149,6 +167,7 @@
     "price": 9.5,
     "image": "assets/products/saline-wound-wash.jpg",
     "description": "Sterile saline spray for gentle rinsing of fresh work.",
-    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock"
+    "sourceNote": "Studio aftercare \u2014 Coles / Woolworths / Chemist Warehouse style stock",
+    "category": "aftercare"
   }
 ]

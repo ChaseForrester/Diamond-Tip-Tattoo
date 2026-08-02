@@ -242,6 +242,8 @@ const portfolioCategoryLabels = {
 };
 
 let activePortfolioFilter = "all";
+let portfolioShowAll = false;
+const PORTFOLIO_PAGE_SIZE = 8; // 2 rows × 4 columns
 
 function normalizePortfolioItem(item) {
   if (typeof item === "string") {
@@ -269,25 +271,55 @@ function portfolioHasCuratedWork(items) {
 
 function renderPortfolioGrid(items, filter = "all") {
   const portfolioGrid = document.getElementById("portfolioGrid");
+  const moreWrap = document.getElementById("portfolioShowMoreWrap");
+  const moreBtn = document.getElementById("portfolioShowMoreBtn");
+  const moreMeta = document.getElementById("portfolioShowMoreMeta");
   if (!portfolioGrid) return;
 
   const normalized = (items || []).map(normalizePortfolioItem).filter(i => i.src);
-  const visible = filter === "all" ? normalized : normalized.filter(i => i.category === filter);
+  const filtered = filter === "all" ? normalized : normalized.filter(i => i.category === filter);
 
-  if (visible.length === 0) {
+  if (filtered.length === 0) {
     portfolioGrid.innerHTML = `<p class="portfolio-empty">No pieces in this category yet.</p>`;
+    if (moreWrap) moreWrap.hidden = true;
     return;
   }
 
-  portfolioGrid.innerHTML = visible.map((item) => `
-    <figure class="portfolio-item" data-category="${item.category}">
-      <img src="${item.src}" alt="${item.alt}" loading="lazy">
+  const limit = portfolioShowAll ? filtered.length : PORTFOLIO_PAGE_SIZE;
+  const visible = filtered.slice(0, limit);
+  const remaining = Math.max(0, filtered.length - visible.length);
+
+  portfolioGrid.innerHTML = visible.map((item, idx) => `
+    <figure class="portfolio-item reveal-on-scroll" data-category="${item.category}" style="--reveal-i:${idx % 8}">
+      <img src="${item.src}" alt="${item.alt}" loading="lazy" width="480" height="600">
       <figcaption class="portfolio-caption">
         <span class="portfolio-cat-tag">${portfolioCategoryLabels[item.category] || item.category}</span>
         <span class="portfolio-title">${item.alt}</span>
       </figcaption>
     </figure>
   `).join("");
+
+  if (moreWrap && moreBtn) {
+    if (filtered.length > PORTFOLIO_PAGE_SIZE) {
+      moreWrap.hidden = false;
+      moreBtn.hidden = false;
+      moreBtn.textContent = portfolioShowAll
+        ? "Show less"
+        : `Show more artwork (${remaining} more)`;
+      if (moreMeta) {
+        moreMeta.textContent = `Showing ${visible.length} of ${filtered.length}`;
+      }
+    } else {
+      moreWrap.hidden = true;
+    }
+  }
+
+  // Stagger reveal for newly painted items
+  requestAnimationFrame(() => {
+    portfolioGrid.querySelectorAll(".reveal-on-scroll").forEach((el) => {
+      el.classList.add("is-visible");
+    });
+  });
 }
 
 function initPortfolioFilters() {
@@ -299,9 +331,22 @@ function initPortfolioFilters() {
       filterBar.querySelectorAll("[data-filter]").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       activePortfolioFilter = btn.getAttribute("data-filter") || "all";
+      portfolioShowAll = false;
       renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
     });
   });
+
+  const moreBtn = document.getElementById("portfolioShowMoreBtn");
+  if (moreBtn && !moreBtn.dataset.bound) {
+    moreBtn.dataset.bound = "1";
+    moreBtn.addEventListener("click", () => {
+      portfolioShowAll = !portfolioShowAll;
+      renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
+      if (!portfolioShowAll) {
+        document.getElementById("portfolio")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  }
 }
 
 const defaultFaqs = [
@@ -313,26 +358,46 @@ const defaultFaqs = [
 ];
 
 // Aftercare & studio supplies (Coles / Woolworths / Chemist Warehouse style stock)
+const SHOP_CATEGORY_LABELS = {
+  all: "All",
+  aftercare: "Aftercare",
+  cleansing: "Cleansing",
+  wraps: "Wraps & dressings",
+  studio: "Studio essentials"
+};
+const SHOP_PAGE_SIZE = 8; // 2 rows × 4 columns
+let activeShopFilter = "all";
+let shopShowAll = false;
+
+function inferShopCategory(p) {
+  if (p.category && SHOP_CATEGORY_LABELS[p.category]) return p.category;
+  const n = `${p.name || ""} ${p.id || ""}`.toLowerCase();
+  if (/glove|saniti|paper.?towel/.test(n)) return "studio";
+  if (/gauze|tape|cotton|cling/.test(n)) return "wraps";
+  if (/soap|antiseptic|wipe/.test(n)) return "cleansing";
+  return "aftercare";
+}
+
 const defaultShopProducts = [
-  { id: "prod_spf50-sunscreen", name: "SPF 50+ Sunscreen", price: 18.50, image: "assets/products/spf50-sunscreen.jpg", description: "Broad-spectrum face & body sunscreen for healing ink. Chemist Warehouse / Coles style staple." },
-  { id: "prod_nitrile-gloves", name: "Black Nitrile Gloves (Box 100)", price: 24.00, image: "assets/products/nitrile-gloves.jpg", description: "Powder-free black nitrile gloves — studio hygiene essential." },
-  { id: "prod_gentle-soap", name: "Fragrance-Free Liquid Soap", price: 8.90, image: "assets/products/gentle-soap.jpg", description: "Gentle pH-balanced cleanser for washing fresh tattoos safely." },
-  { id: "prod_healing-ointment", name: "Healing Ointment Tube", price: 12.50, image: "assets/products/healing-ointment.jpg", description: "Thick protective ointment for the first days of tattoo aftercare. Chemist-aisle favourite." },
-  { id: "prod_aloe-vera-gel", name: "Aloe Vera Gel", price: 9.90, image: "assets/products/aloe-vera-gel.jpg", description: "Cooling pure aloe gel to soothe irritated skin during healing." },
-  { id: "prod_hand-sanitizer", name: "Alcohol-Free Hand Sanitiser", price: 7.50, image: "assets/products/hand-sanitizer.jpg", description: "Moisturising hand sanitiser for clients and studio use." },
-  { id: "prod_gauze-roll", name: "Sterile Gauze Roll", price: 5.50, image: "assets/products/gauze-roll.jpg", description: "Medical-grade gauze for aftercare wraps and blotting." },
-  { id: "prod_moisturising-cream", name: "Fragrance-Free Moisturising Cream", price: 14.90, image: "assets/products/moisturising-cream.jpg", description: "Rich cream for dry healing skin once the tattoo has settled." },
-  { id: "prod_micropore-tape", name: "Medical Micropore Tape", price: 6.20, image: "assets/products/micropore-tape.jpg", description: "Breathable paper tape for securing wraps without tearing skin." },
-  { id: "prod_cotton-pads", name: "Cotton Rounds Pack", price: 4.50, image: "assets/products/cotton-pads.jpg", description: "Soft cotton pads for gentle cleansing — Coles / Woolies aisle." },
-  { id: "prod_lip-balm", name: "Healing Lip Balm", price: 5.00, image: "assets/products/lip-balm.jpg", description: "Fragrance-free balm for lip tattoos and general dryness." },
-  { id: "prod_antiseptic-liquid", name: "Antiseptic Liquid", price: 11.90, image: "assets/products/antiseptic-liquid.jpg", description: "Pharmacy antiseptic for studio prep and minor skin care." },
-  { id: "prod_vitamin-e-cream", name: "Vitamin E Skin Cream", price: 10.50, image: "assets/products/vitamin-e-cream.jpg", description: "Vitamin E cream to support soft, hydrated healed skin." },
-  { id: "prod_paper-towels", name: "Absorbent Paper Towels", price: 4.20, image: "assets/products/paper-towels.jpg", description: "Lint-conscious paper towels for studio and home aftercare." },
-  { id: "prod_cling-wrap", name: "Cling Wrap Roll", price: 3.80, image: "assets/products/cling-wrap.jpg", description: "Food-grade cling wrap for initial tattoo covering after sessions." },
-  { id: "prod_antibacterial-wipes", name: "Antibacterial Wipes Pack", price: 6.90, image: "assets/products/antibacterial-wipes.jpg", description: "Fragrance-aware wipes for surfaces and kit bags. Chemist style." },
-  { id: "prod_liquid-bandage", name: "Liquid Bandage", price: 13.50, image: "assets/products/liquid-bandage.jpg", description: "Brush-on protective film for small healed areas needing cover." },
-  { id: "prod_ink-heal-balm", name: "Ink Heal Balm Tin", price: 22.00, image: "assets/products/ink-heal-balm.jpg", description: "Studio-favourite healing balm tin — thick, clean, fragrance-free." },
-  { id: "prod_saline-wound-wash", name: "Saline Wound Wash Spray", price: 9.50, image: "assets/products/saline-wound-wash.jpg", description: "Sterile saline spray for gentle rinsing of fresh work." }
+  { id: "prod_spf50-sunscreen", name: "SPF 50+ Sunscreen", price: 18.50, category: "aftercare", image: "assets/products/spf50-sunscreen.jpg", description: "Broad-spectrum face & body sunscreen for healing ink. Chemist Warehouse / Coles style staple." },
+  { id: "prod_nitrile-gloves", name: "Black Nitrile Gloves (Box 100)", price: 24.00, category: "studio", image: "assets/products/nitrile-gloves.jpg", description: "Powder-free black nitrile gloves — studio hygiene essential." },
+  { id: "prod_gentle-soap", name: "Fragrance-Free Liquid Soap", price: 8.90, category: "cleansing", image: "assets/products/gentle-soap.jpg", description: "Gentle pH-balanced cleanser for washing fresh tattoos safely." },
+  { id: "prod_healing-ointment", name: "Healing Ointment Tube", price: 12.50, category: "aftercare", image: "assets/products/healing-ointment.jpg", description: "Thick protective ointment for the first days of tattoo aftercare. Chemist-aisle favourite." },
+  { id: "prod_aloe-vera-gel", name: "Aloe Vera Gel", price: 9.90, category: "aftercare", image: "assets/products/aloe-vera-gel.jpg", description: "Cooling pure aloe gel to soothe irritated skin during healing." },
+  { id: "prod_hand-sanitizer", name: "Alcohol-Free Hand Sanitiser", price: 7.50, category: "studio", image: "assets/products/hand-sanitizer.jpg", description: "Moisturising hand sanitiser for clients and studio use." },
+  { id: "prod_gauze-roll", name: "Sterile Gauze Roll", price: 5.50, category: "wraps", image: "assets/products/gauze-roll.jpg", description: "Medical-grade gauze for aftercare wraps and blotting." },
+  { id: "prod_moisturising-cream", name: "Fragrance-Free Moisturising Cream", price: 14.90, category: "aftercare", image: "assets/products/moisturising-cream.jpg", description: "Rich cream for dry healing skin once the tattoo has settled." },
+  { id: "prod_micropore-tape", name: "Medical Micropore Tape", price: 6.20, category: "wraps", image: "assets/products/micropore-tape.jpg", description: "Breathable paper tape for securing wraps without tearing skin." },
+  { id: "prod_cotton-pads", name: "Cotton Rounds Pack", price: 4.50, category: "wraps", image: "assets/products/cotton-pads.jpg", description: "Soft cotton pads for gentle cleansing — Coles / Woolies aisle." },
+  { id: "prod_lip-balm", name: "Healing Lip Balm", price: 5.00, category: "aftercare", image: "assets/products/lip-balm.jpg", description: "Fragrance-free balm for lip tattoos and general dryness." },
+  { id: "prod_antiseptic-liquid", name: "Antiseptic Liquid", price: 11.90, category: "cleansing", image: "assets/products/antiseptic-liquid.jpg", description: "Pharmacy antiseptic for studio prep and minor skin care." },
+  { id: "prod_vitamin-e-cream", name: "Vitamin E Skin Cream", price: 10.50, category: "aftercare", image: "assets/products/vitamin-e-cream.jpg", description: "Vitamin E cream to support soft, hydrated healed skin." },
+  { id: "prod_paper-towels", name: "Absorbent Paper Towels", price: 4.20, category: "studio", image: "assets/products/paper-towels.jpg", description: "Lint-conscious paper towels for studio and home aftercare." },
+  { id: "prod_cling-wrap", name: "Cling Wrap Roll", price: 3.80, category: "wraps", image: "assets/products/cling-wrap.jpg", description: "Food-grade cling wrap for initial tattoo covering after sessions." },
+  { id: "prod_antibacterial-wipes", name: "Antibacterial Wipes Pack", price: 6.90, category: "cleansing", image: "assets/products/antibacterial-wipes.jpg", description: "Fragrance-aware wipes for surfaces and kit bags. Chemist style." },
+  { id: "prod_liquid-bandage", name: "Liquid Bandage", price: 13.50, category: "aftercare", image: "assets/products/liquid-bandage.jpg", description: "Brush-on protective film for small healed areas needing cover." },
+  { id: "prod_ink-heal-balm", name: "Ink Heal Balm Tin", price: 22.00, category: "aftercare", image: "assets/products/ink-heal-balm.jpg", description: "Studio-favourite healing balm tin — thick, clean, fragrance-free." },
+  { id: "prod_saline-wound-wash", name: "Saline Wound Wash Spray", price: 9.50, category: "aftercare", image: "assets/products/saline-wound-wash.jpg", description: "Sterile saline spray for gentle rinsing of fresh work." }
 ];
 
 function shopHasCuratedProducts(items) {
@@ -550,26 +615,51 @@ function renderShopGrid(products) {
     name: p.name,
     price: Number(p.price) || 0,
     image: p.image || "assets/products/ink-heal-balm.jpg",
-    description: p.description || ""
+    description: p.description || "",
+    category: inferShopCategory(p)
   }));
+
+  const filtered = activeShopFilter === "all"
+    ? window.shopCatalog
+    : window.shopCatalog.filter(p => p.category === activeShopFilter);
+
+  const limit = shopShowAll ? filtered.length : SHOP_PAGE_SIZE;
+  const visible = filtered.slice(0, limit);
+  const remaining = Math.max(0, filtered.length - visible.length);
 
   const countEl = document.getElementById("shopProductCount");
   if (countEl) {
-    countEl.textContent = `${window.shopCatalog.length} product${window.shopCatalog.length === 1 ? "" : "s"} · pickup only`;
+    const catLabel = SHOP_CATEGORY_LABELS[activeShopFilter] || "All";
+    countEl.textContent = `${visible.length} of ${filtered.length} · ${catLabel} · pickup only`;
   }
 
-  if (!window.shopCatalog.length) {
-    shopGrid.innerHTML = `<p style="color: var(--text-secondary);">Check back soon for studio aftercare and merchandise!</p>`;
+  const moreWrap = document.getElementById("shopShowMoreWrap");
+  const moreBtn = document.getElementById("shopShowMoreBtn");
+  const moreMeta = document.getElementById("shopShowMoreMeta");
+  if (moreWrap && moreBtn) {
+    if (filtered.length > SHOP_PAGE_SIZE) {
+      moreWrap.hidden = false;
+      moreBtn.textContent = shopShowAll ? "Show less" : `Show more products (${remaining} more)`;
+      if (moreMeta) moreMeta.textContent = `Showing ${visible.length} of ${filtered.length}`;
+    } else {
+      moreWrap.hidden = true;
+    }
+  }
+
+  if (!filtered.length) {
+    shopGrid.innerHTML = `<p style="color: var(--text-secondary);">No products in this category yet.</p>`;
     return;
   }
 
-  shopGrid.innerHTML = window.shopCatalog.map(prod => {
+  shopGrid.innerHTML = visible.map((prod, idx) => {
     const inCart = window.cart.find(i => i.id === prod.id);
+    const cat = SHOP_CATEGORY_LABELS[prod.category] || prod.category;
     return `
-    <article class="shop-card" data-product-id="${escapeHtml(prod.id)}">
+    <article class="shop-card reveal-on-scroll" data-product-id="${escapeHtml(prod.id)}" data-category="${escapeHtml(prod.category)}" style="--reveal-i:${idx % 8}">
       <div class="product-image-wrap">
-        <img src="${escapeHtml(prod.image)}" alt="${escapeHtml(prod.name)}" loading="lazy"
+        <img src="${escapeHtml(prod.image)}" alt="${escapeHtml(prod.name)}" loading="lazy" width="400" height="400"
           onerror="this.onerror=null;this.src='assets/products/ink-heal-balm.jpg';">
+        <span class="shop-card-cat">${escapeHtml(cat)}</span>
       </div>
       <div class="shop-card-content">
         <h3>${escapeHtml(prod.name)}</h3>
@@ -583,6 +673,35 @@ function renderShopGrid(products) {
       </div>
     </article>`;
   }).join("");
+
+  requestAnimationFrame(() => {
+    shopGrid.querySelectorAll(".reveal-on-scroll").forEach((el) => el.classList.add("is-visible"));
+  });
+}
+
+function initShopFilters() {
+  const bar = document.getElementById("shopFilters");
+  if (!bar) return;
+  bar.querySelectorAll("[data-shop-filter]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      bar.querySelectorAll("[data-shop-filter]").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeShopFilter = btn.getAttribute("data-shop-filter") || "all";
+      shopShowAll = false;
+      renderShopGrid(window.shopCatalog.length ? window.shopCatalog : defaultShopProducts);
+    });
+  });
+  const moreBtn = document.getElementById("shopShowMoreBtn");
+  if (moreBtn && !moreBtn.dataset.bound) {
+    moreBtn.dataset.bound = "1";
+    moreBtn.addEventListener("click", () => {
+      shopShowAll = !shopShowAll;
+      renderShopGrid(window.shopCatalog.length ? window.shopCatalog : defaultShopProducts);
+      if (!shopShowAll) {
+        document.getElementById("shop")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  }
 }
 
 window.initShopCart = function initShopCart() {
@@ -596,6 +715,7 @@ window.initShopCart = function initShopCart() {
 
   loadCartFromStorage();
   // Always paint catalogue immediately (no login, no portal)
+  initShopFilters();
   renderShopGrid(defaultShopProducts);
   updateCartUI();
 
@@ -1095,11 +1215,13 @@ document.addEventListener("DOMContentLoaded", () => {
         rootMargin: isNarrow ? "0px 0px -2% 0px" : "0px 0px -8% 0px"
     });
 
-    document.querySelectorAll('.fade-in, .slide-up, .features-bar, .journey-section').forEach((el) => observer.observe(el));
+    document.querySelectorAll(
+      '.fade-in, .slide-up, .features-bar, .sterilization-bar, .journey-section, .section, .conversion-strip, .reviews-section, .social-feed-section, .book-section'
+    ).forEach((el) => observer.observe(el));
 
     // Safety: force-reveal anything already in/near viewport after layout settles
     requestAnimationFrame(() => {
-        document.querySelectorAll('.fade-in, .slide-up, .features-bar, .journey-section').forEach((el) => {
+        document.querySelectorAll('.fade-in, .slide-up, .features-bar, .sterilization-bar, .journey-section, .section, .conversion-strip').forEach((el) => {
             const r = el.getBoundingClientRect();
             const vh = window.innerHeight || 1;
             if (r.top < vh * 0.95 && r.bottom > 0) {
