@@ -120,19 +120,21 @@ function renderSpecialtiesGrid(specialties) {
 const defaultArtists = [
   {
     id: "steven",
-    name: "STEVEN BENN",
-    role: "Owner / Studio Master",
-    image: "assets/artists/steven-benn.jpg",
-    bio: "Owner of Diamond Tip Tattoo in Dapto. Decades of custom ink, realism, black & grey, and client-first studio craft. Known for high-impact portraits, animals, and full custom pieces.",
-    tags: ["Realism", "Black & Grey", "Custom Design"]
+    name: "Steven Benn",
+    role: "31+ years · 80+ awards · realism & black & grey",
+    image: "assets/artists/steven-benn.png",
+    badge: "Owner",
+    bio: "Studio master of Diamond Tip Tattoo. Custom portraits, realism and lasting black & grey for Illawarra clients.",
+    tags: ["Realism", "Black & Grey", "Custom"]
   },
   {
     id: "scotty",
-    name: "SCOTTY",
-    role: "Tattooist",
+    name: "Scotty",
+    role: "21+ years · blackwork, linework & custom",
     image: "assets/artists/scotty.png",
-    bio: "Resident tattooist at Diamond Tip Tattoo. Clean linework, bold blackwork, and custom designs with a steady, professional studio approach.",
-    tags: ["Blackwork", "Custom", "Linework"]
+    badge: "Artist",
+    bio: "Resident tattooist with clean linework, bold blackwork and a calm, professional studio approach.",
+    tags: ["Blackwork", "Linework", "Custom"]
   }
 ];
 
@@ -146,26 +148,27 @@ function renderArtistsGrid(artists) {
   const artistsGrid = document.getElementById("artistsGrid");
   if (!artistsGrid) return;
   const list = artists && artists.length ? artists : defaultArtists;
-  artistsGrid.innerHTML = list.map((art, i) => {
-    const first = (art.name || "").split(" ")[0];
-    const badge = art.id === "steven" || /owner/i.test(art.role || "") ? "OWNER" : "ARTIST";
-    const kicker = art.id === "steven" ? "Studio Master" : "Resident Tattooist";
-    const reverse = i % 2 === 1 ? " reverse" : "";
+  artistsGrid.innerHTML = list.map((art) => {
+    const first = (art.name || "Artist").split(" ")[0];
+    const badge = art.badge || (art.id === "steven" || /owner/i.test(art.role || "") ? "Owner" : "Artist");
+    const img = (art.image || "").includes("steven-benn.jpg")
+      ? "assets/artists/steven-benn.png"
+      : (art.image || "assets/artists/steven-benn.png");
+    const pref = art.id === "steven" ? "Steven Benn" : (art.name || first);
     return `
-    <article class="artist-row${reverse}" data-artist="${art.id || ""}">
-      <div class="artist-photo-frame">
-        <img src="${art.image}" alt="${art.name}">
-        <span class="artist-badge">${badge}</span>
-      </div>
-      <div class="artist-copy">
-        <p class="artist-kicker">${kicker}</p>
-        <h3>${art.name}</h3>
-        <p class="role">${art.role || ""}</p>
-        ${art.bio ? `<p class="artist-bio">${art.bio}</p>` : ""}
+    <article class="artist artist-compact" data-artist="${art.id || ""}">
+      <figure class="artist-avatar">
+        <img src="${img}" alt="${art.name || "Artist"}" width="160" height="160" loading="lazy" decoding="async">
+      </figure>
+      <div class="artist-info">
+        <span class="artist-badge-inline">${badge}</span>
+        <h3 class="artist-name">${art.name || ""}</h3>
+        <p class="artist-title">${art.role || ""}</p>
+        ${art.bio ? `<p class="artist-text">${art.bio}</p>` : ""}
         ${Array.isArray(art.tags) && art.tags.length ? `
-          <ul class="artist-tags">${art.tags.map(t => `<li>${t}</li>`).join("")}</ul>
+          <ul class="artist-skills">${art.tags.map(t => `<li>${t}</li>`).join("")}</ul>
         ` : ""}
-        <a href="#book" class="btn btn-solid artist-book-btn" data-artist-pref="${art.name || first}" data-track="cta_book_${art.id || first.toLowerCase()}">Book with ${first}</a>
+        <a href="#book" class="btn btn-solid artist-cta" data-artist-pref="${pref}" data-track="cta_book_${art.id || first.toLowerCase()}">Book with ${first}</a>
       </div>
     </article>`;
   }).join("");
