@@ -4837,14 +4837,14 @@ window.initTattooTryOn = function initTattooTryOn() {
 
   updateTryOnSteps();
 
-  // Home demo step animation captions
-  const demoSteps = document.querySelectorAll("#tryonDemoSteps span");
+  // Home step highlight — calm cycle, no gimmicky motion
+  const demoSteps = document.querySelectorAll("#tryonDemoSteps > li");
   if (demoSteps.length) {
     let di = 0;
     setInterval(() => {
       demoSteps.forEach((s, i) => s.classList.toggle("is-active", i === di));
       di = (di + 1) % demoSteps.length;
-    }, 2200);
+    }, 2800);
   }
 };
 

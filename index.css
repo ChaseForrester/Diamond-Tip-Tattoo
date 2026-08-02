@@ -3456,207 +3456,198 @@ body.journey-theme-skulls .journey-motif.motif-skull {
 .motif-mid.motif-diamond { color: rgba(230, 57, 70, 0.65); animation: motifFloatY 5s ease-in-out infinite; }
 
 /* =========================================================
-   HOME — See It On You showcase
+   HOME — See It On You (centered, premium)
    ========================================================= */
 .tryon-home {
-    padding-top: clamp(3rem, 6vw, 5rem);
-    padding-bottom: clamp(3rem, 6vw, 5rem);
+    padding-top: clamp(3.5rem, 7vw, 5.5rem);
+    padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
     background:
-        radial-gradient(ellipse at 80% 20%, rgba(230,57,70,0.08), transparent 50%),
+        radial-gradient(ellipse at 50% 0%, rgba(230,57,70,0.09), transparent 55%),
         var(--bg-dark);
+    text-align: center;
 }
-.tryon-home-grid {
-    max-width: 1100px;
+.tryon-home-inner {
+    max-width: 920px;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: 2.5rem 3rem;
+    display: flex;
+    flex-direction: column;
     align-items: center;
+}
+.tryon-home-header {
+    max-width: 36rem;
+    margin: 0 auto 2rem;
+}
+.tryon-home-header h2 {
+    margin-bottom: 0.75rem;
 }
 .tryon-home-lead {
     color: var(--text-secondary);
     font-size: 1rem;
-    line-height: 1.6;
-    margin: 0 0 1.25rem;
-    max-width: 36rem;
+    line-height: 1.65;
+    margin: 0 auto;
 }
-.tryon-home-list {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 1.5rem;
+
+/* Visual frame */
+.tryon-home-visual {
+    width: 100%;
     display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
+    justify-content: center;
+    margin-bottom: 1.75rem;
 }
-.tryon-home-list li {
-    font-size: 0.92rem;
-    color: var(--text-secondary);
-    padding-left: 0;
-    line-height: 1.45;
+.tryon-frame {
+    position: relative;
+    width: min(100%, 420px);
+    aspect-ratio: 4 / 5;
+    border: 1px solid var(--border);
+    background: #0a0a0a;
+    overflow: hidden;
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,0.03) inset,
+        0 24px 64px rgba(0,0,0,0.5);
 }
-.tryon-home-list strong {
+.tryon-frame-body {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    filter: saturate(0.92) contrast(1.05);
+}
+.tryon-frame-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.55) 100%);
+    pointer-events: none;
+}
+.tryon-frame-design {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    width: 28%;
+    height: 28%;
+    transform: translate(-50%, -50%);
+    color: rgba(12, 12, 12, 0.88);
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
+    animation: tryonDesignSettle 7s ease-in-out infinite;
+    pointer-events: none;
+}
+.tryon-frame-design svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    stroke-width: 1.6;
+}
+.tryon-frame-badge {
+    position: absolute;
+    left: 0.85rem;
+    bottom: 0.85rem;
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 0.35rem 0.6rem;
+    background: rgba(0,0,0,0.65);
+    border: 1px solid rgba(230,57,70,0.45);
     color: #fff;
+    backdrop-filter: blur(6px);
+}
+
+@keyframes tryonDesignSettle {
+    0%, 12% {
+        opacity: 0;
+        transform: translate(-50%, -42%) scale(0.72);
+    }
+    28%, 70% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    82%, 100% {
+        opacity: 0.92;
+        transform: translate(-48%, -52%) scale(1.04);
+    }
+}
+
+/* Step row */
+.tryon-steps-row {
+    list-style: none;
+    margin: 0 0 1.75rem;
+    padding: 0;
+    width: 100%;
+    max-width: 820px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.65rem;
+}
+.tryon-steps-row li {
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    padding: 0.9rem 0.65rem;
+    text-align: center;
+    transition: border-color 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
+}
+.tryon-steps-row li.is-active {
+    border-color: rgba(230, 57, 70, 0.65);
+    background: rgba(230, 57, 70, 0.08);
+    box-shadow: 0 0 0 1px rgba(230,57,70,0.12);
+}
+.tryon-step-num {
+    display: block;
+    font-size: 0.68rem;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 0.35rem;
     font-weight: 600;
 }
+.tryon-step-title {
+    display: block;
+    font-size: 0.82rem;
+    color: #fff;
+    letter-spacing: 0.3px;
+    margin-bottom: 0.25rem;
+}
+.tryon-step-desc {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    line-height: 1.35;
+}
+
 .tryon-home-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 0.65rem;
+    justify-content: center;
     margin-bottom: 0.85rem;
 }
 .tryon-home-actions .btn {
     min-height: 48px;
+    min-width: 160px;
 }
 .tryon-home-note {
     font-size: 0.75rem;
     color: var(--text-secondary);
     margin: 0;
+    letter-spacing: 0.3px;
 }
 
-.tryon-home-demo {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-}
-.tryon-demo-device {
-    width: min(100%, 380px);
-    border: 1px solid var(--border);
-    background: #0a0a0a;
-    padding: 0.75rem;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
-}
-.tryon-demo-screen {
-    border: 1px solid var(--border);
-    background: #111;
-    overflow: hidden;
-}
-.tryon-demo-stage {
-    position: relative;
-    height: 280px;
-    background:
-        radial-gradient(ellipse at 40% 50%, #2a2220 0%, #15110f 55%, #0a0a0a 100%);
-    overflow: hidden;
-}
-.tryon-demo-body {
-    position: absolute;
-    left: 18%;
-    top: 12%;
-    width: 52%;
-    height: 76%;
-    border-radius: 40% 40% 36% 36%;
-    background: linear-gradient(160deg, #c4a090 0%, #8b6a5a 45%, #5c4034 100%);
-    box-shadow: inset -12px 0 24px rgba(0,0,0,0.25);
-    animation: tryonDemoBody 8.8s ease-in-out infinite;
-}
-.tryon-demo-ink {
-    position: absolute;
-    left: 32%;
-    top: 34%;
-    width: 22%;
-    height: 28%;
-    background:
-        radial-gradient(circle at 40% 40%, rgba(20,20,20,0.92) 0 28%, transparent 30%),
-        radial-gradient(circle at 65% 55%, rgba(20,20,20,0.85) 0 18%, transparent 20%),
-        linear-gradient(135deg, transparent 40%, rgba(20,20,20,0.75) 42% 58%, transparent 60%);
-    border-radius: 8px;
-    opacity: 0;
-    transform: scale(0.6) rotate(-8deg);
-    animation: tryonDemoInk 8.8s ease-in-out infinite;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
-}
-.tryon-demo-hand {
-    position: absolute;
-    width: 42px;
-    height: 42px;
-    border: 2px solid rgba(230,57,70,0.85);
-    border-radius: 50%;
-    left: 55%;
-    top: 48%;
-    opacity: 0;
-    animation: tryonDemoHand 8.8s ease-in-out infinite;
-    pointer-events: none;
-}
-.tryon-demo-hand::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 8px;
-    height: 8px;
-    margin: -4px 0 0 -4px;
-    background: var(--accent);
-    border-radius: 50%;
-}
-.tryon-demo-steps {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    border-top: 1px solid var(--border);
-}
-.tryon-demo-steps span {
-    font-size: 0.62rem;
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
-    text-align: center;
-    padding: 0.55rem 0.25rem;
-    color: var(--text-secondary);
-    border-right: 1px solid var(--border);
-    transition: color 0.3s, background 0.3s;
-}
-.tryon-demo-steps span:last-child { border-right: none; }
-.tryon-demo-steps span.is-active {
-    color: #fff;
-    background: rgba(230,57,70,0.12);
-}
-.tryon-demo-caption {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    letter-spacing: 0.5px;
-    margin: 0;
-}
-
-@keyframes tryonDemoBody {
-    0%, 18% { transform: scale(1); filter: brightness(1); }
-    25%, 45% { transform: scale(1.02); filter: brightness(1.05); }
-    55%, 100% { transform: scale(1); filter: brightness(1); }
-}
-@keyframes tryonDemoInk {
-    0%, 12% { opacity: 0; transform: scale(0.5) rotate(-12deg) translateY(12px); }
-    22%, 48% { opacity: 0.95; transform: scale(1) rotate(-6deg) translateY(0); }
-    58%, 78% { opacity: 0.95; transform: scale(1.08) rotate(8deg) translate(6px, -4px); }
-    88%, 100% { opacity: 0.9; transform: scale(1.02) rotate(4deg) translate(2px, 0); }
-}
-@keyframes tryonDemoHand {
-    0%, 20% { opacity: 0; transform: translate(20px, 20px); }
-    30%, 50% { opacity: 1; transform: translate(0, 0); }
-    58%, 78% { opacity: 1; transform: translate(14px, -10px); }
-    88%, 100% { opacity: 0; transform: translate(14px, -10px); }
-}
-
-@media (max-width: 900px) {
-    .tryon-home-grid {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
-    .tryon-home-demo { order: -1; }
-    .tryon-demo-stage { height: 240px; }
-    .tryon-demo-steps {
+@media (max-width: 720px) {
+    .tryon-steps-row {
         grid-template-columns: 1fr 1fr;
     }
-    .tryon-demo-steps span:nth-child(2) { border-right: none; }
-    .tryon-demo-steps span:nth-child(1),
-    .tryon-demo-steps span:nth-child(2) {
-        border-bottom: 1px solid var(--border);
+    .tryon-frame {
+        width: min(100%, 340px);
+    }
+    .tryon-home-actions .btn {
+        width: 100%;
+        min-width: 0;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .tryon-demo-body,
-    .tryon-demo-ink,
-    .tryon-demo-hand {
+    .tryon-frame-design {
         animation: none !important;
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
     }
-    .tryon-demo-ink { opacity: 0.9; transform: none; }
 }
 
 /* Hero secondary CTA as button */
