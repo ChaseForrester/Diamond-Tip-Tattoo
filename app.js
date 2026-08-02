@@ -3930,6 +3930,68 @@ function previewFileInLabel(file, previewEl) {
   previewEl.hidden = false;
 }
 
+function scaleLabelFromValue(v) {
+  if (v < 28) return "Small";
+  if (v < 45) return "Medium";
+  if (v < 58) return "Large";
+  return "XL";
+}
+
+function opacityLabelFromValue(v) {
+  if (v < 55) return "Soft";
+  if (v < 75) return "Natural";
+  if (v < 90) return "Bold";
+  return "Solid";
+}
+
+function updateTryOnSteps() {
+  const steps = document.querySelectorAll("#tryOnSteps li");
+  if (!steps.length) return;
+  const hasDesign = !!tryOnDesignImg;
+  const hasBody = !!tryOnBodyImg;
+  const hasPreview = !!(tryOnDesignImg && tryOnBodyImg);
+  const states = [
+    hasDesign, // 1 design
+    hasBody, // 2 photo
+    hasPreview, // 3 adjust
+    hasPreview && !!tryOnLastPreviewUrl // 4 book-ready
+  ];
+  steps.forEach((li, i) => {
+    li.classList.remove("is-active", "is-done");
+    if (states[i] && i < 3) li.classList.add("is-done");
+    // active = first incomplete, or last if all done
+    const firstIncomplete = states.findIndex((s) => !s);
+    if (firstIncomplete === -1 && i === 3) li.classList.add("is-active");
+    else if (i === firstIncomplete) li.classList.add("is-active");
+    else if (i === 0 && firstIncomplete === -1) li.classList.add("is-done");
+  });
+  if (states.every(Boolean)) {
+    steps.forEach((li, i) => {
+      li.classList.toggle("is-done", i < 3);
+      li.classList.toggle("is-active", i === 3);
+    });
+  }
+}
+
+function setUploadCardFilled(cardId, previewEl, labelId, fileName) {
+  const card = document.getElementById(cardId);
+  const label = document.getElementById(labelId);
+  if (card) card.classList.add("is-filled");
+  if (label && fileName) label.textContent = fileName;
+  if (previewEl) previewEl.hidden = false;
+}
+
+function clearUploadCard(cardId, previewEl, labelId, defaultText) {
+  const card = document.getElementById(cardId);
+  const label = document.getElementById(labelId);
+  if (card) card.classList.remove("is-filled");
+  if (label) label.textContent = defaultText;
+  if (previewEl) {
+    previewEl.hidden = true;
+    previewEl.removeAttribute("src");
+  }
+}
+
 function drawTryOnPreview() {
   const canvas = document.getElementById("tryOnCanvas");
   if (!canvas || !tryOnBodyImg) return;
@@ -3957,6 +4019,7 @@ function drawTryOnPreview() {
 
   if (tryOnDesignImg) {
     const scalePct = Number(document.getElementById("tryOnScale")?.value || 35) / 100;
+    const opacity = Number(document.getElementById("tryOnOpacity")?.value || 88) / 100;
     const maxSide = Math.min(cw, ch) * scalePct;
     const ir = tryOnDesignImg.width / tryOnDesignImg.height;
     let iw, ih;
@@ -3967,43 +4030,55 @@ function drawTryOnPreview() {
       ih = maxSide;
       iw = maxSide * ir;
     }
-    const cx = tryOnOffset.x * cw;
-    const cy = tryOnOffset.y * ch;
+    const cx = Math.max(0, Math.min(1, tryOnOffset.x)) * cw;
+    const cy = Math.max(0, Math.min(1, tryOnOffset.y)) * ch;
 
     ctx.save();
     // Soft blend so ink sits on skin
-    ctx.globalAlpha = 0.88;
+    ctx.globalAlpha = Math.min(1, opacity);
     ctx.globalCompositeOperation = "multiply";
     ctx.drawImage(tryOnDesignImg, cx - iw / 2, cy - ih / 2, iw, ih);
     ctx.globalCompositeOperation = "source-over";
-    ctx.globalAlpha = 0.35;
+    ctx.globalAlpha = Math.min(0.45, opacity * 0.4);
     ctx.drawImage(tryOnDesignImg, cx - iw / 2, cy - ih / 2, iw, ih);
     ctx.restore();
 
-    // Placement ring guide
-    ctx.save();
-    ctx.strokeStyle = "rgba(230,57,70,0.55)";
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([4, 4]);
-    ctx.strokeRect(cx - iw / 2 - 4, cy - ih / 2 - 4, iw + 8, ih + 8);
-    ctx.restore();
+    // Subtle placement guide (only while dragging)
+    if (tryOnDragging) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(230,57,70,0.65)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5, 4]);
+      ctx.strokeRect(cx - iw / 2 - 4, cy - ih / 2 - 4, iw + 8, ih + 8);
+      ctx.restore();
+    }
   }
 
   const placeholder = document.getElementById("tryOnPlaceholder");
   const actions = document.getElementById("tryOnActions");
-  if (placeholder) placeholder.style.display = "none";
-  if (actions) actions.hidden = false;
+  const dragHint = document.getElementById("tryOnDragHint");
+  const mobileBar = document.getElementById("tryOnMobileBar");
+  if (placeholder) placeholder.classList.add("is-hidden");
+  if (actions) actions.hidden = !(tryOnDesignImg && tryOnBodyImg);
+  if (dragHint) dragHint.hidden = !(tryOnDesignImg && tryOnBodyImg);
+  if (mobileBar) mobileBar.hidden = !(tryOnDesignImg && tryOnBodyImg);
   tryOnLastPreviewUrl = canvas.toDataURL("image/png");
+  updateTryOnSteps();
 }
 
 window.initTattooTryOn = function initTattooTryOn() {
+  if (window.__tryOnInited) return;
+  window.__tryOnInited = true;
+
   const designInput = document.getElementById("tryOnDesignFile");
   const bodyInput = document.getElementById("tryOnBodyFile");
   const designPreview = document.getElementById("tryOnDesignPreview");
   const bodyPreview = document.getElementById("tryOnBodyPreview");
   const placement = document.getElementById("tryOnPlacement");
   const scale = document.getElementById("tryOnScale");
+  const opacity = document.getElementById("tryOnOpacity");
   const stitchBtn = document.getElementById("tryOnStitchBtn");
+  const resetBtn = document.getElementById("tryOnResetBtn");
   const downloadBtn = document.getElementById("tryOnDownloadBtn");
   const canvas = document.getElementById("tryOnCanvas");
   const modal = document.getElementById("tryOnModal");
@@ -4011,6 +4086,21 @@ window.initTattooTryOn = function initTattooTryOn() {
   const closeBtn = document.getElementById("closeTryOnBtn");
   const footerLink = document.getElementById("footerTryOnLink");
   const bookBtn = document.getElementById("tryOnBookBtn");
+  const mobileBook = document.getElementById("tryOnMobileBook");
+  const mobileDownload = document.getElementById("tryOnMobileDownload");
+  const chips = document.getElementById("tryOnPlacementChips");
+  const scaleLabel = document.getElementById("tryOnScaleLabel");
+  const opacityLabel = document.getElementById("tryOnOpacityLabel");
+
+  const syncScaleLabel = () => {
+    const v = Number(scale?.value || 35);
+    if (scaleLabel) scaleLabel.textContent = scaleLabelFromValue(v);
+    if (scale) scale.setAttribute("aria-valuetext", scaleLabelFromValue(v));
+  };
+  const syncOpacityLabel = () => {
+    const v = Number(opacity?.value || 88);
+    if (opacityLabel) opacityLabel.textContent = opacityLabelFromValue(v);
+  };
 
   const openModal = (e) => {
     if (e) e.preventDefault();
@@ -4018,6 +4108,10 @@ window.initTattooTryOn = function initTattooTryOn() {
     modal.style.display = "flex";
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("modal-open");
+    updateTryOnSteps();
+    if (typeof window.trackEvent === "function") {
+      window.trackEvent("try_on_open");
+    }
   };
   const closeModal = () => {
     if (!modal) return;
@@ -4025,6 +4119,7 @@ window.initTattooTryOn = function initTattooTryOn() {
     modal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("modal-open");
   };
+
   if (openBtn) openBtn.onclick = openModal;
   if (footerLink) footerLink.onclick = openModal;
   if (closeBtn) closeBtn.onclick = closeModal;
@@ -4033,9 +4128,42 @@ window.initTattooTryOn = function initTattooTryOn() {
       if (e.target === modal) closeModal();
     });
   }
-  if (bookBtn) {
-    bookBtn.addEventListener("click", () => closeModal());
+
+  const attachToBooking = () => {
+    if (!tryOnLastPreviewUrl) return;
+    const container = document.getElementById("aiBookingAttachmentContainer");
+    const img = document.getElementById("aiBookingAttachmentImg");
+    const promptDesc = document.getElementById("aiBookingAttachmentPrompt");
+    if (container && img) {
+      img.src = tryOnLastPreviewUrl;
+      if (promptDesc) {
+        const place =
+          chips?.querySelector(".try-on-chip.is-active")?.textContent?.trim() ||
+          placement?.selectedOptions?.[0]?.text ||
+          "Custom";
+        const notes = document.getElementById("tryOnNotes")?.value?.trim() || "";
+        promptDesc.textContent = `Try-on preview · Placement: ${place}${notes ? " · " + notes : ""}`;
+      }
+      container.style.display = "block";
+      aiGeneratedTattooUrl = tryOnLastPreviewUrl;
+      aiGeneratedTattooPrompt = promptDesc?.textContent || "Try-on preview";
+    }
+    if (typeof window.trackEvent === "function") {
+      window.trackEvent("try_on_book");
+    }
+    closeModal();
+  };
+
+  if (bookBtn) bookBtn.addEventListener("click", attachToBooking);
+  if (mobileBook) {
+    mobileBook.addEventListener("click", (e) => {
+      e.preventDefault();
+      attachToBooking();
+      const bookSec = document.getElementById("book");
+      if (bookSec) bookSec.scrollIntoView({ behavior: "smooth" });
+    });
   }
+
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && modal?.style.display === "flex") closeModal();
   });
@@ -4048,6 +4176,8 @@ window.initTattooTryOn = function initTattooTryOn() {
     try {
       tryOnDesignImg = await loadImageFromFile(file);
       previewFileInLabel(file, designPreview);
+      setUploadCardFilled("tryOnDesignCard", designPreview, "tryOnDesignLabel", file.name);
+      updateTryOnSteps();
       if (tryOnBodyImg) drawTryOnPreview();
     } catch (err) {
       alert(err.message);
@@ -4060,57 +4190,126 @@ window.initTattooTryOn = function initTattooTryOn() {
     try {
       tryOnBodyImg = await loadImageFromFile(file);
       previewFileInLabel(file, bodyPreview);
+      setUploadCardFilled("tryOnBodyCard", bodyPreview, "tryOnBodyLabel", file.name);
+      updateTryOnSteps();
       drawTryOnPreview();
     } catch (err) {
       alert(err.message);
     }
   };
 
+  // Placement chips
+  if (chips) {
+    chips.addEventListener("click", (e) => {
+      const chip = e.target.closest(".try-on-chip");
+      if (!chip) return;
+      chips.querySelectorAll(".try-on-chip").forEach((c) => {
+        c.classList.remove("is-active");
+        c.setAttribute("aria-selected", "false");
+      });
+      chip.classList.add("is-active");
+      chip.setAttribute("aria-selected", "true");
+      const key = chip.getAttribute("data-place") || "custom";
+      if (placement) placement.value = key;
+      tryOnOffset = { ...(TRYON_PLACEMENT_DEFAULTS[key] || TRYON_PLACEMENT_DEFAULTS.custom) };
+      if (tryOnBodyImg && tryOnDesignImg) drawTryOnPreview();
+    });
+  }
+
   if (placement) {
     placement.onchange = () => {
       const key = placement.value;
       tryOnOffset = { ...(TRYON_PLACEMENT_DEFAULTS[key] || TRYON_PLACEMENT_DEFAULTS.custom) };
+      chips?.querySelectorAll(".try-on-chip").forEach((c) => {
+        const on = c.getAttribute("data-place") === key;
+        c.classList.toggle("is-active", on);
+        c.setAttribute("aria-selected", on ? "true" : "false");
+      });
       if (tryOnBodyImg && tryOnDesignImg) drawTryOnPreview();
     };
   }
 
   if (scale) {
+    syncScaleLabel();
     scale.oninput = () => {
+      syncScaleLabel();
       if (tryOnBodyImg && tryOnDesignImg) drawTryOnPreview();
     };
   }
 
-  stitchBtn.onclick = async () => {
+  if (opacity) {
+    syncOpacityLabel();
+    opacity.oninput = () => {
+      syncOpacityLabel();
+      if (tryOnBodyImg && tryOnDesignImg) drawTryOnPreview();
+    };
+  }
+
+  stitchBtn.onclick = () => {
     if (!tryOnDesignImg) {
-      alert("Please upload your tattoo idea / design image first.");
+      alert("Upload your tattoo design first (step 1).");
+      designInput?.click();
       return;
     }
     if (!tryOnBodyImg) {
-      alert("Please upload a photo of the body area where you want the tattoo.");
+      alert("Upload a photo of the body area (step 2).");
+      bodyInput?.click();
       return;
     }
     const key = placement?.value || "custom";
-    tryOnOffset = { ...(TRYON_PLACEMENT_DEFAULTS[key] || TRYON_PLACEMENT_DEFAULTS.custom) };
+    // Keep current drag position if user already moved it
+    if (!tryOnOffset || (tryOnOffset.x === 0.5 && tryOnOffset.y === 0.5)) {
+      tryOnOffset = { ...(TRYON_PLACEMENT_DEFAULTS[key] || TRYON_PLACEMENT_DEFAULTS.custom) };
+    }
     stitchBtn.disabled = true;
     const originalLabel = stitchBtn.textContent;
-    stitchBtn.textContent = "STITCHING...";
-
+    stitchBtn.textContent = "Updating…";
     try {
-      // Optional AI placement tip via Gemini (non-blocking if it fails)
-      const notes = document.getElementById("tryOnNotes")?.value?.trim() || "";
-      try {
-        if (geminiModel && notes) {
-          // soft nudge only — visual stitch is canvas-based
-          console.log("Try-on notes for consultation:", notes, "placement:", key);
-        }
-      } catch (_) { /* ignore */ }
-
       drawTryOnPreview();
+      if (typeof window.trackEvent === "function") {
+        window.trackEvent("try_on_preview");
+      }
     } finally {
       stitchBtn.disabled = false;
       stitchBtn.textContent = originalLabel;
     }
   };
+
+  if (resetBtn) {
+    resetBtn.onclick = () => {
+      tryOnDesignImg = null;
+      tryOnBodyImg = null;
+      tryOnLastPreviewUrl = null;
+      tryOnOffset = { x: 0.5, y: 0.5 };
+      tryOnDragging = false;
+      if (designInput) designInput.value = "";
+      if (bodyInput) bodyInput.value = "";
+      if (scale) scale.value = "35";
+      if (opacity) opacity.value = "88";
+      const notes = document.getElementById("tryOnNotes");
+      if (notes) notes.value = "";
+      clearUploadCard("tryOnDesignCard", designPreview, "tryOnDesignLabel", "Sketch, flash, or reference");
+      clearUploadCard("tryOnBodyCard", bodyPreview, "tryOnBodyLabel", "Arm, chest, leg — well lit");
+      syncScaleLabel();
+      syncOpacityLabel();
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      document.getElementById("tryOnPlaceholder")?.classList.remove("is-hidden");
+      const actions = document.getElementById("tryOnActions");
+      if (actions) actions.hidden = true;
+      const dragHint = document.getElementById("tryOnDragHint");
+      if (dragHint) dragHint.hidden = true;
+      const mobileBar = document.getElementById("tryOnMobileBar");
+      if (mobileBar) mobileBar.hidden = true;
+      // reset chips
+      chips?.querySelectorAll(".try-on-chip").forEach((c, i) => {
+        c.classList.toggle("is-active", i === 0);
+        c.setAttribute("aria-selected", i === 0 ? "true" : "false");
+      });
+      if (placement) placement.value = "forearm";
+      updateTryOnSteps();
+    };
+  }
 
   // Drag design on canvas
   const getPos = (evt) => {
@@ -4118,8 +4317,8 @@ window.initTattooTryOn = function initTattooTryOn() {
     const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
     const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
     return {
-      x: (clientX - rect.left) / rect.width,
-      y: (clientY - rect.top) / rect.height
+      x: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
+      y: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height))
     };
   };
 
@@ -4135,46 +4334,34 @@ window.initTattooTryOn = function initTattooTryOn() {
     tryOnOffset = getPos(e);
     drawTryOnPreview();
   });
-  const endDrag = () => { tryOnDragging = false; };
+  const endDrag = () => {
+    if (tryOnDragging) {
+      tryOnDragging = false;
+      drawTryOnPreview();
+    }
+  };
   canvas.addEventListener("pointerup", endDrag);
   canvas.addEventListener("pointercancel", endDrag);
 
-  if (downloadBtn) {
-    downloadBtn.onclick = () => {
-      if (!tryOnLastPreviewUrl) {
-        alert("Create a preview first.");
-        return;
-      }
-      const a = document.createElement("a");
-      a.href = tryOnLastPreviewUrl;
-      a.download = `diamond-tip-tattoo-preview-${Date.now()}.png`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    };
-  }
+  const doDownload = () => {
+    if (!tryOnLastPreviewUrl) {
+      alert("Create a preview first — upload design + photo.");
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = tryOnLastPreviewUrl;
+    a.download = `diamond-tip-tattoo-preview-${Date.now()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    if (typeof window.trackEvent === "function") {
+      window.trackEvent("try_on_download");
+    }
+  };
+  if (downloadBtn) downloadBtn.onclick = doDownload;
+  if (mobileDownload) mobileDownload.onclick = doDownload;
 
-  // Attach preview to booking when using Book With This Idea
-  const bookLink = document.querySelector('#tryOnActions a[href="#book"]');
-  if (bookLink) {
-    bookLink.addEventListener("click", () => {
-      if (!tryOnLastPreviewUrl) return;
-      const container = document.getElementById("aiBookingAttachmentContainer");
-      const img = document.getElementById("aiBookingAttachmentImg");
-      const promptDesc = document.getElementById("aiBookingAttachmentPrompt");
-      if (container && img) {
-        img.src = tryOnLastPreviewUrl;
-        if (promptDesc) {
-          const place = document.getElementById("tryOnPlacement")?.selectedOptions?.[0]?.text || "Custom";
-          const notes = document.getElementById("tryOnNotes")?.value?.trim() || "";
-          promptDesc.textContent = `Try-on preview · Placement: ${place}${notes ? " · " + notes : ""}`;
-        }
-        container.style.display = "block";
-        aiGeneratedTattooUrl = tryOnLastPreviewUrl;
-        aiGeneratedTattooPrompt = promptDesc?.textContent || "Try-on preview";
-      }
-    });
-  }
+  updateTryOnSteps();
 };
 
 // =============================================

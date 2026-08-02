@@ -998,41 +998,100 @@
     </div>
 </div>
 
-<!-- Compact See It On You modal (header) -->
+<!-- See It On You — retail-grade virtual try-on -->
 <div id="tryOnModal" class="modal try-on-modal" style="display:none;" aria-hidden="true">
-    <div class="modal-content box try-on-modal-content">
-        <button type="button" class="close-modal" id="closeTryOnBtn" aria-label="Close">&times;</button>
-        <div class="try-on-modal-head">
-            <p class="subtitle">QUICK PREVIEW</p>
-            <h2>See It On You</h2>
-            <p class="try-on-modal-lead">Upload idea + body photo, pick placement — we stitch a preview.</p>
-        </div>
-        <div class="try-on-layout compact">
-            <div class="try-on-controls">
-                <div class="try-on-upload-row">
-                    <label class="try-on-drop" for="tryOnDesignFile">
-                        <span class="try-on-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>
+    <div class="modal-content try-on-shell" role="dialog" aria-modal="true" aria-labelledby="tryOnTitle">
+        <header class="try-on-topbar">
+            <div class="try-on-brand">
+                <span class="try-on-kicker">Virtual try-on</span>
+                <h2 id="tryOnTitle">See it on you</h2>
+            </div>
+            <ol class="try-on-steps" id="tryOnSteps" aria-label="Progress">
+                <li class="is-active" data-step="1"><span>1</span> Design</li>
+                <li data-step="2"><span>2</span> Photo</li>
+                <li data-step="3"><span>3</span> Adjust</li>
+                <li data-step="4"><span>4</span> Book</li>
+            </ol>
+            <button type="button" class="try-on-close" id="closeTryOnBtn" aria-label="Close">&times;</button>
+        </header>
+
+        <div class="try-on-body">
+            <!-- Preview column (hero) -->
+            <section class="try-on-stage" aria-label="Live preview">
+                <div class="try-on-stage-frame">
+                    <canvas id="tryOnCanvas" width="720" height="900" aria-label="Tattoo preview canvas"></canvas>
+                    <div id="tryOnPlaceholder" class="try-on-placeholder">
+                        <div class="try-on-placeholder-inner">
+                            <div class="try-on-placeholder-icons" aria-hidden="true">
+                                <span class="ph-icon">1</span>
+                                <span class="ph-plus">+</span>
+                                <span class="ph-icon">2</span>
+                            </div>
+                            <p class="ph-title">Your preview will appear here</p>
+                            <p class="ph-sub">Upload a tattoo design and a clear photo of the body area. Drag the design on the image to position it.</p>
+                        </div>
+                    </div>
+                    <div class="try-on-stage-hint" id="tryOnDragHint" hidden>
+                        <span>Drag to reposition</span>
+                    </div>
+                </div>
+                <div class="try-on-actions" id="tryOnActions" hidden>
+                    <button type="button" id="tryOnDownloadBtn" class="btn btn-outline try-on-act-btn">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 19h16"/></svg>
+                        Download
+                    </button>
+                    <a href="#book" class="btn btn-solid try-on-act-btn" id="tryOnBookBtn" data-track="cta_tryon_book">
+                        Book this idea
+                    </a>
+                </div>
+            </section>
+
+            <!-- Controls column -->
+            <aside class="try-on-panel">
+                <p class="try-on-panel-lead">Like a virtual fitting room for ink — private, free, no account needed.</p>
+
+                <div class="try-on-upload-grid">
+                    <label class="try-on-upload-card" for="tryOnDesignFile" id="tryOnDesignCard">
+                        <span class="try-on-step-badge">1</span>
+                        <span class="try-on-upload-main">
+                            <span class="try-on-upload-title">Tattoo design</span>
+                            <span class="try-on-upload-sub" id="tryOnDesignLabel">Sketch, flash, or reference</span>
                         </span>
-                        <strong>Tattoo Idea</strong>
-                        <span>Sketch / reference</span>
-                        <img id="tryOnDesignPreview" alt="" hidden>
-                        <input type="file" id="tryOnDesignFile" accept="image/*" hidden>
+                        <span class="try-on-upload-cta">Upload</span>
+                        <img id="tryOnDesignPreview" class="try-on-upload-thumb" alt="" hidden>
+                        <input type="file" id="tryOnDesignFile" accept="image/*" capture="environment" hidden>
                     </label>
-                    <label class="try-on-drop" for="tryOnBodyFile">
-                        <span class="try-on-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="3"/><path d="M5 20c1.5-4 4-6 7-6s5.5 2 7 6"/></svg>
+                    <label class="try-on-upload-card" for="tryOnBodyFile" id="tryOnBodyCard">
+                        <span class="try-on-step-badge">2</span>
+                        <span class="try-on-upload-main">
+                            <span class="try-on-upload-title">Your photo</span>
+                            <span class="try-on-upload-sub" id="tryOnBodyLabel">Arm, chest, leg — well lit</span>
                         </span>
-                        <strong>Body Photo</strong>
-                        <span>Area for the ink</span>
-                        <img id="tryOnBodyPreview" alt="" hidden>
-                        <input type="file" id="tryOnBodyFile" accept="image/*" hidden>
+                        <span class="try-on-upload-cta">Upload</span>
+                        <img id="tryOnBodyPreview" class="try-on-upload-thumb" alt="" hidden>
+                        <input type="file" id="tryOnBodyFile" accept="image/*" capture="environment" hidden>
                     </label>
                 </div>
-                <div class="try-on-field">
-                    <label for="tryOnPlacement"><strong>Placement</strong></label>
-                    <select id="tryOnPlacement">
-                        <option value="forearm">Forearm</option>
+
+                <div class="try-on-control-block">
+                    <div class="try-on-control-head">
+                        <label>Placement</label>
+                        <span class="try-on-control-hint">Where it sits</span>
+                    </div>
+                    <div class="try-on-chips" id="tryOnPlacementChips" role="listbox" aria-label="Placement">
+                        <button type="button" class="try-on-chip is-active" data-place="forearm" role="option" aria-selected="true">Forearm</button>
+                        <button type="button" class="try-on-chip" data-place="upper-arm" role="option">Upper arm</button>
+                        <button type="button" class="try-on-chip" data-place="chest" role="option">Chest</button>
+                        <button type="button" class="try-on-chip" data-place="back" role="option">Back</button>
+                        <button type="button" class="try-on-chip" data-place="ribs" role="option">Ribs</button>
+                        <button type="button" class="try-on-chip" data-place="thigh" role="option">Thigh</button>
+                        <button type="button" class="try-on-chip" data-place="calf" role="option">Calf</button>
+                        <button type="button" class="try-on-chip" data-place="wrist" role="option">Wrist</button>
+                        <button type="button" class="try-on-chip" data-place="neck" role="option">Neck</button>
+                        <button type="button" class="try-on-chip" data-place="custom" role="option">Custom</button>
+                    </div>
+                    <select id="tryOnPlacement" class="try-on-sr-only" aria-hidden="true" tabindex="-1">
+                        <option value="forearm" selected>Forearm</option>
                         <option value="upper-arm">Upper Arm / Shoulder</option>
                         <option value="chest">Chest</option>
                         <option value="back">Back</option>
@@ -1044,31 +1103,51 @@
                         <option value="custom">Custom / Other</option>
                     </select>
                 </div>
-                <div class="try-on-field">
-                    <label for="tryOnNotes"><strong>Notes</strong> <span class="optional">(optional)</span></label>
-                    <textarea id="tryOnNotes" rows="2" placeholder="Size, style, wrap, etc."></textarea>
+
+                <div class="try-on-control-block">
+                    <div class="try-on-control-head">
+                        <label for="tryOnScale">Size</label>
+                        <span class="try-on-scale-value" id="tryOnScaleLabel">Medium</span>
+                    </div>
+                    <div class="try-on-slider-wrap">
+                        <span class="try-on-slider-end">S</span>
+                        <input type="range" id="tryOnScale" min="15" max="70" value="35" aria-valuetext="Medium">
+                        <span class="try-on-slider-end">L</span>
+                    </div>
                 </div>
-                <div class="try-on-size-row">
-                    <label for="tryOnScale"><strong>Size</strong></label>
-                    <input type="range" id="tryOnScale" min="15" max="70" value="35">
+
+                <div class="try-on-control-block">
+                    <div class="try-on-control-head">
+                        <label for="tryOnOpacity">Ink strength</label>
+                        <span class="try-on-scale-value" id="tryOnOpacityLabel">Natural</span>
+                    </div>
+                    <div class="try-on-slider-wrap">
+                        <span class="try-on-slider-end">Soft</span>
+                        <input type="range" id="tryOnOpacity" min="40" max="100" value="88">
+                        <span class="try-on-slider-end">Bold</span>
+                    </div>
                 </div>
-                <button type="button" id="tryOnStitchBtn" class="btn btn-solid" style="width:100%;">STITCH PREVIEW</button>
-                <p class="try-on-disclaimer">Preview only. Book with Steven or Scotty to finalise.</p>
-            </div>
-            <div class="try-on-result box-inner">
-                <canvas id="tryOnCanvas" width="720" height="900" aria-label="Tattoo preview canvas"></canvas>
-                <div id="tryOnPlaceholder" class="try-on-placeholder">
-                    <span class="try-on-icon lg" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
-                    </span>
-                    <p>Preview appears here</p>
+
+                <div class="try-on-control-block try-on-notes-block">
+                    <div class="try-on-control-head">
+                        <label for="tryOnNotes">Notes <span class="optional">(optional)</span></label>
+                    </div>
+                    <textarea id="tryOnNotes" rows="2" placeholder="Style, wrap, size in cm, cover-up…"></textarea>
                 </div>
-                <div class="try-on-actions" id="tryOnActions" hidden>
-                    <button type="button" id="tryOnDownloadBtn" class="btn btn-outline">Download</button>
-                    <a href="#book" class="btn btn-solid" id="tryOnBookBtn">Book Idea</a>
+
+                <div class="try-on-panel-actions">
+                    <button type="button" id="tryOnStitchBtn" class="btn btn-solid try-on-primary-btn">Update preview</button>
+                    <button type="button" id="tryOnResetBtn" class="btn btn-outline try-on-reset-btn">Reset</button>
                 </div>
-            </div>
+                <p class="try-on-disclaimer">Preview only — not a final stencil. Book with Steven or Scotty to lock the design.</p>
+            </aside>
         </div>
+
+        <!-- Mobile sticky CTA -->
+        <footer class="try-on-mobile-bar" id="tryOnMobileBar" hidden>
+            <button type="button" class="btn btn-outline" id="tryOnMobileDownload">Download</button>
+            <a href="#book" class="btn btn-solid" id="tryOnMobileBook">Book idea</a>
+        </footer>
     </div>
 </div>
 
