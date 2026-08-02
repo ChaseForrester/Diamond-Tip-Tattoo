@@ -221,6 +221,10 @@
             <span>See It On You</span>
         </button>
         <a href="#book" class="btn btn-solid nav-book-cta" id="navBookCta" data-track="cta_nav_book">Book Now</a>
+        <button type="button" id="openCartBtn" class="cart-nav-btn" aria-label="Open cart" data-track="cta_open_cart">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
+            <span class="cart-badge" id="cartBadge" hidden>0</span>
+        </button>
         <div class="nav-social-links">
             <a href="https://www.facebook.com/profile.php?id=100049840695666" target="_blank" rel="noopener noreferrer" aria-label="Facebook" data-track="social_facebook">Facebook</a>
             <a href="https://www.instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" data-track="social_instagram">Instagram</a>
@@ -787,11 +791,17 @@
     <div class="section-header center">
         <p class="subtitle">TATTOO AFTERCARE &amp; STUDIO SUPPLIES</p>
         <h2>Studio Shop</h2>
-        <p class="shop-intro">Healing staples &amp; studio essentials — the kind of aftercare stock you grab from Coles, Woolworths or Chemist Warehouse at Dapto Mall, curated for fresh ink.</p>
+        <p class="shop-intro">Healing staples &amp; studio essentials — order online for <strong>in-studio pickup</strong>. Pay at Diamond Tip when you collect (cash or card). No shipping.</p>
+        <p class="shop-pickup-note">Tue–Sat · 10AM–6PM · Shop 5/37–39 Baan Baan St, Dapto</p>
+    </div>
+    <div class="shop-toolbar">
+        <p id="shopProductCount" class="shop-product-count"></p>
+        <button type="button" class="btn btn-outline" id="shopOpenCartBtn" data-track="cta_shop_view_cart">View cart</button>
     </div>
     <div id="shopGrid" class="shop-grid">
         <!-- Dynamic Products -->
     </div>
+    <p id="shopLoadError" class="shop-load-error" hidden>Couldn’t refresh products — showing studio catalogue offline.</p>
 </section>
 
 <section id="info" class="section bottom-info slide-up">
@@ -1480,6 +1490,83 @@
             </div>
         </div>
     </div>
+
+<!-- Cart drawer -->
+<div id="cartDrawer" class="cart-drawer" aria-hidden="true">
+    <div class="cart-drawer-backdrop" id="cartBackdrop"></div>
+    <aside class="cart-drawer-panel" role="dialog" aria-labelledby="cartDrawerTitle">
+        <header class="cart-drawer-head">
+            <h2 id="cartDrawerTitle">Your cart</h2>
+            <button type="button" class="cart-close-btn" id="closeCartBtn" aria-label="Close cart">&times;</button>
+        </header>
+        <p class="cart-pickup-banner">Pickup only · Pay at the studio when you collect</p>
+        <div id="cartItems" class="cart-items">
+            <p class="cart-empty" id="cartEmptyMsg">Your cart is empty. Add aftercare from the shop.</p>
+        </div>
+        <footer class="cart-drawer-foot">
+            <div class="cart-subtotal-row">
+                <span>Subtotal</span>
+                <strong id="cartSubtotal">$0.00</strong>
+            </div>
+            <p class="cart-foot-note">Pay in studio · no online card charge yet</p>
+            <button type="button" class="btn btn-solid" id="cartCheckoutBtn" disabled data-track="cta_checkout_open">Checkout for pickup</button>
+            <a href="#shop" class="btn btn-outline cart-keep-shopping" id="cartKeepShopping">Keep shopping</a>
+        </footer>
+    </aside>
+</div>
+
+<!-- Checkout modal -->
+<div id="checkoutModal" class="modal checkout-modal" style="display:none;" aria-hidden="true">
+    <div class="modal-content box checkout-modal-content">
+        <button type="button" class="close-modal" id="closeCheckoutBtn" aria-label="Close">&times;</button>
+        <p class="subtitle">STUDIO PICKUP ORDER</p>
+        <h2>Checkout</h2>
+        <p class="checkout-lead">We’ll hold your order for pickup at Diamond Tip Tattoo. Pay when you collect.</p>
+        <div id="checkoutSummary" class="checkout-summary"></div>
+        <form id="checkoutForm">
+            <div class="form-row">
+                <div class="field">
+                    <label for="checkoutName">Full name <span class="req">*</span></label>
+                    <input type="text" id="checkoutName" name="name" autocomplete="name" required placeholder="Your name">
+                </div>
+                <div class="field">
+                    <label for="checkoutEmail">Email <span class="req">*</span></label>
+                    <input type="email" id="checkoutEmail" name="email" autocomplete="email" required placeholder="you@email.com">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="field" style="width:100%;">
+                    <label for="checkoutPhone">Mobile <span class="req">*</span></label>
+                    <input type="tel" id="checkoutPhone" name="phone" autocomplete="tel" required inputmode="tel" placeholder="04XX XXX XXX">
+                </div>
+            </div>
+            <div class="field">
+                <label for="checkoutWhen">Preferred pickup window</label>
+                <select id="checkoutWhen" name="pickupWindow">
+                    <option value="First available">First available (we’ll confirm)</option>
+                    <option value="Tue–Thu morning">Tue–Thu morning</option>
+                    <option value="Tue–Thu afternoon">Tue–Thu afternoon</option>
+                    <option value="Fri–Sat">Fri–Sat</option>
+                    <option value="With my tattoo appointment">With my tattoo appointment</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="checkoutNotes">Order notes <span class="optional-lab">(optional)</span></label>
+                <textarea id="checkoutNotes" name="notes" rows="2" placeholder="e.g. picking up after my session with Steven"></textarea>
+            </div>
+            <p class="checkout-terms">By placing this order you agree to collect and pay at the studio. We’ll email/SMS when ready.</p>
+            <div id="checkoutError" class="error-text" role="alert"></div>
+            <button type="submit" class="btn btn-solid" id="checkoutSubmitBtn" style="width:100%;" data-track="cta_place_order">Place pickup order</button>
+        </form>
+        <div id="checkoutSuccess" class="booking-success" hidden>
+            <div class="booking-success-icon" aria-hidden="true">✓</div>
+            <h3>Order placed</h3>
+            <p id="checkoutSuccessMsg">We’ll confirm when your pickup is ready. Check your email/phone.</p>
+            <p class="checkout-order-id" id="checkoutOrderId"></p>
+            <button type="button" class="btn btn-solid" id="checkoutSuccessClose" style="width:100%;margin-top:1rem;">Done</button>
+        </div>
+    </div>
+</div>
 
     <!-- Floating Live Chat Widget -->
     <div id="chatWidget" class="chat-widget-container">

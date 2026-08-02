@@ -334,35 +334,447 @@ const defaultShopProducts = [
   { id: "prod_saline-wound-wash", name: "Saline Wound Wash Spray", price: 9.50, image: "assets/products/saline-wound-wash.jpg", description: "Sterile saline spray for gentle rinsing of fresh work." }
 ];
 
-function renderShopGrid(products) {
-  const shopGrid = document.getElementById("shopGrid");
-  if (!shopGrid) return;
-
-  if (!products || products.length === 0) {
-    shopGrid.innerHTML = `<p style="color: var(--text-secondary);">Check back soon for studio aftercare and merchandise!</p>`;
-    return;
-  }
-
-  shopGrid.innerHTML = products.map(prod => `
-    <div class="shop-card">
-      <div class="product-image-wrap">
-        <img src="${prod.image || "assets/products/ink-heal-balm.jpg"}" alt="${prod.name}" loading="lazy">
-      </div>
-      <div class="shop-card-content">
-        <h3>${prod.name}</h3>
-        <p>${prod.description || ""}</p>
-        <div class="shop-price">$${Number(prod.price).toFixed(2)}</div>
-        <a href="#portal/browse-shop" class="btn btn-solid" style="width: 100%; display: block; text-align: center;">ORDER FOR PICKUP</a>
-      </div>
-    </div>
-  `).join("");
-}
-
 function shopHasCuratedProducts(items) {
   return Array.isArray(items) && items.some(p =>
     typeof (p.image || "") === "string" && (p.image || "").includes("assets/products/")
   );
 }
+
+// =============================================
+// STUDIO SHOP — cart + pickup checkout (works for guests)
+// =============================================
+const CART_STORAGE_KEY = "dtt_shop_cart_v1";
+window.shopCatalog = [];
+window.cart = [];
+
+function money(n) {
+  const v = Number(n);
+  return `$${(Number.isFinite(v) ? v : 0).toFixed(2)}`;
+}
+
+function escapeHtml(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function loadCartFromStorage() {
+  try {
+    const raw = localStorage.getItem(CART_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    window.cart = Array.isArray(parsed) ? parsed : [];
+  } catch {
+    window.cart = [];
+  }
+}
+
+function saveCartToStorage() {
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(window.cart));
+  } catch { /* private mode */ }
+}
+
+function cartCount() {
+  return window.cart.reduce((n, i) => n + (i.qty || 0), 0);
+}
+
+function cartSubtotal() {
+  return window.cart.reduce((n, i) => n + Number(i.price) * (i.qty || 0), 0);
+}
+
+function findProduct(id) {
+  return (window.shopCatalog || []).find(p => p.id === id)
+    || defaultShopProducts.find(p => p.id === id)
+    || null;
+}
+
+window.updateCartUI = function updateCartUI() {
+  const badge = document.getElementById("cartBadge");
+  const count = cartCount();
+  if (badge) {
+    badge.hidden = count === 0;
+    badge.textContent = String(count);
+  }
+
+  const itemsEl = document.getElementById("cartItems");
+  const emptyMsg = document.getElementById("cartEmptyMsg");
+  const subtotalEl = document.getElementById("cartSubtotal");
+  const checkoutBtn = document.getElementById("cartCheckoutBtn");
+
+  if (subtotalEl) subtotalEl.textContent = money(cartSubtotal());
+  if (checkoutBtn) checkoutBtn.disabled = count === 0;
+
+  if (!itemsEl) return;
+
+  if (!window.cart.length) {
+    itemsEl.innerHTML = `<p class="cart-empty" id="cartEmptyMsg">Your cart is empty. Add aftercare from the shop.</p>`;
+    return;
+  }
+
+  itemsEl.innerHTML = window.cart.map(item => {
+    const line = Number(item.price) * (item.qty || 0);
+    return `
+      <div class="cart-line" data-id="${escapeHtml(item.id)}">
+        <img src="${escapeHtml(item.image || "assets/products/ink-heal-balm.jpg")}" alt="" class="cart-line-img" onerror="this.src='assets/products/ink-heal-balm.jpg'">
+        <div class="cart-line-body">
+          <h4>${escapeHtml(item.name)}</h4>
+          <p class="cart-line-price">${money(item.price)} each</p>
+          <div class="cart-line-qty">
+            <button type="button" class="cart-qty-btn" data-cart-action="dec" data-id="${escapeHtml(item.id)}" aria-label="Decrease quantity">−</button>
+            <span>${item.qty}</span>
+            <button type="button" class="cart-qty-btn" data-cart-action="inc" data-id="${escapeHtml(item.id)}" aria-label="Increase quantity">+</button>
+            <button type="button" class="cart-remove-btn" data-cart-action="remove" data-id="${escapeHtml(item.id)}">Remove</button>
+          </div>
+        </div>
+        <div class="cart-line-total">${money(line)}</div>
+      </div>`;
+  }).join("");
+};
+
+window.addToCart = function addToCart(productId, qty = 1) {
+  const prod = findProduct(productId);
+  if (!prod) {
+    console.warn("Product not found:", productId);
+    return false;
+  }
+  const existing = window.cart.find(i => i.id === prod.id);
+  if (existing) {
+    existing.qty = Math.min(20, (existing.qty || 0) + qty);
+  } else {
+    window.cart.push({
+      id: prod.id,
+      name: prod.name,
+      price: Number(prod.price) || 0,
+      image: prod.image || "assets/products/ink-heal-balm.jpg",
+      qty: Math.max(1, Math.min(20, qty))
+    });
+  }
+  saveCartToStorage();
+  updateCartUI();
+  if (typeof window.trackEvent === "function") {
+    window.trackEvent("add_to_cart", { item_id: prod.id, item_name: prod.name, value: prod.price });
+  }
+  return true;
+};
+
+window.setCartQty = function setCartQty(productId, qty) {
+  const item = window.cart.find(i => i.id === productId);
+  if (!item) return;
+  if (qty <= 0) {
+    window.cart = window.cart.filter(i => i.id !== productId);
+  } else {
+    item.qty = Math.min(20, qty);
+  }
+  saveCartToStorage();
+  updateCartUI();
+};
+
+window.openCartDrawer = function openCartDrawer() {
+  const drawer = document.getElementById("cartDrawer");
+  if (!drawer) return;
+  updateCartUI();
+  drawer.classList.add("is-open");
+  drawer.setAttribute("aria-hidden", "false");
+  document.body.classList.add("cart-open");
+};
+
+window.closeCartDrawer = function closeCartDrawer() {
+  const drawer = document.getElementById("cartDrawer");
+  if (!drawer) return;
+  drawer.classList.remove("is-open");
+  drawer.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("cart-open");
+};
+
+window.openCheckout = function openCheckout() {
+  if (!window.cart.length) {
+    alert("Your cart is empty.");
+    return;
+  }
+  closeCartDrawer();
+  const modal = document.getElementById("checkoutModal");
+  const form = document.getElementById("checkoutForm");
+  const success = document.getElementById("checkoutSuccess");
+  const summary = document.getElementById("checkoutSummary");
+  const err = document.getElementById("checkoutError");
+  if (err) err.textContent = "";
+  if (form) form.hidden = false;
+  if (success) success.hidden = true;
+  if (summary) {
+    summary.innerHTML = `
+      <ul class="checkout-lines">
+        ${window.cart.map(i => `<li><span>${escapeHtml(i.name)} × ${i.qty}</span><span>${money(i.price * i.qty)}</span></li>`).join("")}
+      </ul>
+      <div class="checkout-total"><span>Total (pay at studio)</span><strong>${money(cartSubtotal())}</strong></div>`;
+  }
+  // Prefill from booking form if present
+  const bn = document.getElementById("bookingName");
+  const be = document.getElementById("bookingEmail");
+  const bp = document.getElementById("bookingPhone");
+  if (bn && document.getElementById("checkoutName") && !document.getElementById("checkoutName").value) {
+    document.getElementById("checkoutName").value = bn.value || "";
+  }
+  if (be && document.getElementById("checkoutEmail") && !document.getElementById("checkoutEmail").value) {
+    document.getElementById("checkoutEmail").value = be.value || "";
+  }
+  if (bp && document.getElementById("checkoutPhone") && !document.getElementById("checkoutPhone").value) {
+    document.getElementById("checkoutPhone").value = bp.value || "";
+  }
+  if (modal) {
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  }
+};
+
+window.closeCheckout = function closeCheckout() {
+  const modal = document.getElementById("checkoutModal");
+  if (modal) {
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+  }
+  document.body.classList.remove("modal-open");
+};
+
+function renderShopGrid(products) {
+  const shopGrid = document.getElementById("shopGrid");
+  if (!shopGrid) return;
+
+  const list = Array.isArray(products) && products.length ? products : defaultShopProducts;
+  window.shopCatalog = list.map(p => ({
+    id: p.id || `prod_${String(p.name || "item").toLowerCase().replace(/\s+/g, "-")}`,
+    name: p.name,
+    price: Number(p.price) || 0,
+    image: p.image || "assets/products/ink-heal-balm.jpg",
+    description: p.description || ""
+  }));
+
+  const countEl = document.getElementById("shopProductCount");
+  if (countEl) {
+    countEl.textContent = `${window.shopCatalog.length} product${window.shopCatalog.length === 1 ? "" : "s"} · pickup only`;
+  }
+
+  if (!window.shopCatalog.length) {
+    shopGrid.innerHTML = `<p style="color: var(--text-secondary);">Check back soon for studio aftercare and merchandise!</p>`;
+    return;
+  }
+
+  shopGrid.innerHTML = window.shopCatalog.map(prod => {
+    const inCart = window.cart.find(i => i.id === prod.id);
+    return `
+    <article class="shop-card" data-product-id="${escapeHtml(prod.id)}">
+      <div class="product-image-wrap">
+        <img src="${escapeHtml(prod.image)}" alt="${escapeHtml(prod.name)}" loading="lazy"
+          onerror="this.onerror=null;this.src='assets/products/ink-heal-balm.jpg';">
+      </div>
+      <div class="shop-card-content">
+        <h3>${escapeHtml(prod.name)}</h3>
+        <p>${escapeHtml(prod.description)}</p>
+        <div class="shop-price">${money(prod.price)}</div>
+        <button type="button" class="btn btn-solid shop-add-btn" data-add-to-cart="${escapeHtml(prod.id)}"
+          style="width:100%;" data-track="cta_add_to_cart">
+          ${inCart ? `In cart (${inCart.qty}) · Add another` : "Add to cart"}
+        </button>
+        <p class="shop-card-meta">Pickup · pay at studio</p>
+      </div>
+    </article>`;
+  }).join("");
+}
+
+window.initShopCart = function initShopCart() {
+  if (window.__shopCartInited) {
+    loadCartFromStorage();
+    renderShopGrid(window.shopCatalog.length ? window.shopCatalog : defaultShopProducts);
+    updateCartUI();
+    return;
+  }
+  window.__shopCartInited = true;
+
+  loadCartFromStorage();
+  // Always paint catalogue immediately (no login, no portal)
+  renderShopGrid(defaultShopProducts);
+  updateCartUI();
+
+  // Delegated product clicks
+  document.addEventListener("click", (e) => {
+    const addBtn = e.target.closest("[data-add-to-cart]");
+    if (addBtn) {
+      e.preventDefault();
+      const id = addBtn.getAttribute("data-add-to-cart");
+      if (window.addToCart(id, 1)) {
+        addBtn.classList.add("just-added");
+        addBtn.textContent = "Added ✓";
+        setTimeout(() => {
+          renderShopGrid(window.shopCatalog.length ? window.shopCatalog : defaultShopProducts);
+        }, 700);
+        // Soft open cart so user sees it worked
+        window.openCartDrawer();
+      }
+      return;
+    }
+
+    const cartAction = e.target.closest("[data-cart-action]");
+    if (cartAction) {
+      e.preventDefault();
+      const id = cartAction.getAttribute("data-id");
+      const action = cartAction.getAttribute("data-cart-action");
+      const item = window.cart.find(i => i.id === id);
+      if (action === "inc") window.setCartQty(id, (item?.qty || 0) + 1);
+      if (action === "dec") window.setCartQty(id, (item?.qty || 1) - 1);
+      if (action === "remove") window.setCartQty(id, 0);
+      return;
+    }
+  });
+
+  const openCartBtn = document.getElementById("openCartBtn");
+  const shopOpenCartBtn = document.getElementById("shopOpenCartBtn");
+  const closeCartBtn = document.getElementById("closeCartBtn");
+  const cartBackdrop = document.getElementById("cartBackdrop");
+  const cartCheckoutBtn = document.getElementById("cartCheckoutBtn");
+  const cartKeepShopping = document.getElementById("cartKeepShopping");
+  const closeCheckoutBtn = document.getElementById("closeCheckoutBtn");
+  const checkoutSuccessClose = document.getElementById("checkoutSuccessClose");
+  const checkoutForm = document.getElementById("checkoutForm");
+  const checkoutModal = document.getElementById("checkoutModal");
+
+  if (openCartBtn) openCartBtn.addEventListener("click", () => window.openCartDrawer());
+  if (shopOpenCartBtn) shopOpenCartBtn.addEventListener("click", () => window.openCartDrawer());
+  if (closeCartBtn) closeCartBtn.addEventListener("click", () => window.closeCartDrawer());
+  if (cartBackdrop) cartBackdrop.addEventListener("click", () => window.closeCartDrawer());
+  if (cartCheckoutBtn) cartCheckoutBtn.addEventListener("click", () => window.openCheckout());
+  if (cartKeepShopping) {
+    cartKeepShopping.addEventListener("click", () => {
+      window.closeCartDrawer();
+    });
+  }
+  if (closeCheckoutBtn) closeCheckoutBtn.addEventListener("click", () => window.closeCheckout());
+  if (checkoutSuccessClose) {
+    checkoutSuccessClose.addEventListener("click", () => {
+      window.closeCheckout();
+      window.closeCartDrawer();
+    });
+  }
+  if (checkoutModal) {
+    checkoutModal.addEventListener("click", (e) => {
+      if (e.target === checkoutModal) window.closeCheckout();
+    });
+  }
+
+  if (checkoutForm) {
+    checkoutForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById("checkoutSubmitBtn");
+      const errEl = document.getElementById("checkoutError");
+      if (!window.cart.length) {
+        if (errEl) errEl.textContent = "Your cart is empty.";
+        return;
+      }
+
+      const name = document.getElementById("checkoutName")?.value?.trim() || "";
+      const email = document.getElementById("checkoutEmail")?.value?.trim() || "";
+      const phone = document.getElementById("checkoutPhone")?.value?.trim() || "";
+      const pickupWindow = document.getElementById("checkoutWhen")?.value || "First available";
+      const notes = document.getElementById("checkoutNotes")?.value?.trim() || "";
+
+      if (!name || !email || !phone) {
+        if (errEl) errEl.textContent = "Name, email and mobile are required.";
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "PLACING ORDER…";
+      }
+      if (errEl) errEl.textContent = "";
+
+      const items = window.cart.map(i => ({
+        id: i.id,
+        name: i.name,
+        price: Number(i.price),
+        qty: Number(i.qty),
+        lineTotal: Number(i.price) * Number(i.qty)
+      }));
+      const total = cartSubtotal();
+      const orderId = `ord_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+      const orderPayload = {
+        id: orderId,
+        name,
+        email,
+        phone,
+        pickupWindow,
+        notes,
+        items,
+        itemCount: cartCount(),
+        total,
+        currency: "AUD",
+        fulfillment: "studio_pickup",
+        payment: "pay_at_studio",
+        status: "Pending",
+        createdAt: new Date().toISOString(),
+        userId: currentUser ? currentUser.uid : null,
+        source: "website_shop"
+      };
+
+      try {
+        await setDoc(doc(db, "orders", orderId), orderPayload);
+
+        if (typeof window.trackConversion === "function") {
+          window.trackConversion("purchase", {
+            transaction_id: orderId,
+            value: total,
+            currency: "AUD",
+            items: items.length
+          });
+        }
+
+        // Clear cart
+        window.cart = [];
+        saveCartToStorage();
+        updateCartUI();
+        renderShopGrid(window.shopCatalog.length ? window.shopCatalog : defaultShopProducts);
+
+        const formEl = document.getElementById("checkoutForm");
+        const successEl = document.getElementById("checkoutSuccess");
+        const msg = document.getElementById("checkoutSuccessMsg");
+        const oid = document.getElementById("checkoutOrderId");
+        if (formEl) formEl.hidden = true;
+        if (successEl) successEl.hidden = false;
+        if (msg) {
+          msg.textContent = `Thanks ${name}. We’ll confirm when your pickup is ready at Diamond Tip Tattoo, Dapto.`;
+        }
+        if (oid) oid.textContent = `Order ref: ${orderId}`;
+      } catch (err) {
+        console.error("Order failed:", err);
+        // Offline / rules fallback: still give local confirmation + save draft
+        try {
+          const drafts = JSON.parse(localStorage.getItem("dtt_order_drafts") || "[]");
+          drafts.push(orderPayload);
+          localStorage.setItem("dtt_order_drafts", JSON.stringify(drafts.slice(-20)));
+        } catch { /* ignore */ }
+
+        // If firestore create failed due to rules not deployed yet, show clear error but keep cart
+        if (errEl) {
+          errEl.textContent = err?.code === "permission-denied"
+            ? "Order blocked by server permissions — please call (02) 4261 4311 or message us on Instagram."
+            : ("Could not place order: " + (err.message || "try again"));
+        }
+        // Still allow recovery: if we saved draft, clear cart and show soft success
+        if (err?.code !== "permission-denied") {
+          // network errors already messaged
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Place pickup order";
+        }
+      }
+    });
+  }
+};
 
 document.addEventListener("DOMContentLoaded", () => {
     // Intro Loader Dismissal
@@ -635,6 +1047,9 @@ document.addEventListener("DOMContentLoaded", () => {
     renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
     initPortfolioFilters();
     initTattooTryOn();
+    // Studio shop cart + catalogue (must work without login)
+    if (typeof window.initShopCart === "function") window.initShopCart();
+    if (typeof window.loadShopWebsite === "function") window.loadShopWebsite();
 
     // Dynamic Content Initial Loading
     loadDynamicContent().then(() => {
@@ -2320,63 +2735,49 @@ window.loadClientGiftCards = async function() {
 window.dbProducts = [];
 
 window.loadClientShopProducts = async function() {
-    const portalShopGrid = document.getElementById('portalShopGrid');
-    if (!portalShopGrid) return;
-
-    const renderPortal = (products) => {
-        window.dbProducts = products.map(p => ({ ...p }));
-        if (!products.length) {
-            portalShopGrid.innerHTML = `<p style="color: var(--text-secondary);">No shop products found.</p>`;
-            return;
-        }
-        portalShopGrid.innerHTML = products.map(prod => {
-            const id = prod.id || prod.name;
-            const safeName = String(prod.name || "").replace(/'/g, "\\'");
-            return `
-                <div class="shop-card">
-                    <div class="product-image-wrap">
-                        <img src="${prod.image || "assets/products/ink-heal-balm.jpg"}" alt="${prod.name}">
-                    </div>
-                    <div class="shop-card-content">
-                        <h3>${prod.name}</h3>
-                        <p>${prod.description || ""}</p>
-                        <div class="shop-price">$${Number(prod.price).toFixed(2)}</div>
-                        <button class="btn btn-solid" style="width: 100%;" onclick="buyProductSimulated('${id}', '${safeName}')">BUY NOW</button>
-                    </div>
-                </div>
-            `;
-        }).join("");
-    };
-
-    renderPortal(defaultShopProducts);
-
+    // Portal used a missing #portalShopGrid — keep catalogue in sync for CMS/admin
+    window.dbProducts = defaultShopProducts.map(p => ({ ...p }));
     try {
         const snap = await getDocs(collection(db, "products"));
         const cmsProducts = [];
         snap.forEach(d => cmsProducts.push({ id: d.id, ...d.data() }));
         if (shopHasCuratedProducts(cmsProducts) && cmsProducts.length >= 8) {
-            renderPortal(cmsProducts);
+            window.dbProducts = cmsProducts;
+        } else if (cmsProducts.length > 0 && !shopHasCuratedProducts(cmsProducts)) {
+            // Old CMS placeholders — keep curated defaults for customer-facing shop
+            window.dbProducts = defaultShopProducts.map(p => ({ ...p }));
+        }
+        if (typeof window.renderCMSProducts === "function") {
+            window.renderCMSProducts();
         }
     } catch (e) {
         console.error(e);
     }
 }
 
-window.buyProductSimulated = function(prodId, prodName) {
-    alert(`Simulated Order Registered!\nYou have purchased: ${prodName}.\nYour order is ready for in-studio pickup.`);
+// Legacy alias — public shop uses cart, not simulated buy
+window.buyProductSimulated = function(prodId) {
+    if (window.addToCart(prodId, 1)) {
+        window.openCartDrawer();
+    } else {
+        alert("Product not found. Please refresh and try again.");
+    }
 }
 
 window.loadShopWebsite = async function() {
     const shopGrid = document.getElementById('shopGrid');
     if (!shopGrid) return;
 
-    // Show curated local shop immediately
+    // Show curated local shop immediately (never blank / never login wall)
     renderShopGrid(defaultShopProducts);
+    const errEl = document.getElementById("shopLoadError");
+    if (errEl) errEl.hidden = true;
 
     try {
         const snap = await getDocs(collection(db, "products"));
         const cmsProducts = [];
         snap.forEach(d => cmsProducts.push({ id: d.id, ...d.data() }));
+        window.dbProducts = cmsProducts.length ? cmsProducts : defaultShopProducts.map(p => ({ ...p }));
 
         // Prefer curated product packshots when CMS still has old placeholders
         if (shopHasCuratedProducts(cmsProducts) && cmsProducts.length >= 8) {
@@ -2402,6 +2803,8 @@ window.loadShopWebsite = async function() {
     } catch (e) {
         console.error(e);
         renderShopGrid(defaultShopProducts);
+        const errEl = document.getElementById("shopLoadError");
+        if (errEl) errEl.hidden = false;
     }
 }
 

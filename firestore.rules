@@ -36,6 +36,15 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Studio shop pickup orders (pay in studio)
+    match /orders/{orderId} {
+      allow create: if true;
+      allow read: if isAdmin() ||
+        (request.auth != null && resource.data.userId == request.auth.uid) ||
+        (request.auth != null && resource.data.email == request.auth.token.email);
+      allow update, delete: if isAdmin();
+    }
+
     match /giftcards/{cardId} {
       allow create: if true;
       allow read: if request.auth != null;
