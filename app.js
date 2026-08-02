@@ -116,7 +116,7 @@ const defaultArtists = [
     id: "steven",
     name: "STEVEN BENN",
     role: "Owner / Studio Master",
-    image: "assets/artists/steven-benn.png",
+    image: "assets/artists/steven-benn.jpg",
     bio: "Owner of Diamond Tip Tattoo in Dapto. Decades of custom ink, realism, black & grey, and client-first studio craft. Known for high-impact portraits, animals, and full custom pieces.",
     tags: ["Realism", "Black & Grey", "Custom Design"]
   },
@@ -777,17 +777,8 @@ window.initShopCart = function initShopCart() {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Intro Loader Dismissal
-    const loader = document.getElementById('introLoader');
-    if (loader) {
-        setTimeout(() => {
-            loader.classList.add('fade-out');
-            document.body.classList.add('page-ready');
-            setTimeout(() => {
-                loader.style.display = 'none';
-            }, 800);
-        }, 3000);
-    }
+    // No intro animation — page is ready immediately
+    document.body.classList.add('page-ready');
 
     // Mobile Hamburger Menu Toggle
     const menuToggle = document.getElementById('menuToggleBtn');
@@ -883,10 +874,10 @@ document.addEventListener("DOMContentLoaded", () => {
     function initSlider() {
         if (!homeHeader) return;
         
-        // Trigger initial slide reveal transition after page load
-        setTimeout(() => {
+        // Trigger initial slide reveal immediately (no intro loader)
+        requestAnimationFrame(() => {
             homeHeader.classList.add('slide-in');
-        }, 3100); // Trigger after intro loader fades out
+        });
 
         // Dot Navigation
         if (sliderDotsContainer) {
@@ -1740,6 +1731,8 @@ function enterPortal() {
     if (findUsEl) findUsEl.style.display = 'none';
     const tryonHome = document.getElementById('see-it-on-you');
     if (tryonHome) tryonHome.style.display = 'none';
+    const awardsEl = document.getElementById('awards');
+    if (awardsEl) awardsEl.style.display = 'none';
     const bookEl = document.getElementById('book');
     if (bookEl) bookEl.style.display = 'none';
     document.getElementById('info').style.display = 'none';
@@ -1777,6 +1770,8 @@ function exitPortal() {
     if (findUsEl) findUsEl.style.display = '';
     const tryonHome = document.getElementById('see-it-on-you');
     if (tryonHome) tryonHome.style.display = '';
+    const awardsEl = document.getElementById('awards');
+    if (awardsEl) awardsEl.style.display = '';
     const bookEl = document.getElementById('book');
     if (bookEl) bookEl.style.display = '';
     document.getElementById('info').style.display = '';

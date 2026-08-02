@@ -16,7 +16,7 @@
     <meta property="og:title" content="Diamond Tip Tattoo · Dapto NSW — Book a Private Consultation">
     <meta property="og:description" content="Custom ink by appointment only. Realism, fine line &amp; black &amp; grey. Steven Benn &amp; Scotty. Book your consultation online.">
     <meta property="og:url" content="https://diamond-tip-tattoo.web.app/">
-    <meta property="og:image" content="https://diamond-tip-tattoo.web.app/assets/logo/diamond-tip-logo-solid.jpg">
+    <meta property="og:image" content="https://diamond-tip-tattoo.web.app/assets/logo/diamond-tip-circle.png">
     <meta property="og:locale" content="en_AU">
     <meta property="business:contact_data:street_address" content="Shop 5/37-39 Baan Baan St">
     <meta property="business:contact_data:locality" content="Dapto">
@@ -26,9 +26,9 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Diamond Tip Tattoo · Dapto NSW">
     <meta name="twitter:description" content="Private custom tattoo studio. Book your consultation online.">
-    <meta name="twitter:image" content="https://diamond-tip-tattoo.web.app/assets/logo/diamond-tip-logo-solid.jpg">
-    <link rel="icon" type="image/png" href="assets/logo/favicon.png">
-    <link rel="apple-touch-icon" href="assets/logo/favicon.png">
+    <meta name="twitter:image" content="https://diamond-tip-tattoo.web.app/assets/logo/diamond-tip-circle.png">
+    <link rel="icon" type="image/png" href="assets/logo/diamond-tip-logo.png">
+    <link rel="apple-touch-icon" href="assets/logo/diamond-tip-circle.png">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
     <!-- LocalBusiness schema for Google Maps / local pack -->
@@ -37,7 +37,7 @@
       "@context": "https://schema.org",
       "@type": "TattooParlor",
       "name": "Diamond Tip Tattoo",
-      "image": "https://diamond-tip-tattoo.web.app/assets/logo/diamond-tip-logo-solid.jpg",
+      "image": "https://diamond-tip-tattoo.web.app/assets/logo/diamond-tip-circle.png",
       "url": "https://diamond-tip-tattoo.web.app/",
       "telephone": "+61242614311",
       "email": "hello@diamondtiptattoo.com",
@@ -72,7 +72,7 @@
     <!-- Optional: paste Meta Pixel / Google Analytics IDs via data attributes — see docs at bottom of app.js -->
     <meta name="facebook-domain-verification" content="" id="fbDomainVerify">
 </head>
-<body>
+<body class="page-ready">
 <a class="skip-link" href="#book">Skip to book consultation</a>
 
 <!-- Scroll progress -->
@@ -147,53 +147,11 @@
     <div class="journey-motif motif-skull m12" data-parallax="-0.12"><svg viewBox="0 0 64 64"><use href="#icon-skull"/></svg></div>
 </div>
 
-<!-- Start Intro Loader -->
-<div id="introLoader" class="intro-loader">
-    <!-- Smoke particles container -->
-    <div class="smoke-container">
-        <div class="smoke-particle"></div>
-        <div class="smoke-particle"></div>
-        <div class="smoke-particle"></div>
-        <div class="smoke-particle"></div>
-        <div class="smoke-particle"></div>
-    </div>
-    
-    <div class="loader-content" style="z-index: 10;">
-        <svg class="loader-diamond" viewBox="0 0 100 100" width="140" height="140" fill="none" style="width: 140px; height: 140px; fill: none !important; max-width: 100%; stroke: #e63946; stroke-width: 1.5;" xmlns="http://www.w3.org/2000/svg">
-            <!-- Center Diamond -->
-            <polygon points="50,25 75,50 50,75 25,50" fill="none" stroke="#e63946" stroke-width="1.5" style="fill: none !important;" />
-            <!-- Tribal Inner Accent Lines -->
-            <path d="M 50,25 L 50,75" fill="none" stroke="#e63946" stroke-width="1" style="fill: none !important;" />
-            <path d="M 25,50 L 75,50" fill="none" stroke="#e63946" stroke-width="1" style="fill: none !important;" />
-            <!-- Tribal Left wing curve -->
-            <path d="M 50,15 C 35,25 20,35 15,50 C 25,55 35,50 50,85 C 40,65 42,55 50,25" fill="none" stroke="#e63946" stroke-width="1.5" stroke-linecap="round" style="fill: none !important;" />
-            <!-- Tribal Right wing curve -->
-            <path d="M 50,15 C 65,25 80,35 85,50 C 75,55 65,50 50,85 C 60,65 58,55 50,25" fill="none" stroke="#e63946" stroke-width="1.5" stroke-linecap="round" style="fill: none !important;" />
-        </svg>
-        <h1 class="loader-title">Diamond Tip Tattoo</h1>
-        <p class="loader-subtitle">DAPTO NSW</p>
-    </div>
-</div>
-
-<script>
-    // Fallback safety timeout: ensure preloader is dismissed even if main JS module fails to load/is slow
-    setTimeout(function() {
-        var loader = document.getElementById('introLoader');
-        if (loader && !loader.classList.contains('fade-out')) {
-            loader.classList.add('fade-out');
-            document.body.classList.add('page-ready');
-            setTimeout(function() {
-                loader.style.display = 'none';
-            }, 800);
-        }
-    }, 3500);
-</script>
-
 <nav class="navbar">
     <div class="nav-left-group">
         <a href="#home" class="logo" aria-label="Diamond Tip Tattoo Home">
             <img src="assets/logo/diamond-tip-logo.png" alt="Diamond Tip Tattoo" class="logo-img">
-            <span class="logo-text">Diamond Tip Tattoo</span>
+            <img src="assets/logo/diamond-tip-wordmark.png" alt="" class="logo-wordmark">
         </a>
         <span class="nav-location-tag">Dapto, NSW, Australia</span>
     </div>
@@ -335,6 +293,26 @@
     </div>
 </div>
 
+<!-- Awards / studio credentials -->
+<section id="awards" class="section awards-section fade-in">
+    <div class="awards-layout">
+        <div class="awards-copy">
+            <p class="subtitle">CREDENTIALS</p>
+            <h2>Award-winning studio craft</h2>
+            <p class="awards-lead">Trophies, plaques and industry recognition earned by Steven Benn and the Diamond Tip team — trust you can see on the wall.</p>
+            <ul class="awards-points">
+                <li>Competition wins &amp; industry awards</li>
+                <li>Memberships &amp; professional certificates</li>
+                <li>Decades of client-first studio work</li>
+            </ul>
+            <a href="#artists" class="btn btn-outline">Meet the artists</a>
+        </div>
+        <figure class="awards-photo">
+            <img src="assets/brand/awards.png" alt="Diamond Tip Tattoo awards wall with trophies and certificates" loading="lazy">
+        </figure>
+    </div>
+</section>
+
 <!-- See It On You — centered home showcase -->
 <section id="see-it-on-you" class="section tryon-home fade-in journey-section" data-journey="diamonds">
     <div class="tryon-home-inner">
@@ -461,7 +439,7 @@
     <div class="artists-roster" id="artistsGrid">
         <article class="artist-row" data-artist="steven">
             <div class="artist-photo-frame">
-                <img src="assets/artists/steven-benn.png" alt="Steven Benn, Owner">
+                <img src="assets/artists/steven-benn.jpg" alt="Steven Benn, Owner of Diamond Tip Tattoo">
                 <span class="artist-badge">OWNER</span>
             </div>
             <div class="artist-copy">
@@ -939,9 +917,8 @@
 <footer>
     <div class="footer-top">
         <div class="footer-brand">
-            <img src="assets/logo/diamond-tip-logo.png" alt="Diamond Tip Tattoo" class="footer-logo">
-            <h2>Diamond Tip Tattoo<br><span style="font-size: 0.6rem; letter-spacing: 4px; font-family: var(--font-body);">DAPTO NSW</span></h2>
-            <p style="margin-top: 1rem; color: var(--text-secondary);">Private ink. Timeless craft.</p>
+            <img src="assets/logo/diamond-tip-wordmark.png" alt="Diamond Tip Tattoo" class="footer-wordmark">
+            <p class="footer-tagline">Private ink. Timeless craft. · Dapto NSW</p>
         </div>
         <div class="footer-links">
             <h4>QUICK LINKS</h4>
@@ -979,7 +956,7 @@
             <a href="#book" class="btn btn-solid footer-book-btn" data-track="cta_footer_book">Book consultation</a>
         </div>
         <div class="footer-badge">
-            <div class="badge-circle">DT</div>
+            <img src="assets/logo/diamond-tip-circle.png" alt="Diamond Tip Tattoo seal" class="footer-seal">
         </div>
     </div>
     <div class="footer-bottom">

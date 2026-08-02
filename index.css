@@ -200,16 +200,30 @@ p {
 }
 
 .logo-img {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     object-fit: contain;
     display: block;
     flex-shrink: 0;
-    filter: drop-shadow(0 0 8px rgba(230, 57, 70, 0.35));
+    border-radius: 4px;
+}
+
+.logo-wordmark {
+    height: 34px;
+    width: auto;
+    max-width: 160px;
+    object-fit: contain;
+    display: block;
 }
 
 .logo-text {
     white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .logo-wordmark {
+        display: none;
+    }
 }
 
 .footer-logo {
@@ -218,7 +232,29 @@ p {
     object-fit: contain;
     display: block;
     margin-bottom: 1rem;
-    filter: drop-shadow(0 0 12px rgba(230, 57, 70, 0.4));
+}
+
+.footer-wordmark {
+    width: min(100%, 220px);
+    height: auto;
+    display: block;
+    margin-bottom: 0.75rem;
+    object-fit: contain;
+}
+
+.footer-tagline {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.footer-seal {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    display: block;
+    border-radius: 50%;
 }
 
 .shop-intro {
@@ -3612,6 +3648,86 @@ button.slider-link-btn {
     cursor: pointer;
     background: transparent;
     font-family: var(--font-body);
+}
+
+/* Awards wall */
+.awards-section {
+    background: var(--bg-light);
+}
+.awards-layout {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(240px, 0.9fr) 1.2fr;
+    gap: 2rem 2.5rem;
+    align-items: center;
+}
+.awards-copy {
+    text-align: left;
+}
+.awards-lead {
+    color: var(--text-secondary);
+    font-size: 0.98rem;
+    line-height: 1.6;
+    margin: 0 0 1.1rem;
+}
+.awards-points {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.awards-points li {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    padding-left: 1.1rem;
+    position: relative;
+}
+.awards-points li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.45em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+}
+.awards-photo {
+    margin: 0;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    background: #0a0a0a;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+}
+.awards-photo img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    max-height: 420px;
+    object-position: center;
+}
+
+@media (max-width: 820px) {
+    .awards-layout {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    .awards-copy {
+        text-align: center;
+    }
+    .awards-points {
+        align-items: center;
+    }
+    .awards-points li {
+        text-align: left;
+    }
+    .awards-photo img {
+        max-height: 300px;
+    }
 }
 
 /* ---- Header See It On You button ---- */
