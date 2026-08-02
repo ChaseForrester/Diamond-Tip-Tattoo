@@ -1,0 +1,9 @@
+# Diamond Tip Tattoo — https://diamond-tip-tattoo.web.app/
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://diamond-tip-tattoo.web.app/sitemap.xml
+
+# Crawl-delay not needed for static hosting
+Disallow: /404.html

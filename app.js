@@ -26,6 +26,7 @@ const vertexAI = getVertexAI(app);
 const geminiModel = getGenerativeModel(vertexAI, { model: "gemini-2.5-flash" });
 
 // Global Variables
+const SITE_ORIGIN = "https://diamond-tip-tattoo.web.app";
 let currentUser = null;
 let isAdmin = false;
 let selectedBookingFiles = [];
@@ -1233,6 +1234,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // CMS Modal Close Buttons
     const closeBlogModalBtn = document.getElementById('closeBlogModalBtn');
     if (closeBlogModalBtn) closeBlogModalBtn.onclick = closeBlogModal;
+    const closeBlogArticleBtn = document.getElementById('closeBlogArticleBtn');
+    if (closeBlogArticleBtn) closeBlogArticleBtn.onclick = () => window.closeBlogArticle();
+    const blogArticleModal = document.getElementById('blogArticleModal');
+    if (blogArticleModal) {
+        blogArticleModal.addEventListener('click', (e) => {
+            if (e.target === blogArticleModal) window.closeBlogArticle();
+        });
+    }
+    const blogArticleBookBtn = document.getElementById('blogArticleBookBtn');
+    if (blogArticleBookBtn) {
+        blogArticleBookBtn.addEventListener('click', () => window.closeBlogArticle());
+    }
     const closeProductModalBtn = document.getElementById('closeProductModalBtn');
     if (closeProductModalBtn) closeProductModalBtn.onclick = closeProductModal;
 
@@ -2619,9 +2632,50 @@ window.addEventListener('hashchange', window.handleRouting);
 
 async function updateSEOMeta(hash) {
     const pageKey = hash.replace('#', '').split('/')[0] || 'home';
-    let titleText = "Diamond Tip Tattoo | Private Tattoo Studio Dapto";
-    let descText = "Private tattoo studio for custom work of uncompromising quality. Fine art on skin, crafted to last a lifetime in Dapto.";
-    let keywordsText = "tattoo, Dapto, fine line, realism, custom design";
+    const defaults = {
+        home: {
+            title: "Tattoo Dapto NSW | Diamond Tip Tattoo — Realism, Fine Line & Custom Ink",
+            description: "Top-rated private tattoo studio in Dapto NSW · 4.6★ from 64 Google reviews. Custom realism, fine line & black & grey by Steven Benn & Scotty. Free consultation for Wollongong & Illawarra.",
+            keywords: "tattoo Dapto, tattoo Wollongong, Illawarra tattoo, realism, fine line, Steven Benn",
+            image: `${SITE_ORIGIN}/assets/brand/og-share.jpg`,
+            url: `${SITE_ORIGIN}/`,
+        },
+        blog: {
+            title: "Diamond Tip Tattoo Blog | Aftercare, Placement & Custom Ink Guides",
+            description: "Tattoo aftercare, placement, realism, fine line, cover-ups and first-tattoo guides from Diamond Tip Tattoo Dapto — Illawarra NSW.",
+            keywords: "tattoo aftercare, tattoo placement, first tattoo Dapto, realism tattoo guide",
+            image: `${SITE_ORIGIN}/assets/brand/og-share.jpg`,
+            url: `${SITE_ORIGIN}/#blog`,
+        },
+        book: {
+            title: "Book Free Tattoo Consultation | Diamond Tip Tattoo Dapto",
+            description: "Book a free private consultation at Diamond Tip Tattoo Dapto. Custom designs, realism, fine line — Illawarra & Wollongong clients welcome.",
+            keywords: "book tattoo Dapto, tattoo consultation Wollongong",
+            image: `${SITE_ORIGIN}/assets/brand/og-share.jpg`,
+            url: `${SITE_ORIGIN}/#book`,
+        },
+        reviews: {
+            title: "Google Reviews | Diamond Tip Tattooing Dapto 4.6★",
+            description: "Read Google reviews for Diamond Tip Tattooing Dapto NSW — 4.6 stars from 64 clients. Also on Facebook, Yellow Pages, Instagram & TikTok.",
+            keywords: "Diamond Tip Tattoo reviews, tattoo Dapto reviews",
+            image: `${SITE_ORIGIN}/assets/brand/og-share.jpg`,
+            url: `${SITE_ORIGIN}/#reviews`,
+        },
+    };
+
+    let titleText = defaults.home.title;
+    let descText = defaults.home.description;
+    let keywordsText = defaults.home.keywords;
+    let imageUrl = defaults.home.image;
+    let pageUrl = defaults.home.url;
+
+    if (defaults[pageKey]) {
+        titleText = defaults[pageKey].title;
+        descText = defaults[pageKey].description;
+        keywordsText = defaults[pageKey].keywords || keywordsText;
+        imageUrl = defaults[pageKey].image || imageUrl;
+        pageUrl = defaults[pageKey].url || pageUrl;
+    }
 
     if (window.dbSeo[pageKey]) {
         titleText = window.dbSeo[pageKey].title || titleText;
@@ -2643,11 +2697,12 @@ async function updateSEOMeta(hash) {
         }
     }
 
-    document.title = titleText;
-    const titleEl = document.getElementById('seoTitle');
-    if (titleEl) titleEl.textContent = titleText;
-    const descMeta = document.getElementById('seoDesc');
-    if (descMeta) descMeta.setAttribute('content', descText);
+    setSocialMeta({
+        title: titleText,
+        description: descText,
+        image: imageUrl,
+        url: pageUrl,
+    });
     const keywordsMeta = document.getElementById('seoKeywords');
     if (keywordsMeta) keywordsMeta.setAttribute('content', keywordsText);
 }
@@ -2898,6 +2953,7 @@ window.loadShopWebsite = async function() {
 
 // Blog Articles Website
 window.dbBlogs = [];
+window.__localBlogPosts = null;
 
 /** Prefer real studio photos; replace legacy seeded AI/stock paths */
 function resolveBlogImage(blog) {
@@ -2917,59 +2973,264 @@ function resolveBlogImage(blog) {
     if (title.includes("aftercare") || title.includes("heal")) {
         return "assets/brand/blog-aftercare.jpg";
     }
+    if (title.includes("first tattoo")) {
+        return "assets/brand/studio-parlour.jpg";
+    }
+    if (title.includes("realism")) {
+        return "assets/portfolio/realism/realism_tiger-portrait.jpg";
+    }
+    if (title.includes("fine line")) {
+        return "assets/portfolio/fineline/fineline_butterfly-florals.jpg";
+    }
+    if (title.includes("cover")) {
+        return "assets/portfolio/custom/custom_neotrad-serpent.jpg";
+    }
+    if (title.includes("piercing")) {
+        return "assets/brand/aftercare-essentials.jpg";
+    }
     if (!isLegacyFake) return img;
     return "assets/brand/studio-parlour.jpg";
+}
+
+function blogSlug(blog) {
+    if (blog.slug) return String(blog.slug);
+    if (blog.id && !String(blog.id).startsWith("local-") && String(blog.id).includes("-")) {
+        return String(blog.id);
+    }
+    return String(blog.title || "post")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 80) || "post";
+}
+
+function blogShareUrl(blog) {
+    const slug = blogSlug(blog);
+    // Prefer static OG pages when we have a matching local slug
+    const known = (window.__localBlogPosts || []).some((p) => p.slug === slug || p.id === blog.id);
+    if (known || String(blog.id || "").includes("-")) {
+        return `${SITE_ORIGIN}/blog/${slug}.html`;
+    }
+    return `${SITE_ORIGIN}/#blog`;
+}
+
+function setSocialMeta({ title, description, image, url }) {
+    document.title = title;
+    const titleEl = document.getElementById("seoTitle");
+    if (titleEl) titleEl.textContent = title;
+    const descMeta = document.getElementById("seoDesc");
+    if (descMeta) descMeta.setAttribute("content", description);
+    const pairs = [
+        ['meta[property="og:title"]', title],
+        ['meta[property="og:description"]', description],
+        ['meta[property="og:image"]', image],
+        ['meta[property="og:image:secure_url"]', image],
+        ['meta[property="og:url"]', url],
+        ['meta[name="twitter:title"]', title],
+        ['meta[name="twitter:description"]', description],
+        ['meta[name="twitter:image"]', image],
+    ];
+    pairs.forEach(([sel, val]) => {
+        const el = document.querySelector(sel);
+        if (el && val) el.setAttribute("content", val);
+    });
+    const canon = document.querySelector('link[rel="canonical"]');
+    if (canon && url) canon.setAttribute("href", url);
+}
+
+function shareLinksFor(url, title) {
+    const u = encodeURIComponent(url);
+    const t = encodeURIComponent(title);
+    return {
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${u}`,
+        twitter: `https://twitter.com/intent/tweet?text=${t}&url=${u}`,
+        whatsapp: `https://api.whatsapp.com/send?text=${t}%20${u}`,
+        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${u}`,
+        email: `mailto:?subject=${t}&body=${t}%20${u}`,
+    };
+}
+
+window.openBlogArticle = function openBlogArticle(blogId) {
+    const blog = (window.dbBlogs || []).find((b) => b.id === blogId || b.slug === blogId);
+    if (!blog) return;
+    const modal = document.getElementById("blogArticleModal");
+    if (!modal) {
+        // Fallback: open static page
+        window.location.href = blogShareUrl(blog).replace(SITE_ORIGIN, "") || `blog/${blogSlug(blog)}.html`;
+        return;
+    }
+    const image = resolveBlogImage(blog);
+    const absImage = image.startsWith("http") ? image : `${SITE_ORIGIN}/${image}`;
+    const shareUrl = blogShareUrl(blog);
+    const title = blog.title || "Diamond Tip Tattoo Blog";
+    const desc = blog.seoDescription || blog.excerpt || String(blog.content || "").slice(0, 155);
+    setSocialMeta({
+        title: blog.seoTitle || `${title} | Diamond Tip Tattoo`,
+        description: desc,
+        image: absImage,
+        url: shareUrl,
+    });
+
+    const dateStr = new Date(blog.createdAt || Date.now()).toLocaleDateString(undefined, {
+        month: "long", day: "numeric", year: "numeric",
+    });
+    const bodyHtml = String(blog.content || "")
+        .split(/\n\n+/)
+        .map((p) => `<p>${p.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`)
+        .join("");
+    const shares = shareLinksFor(shareUrl, title);
+
+    modal.querySelector("#blogArticleTitle").textContent = title;
+    modal.querySelector("#blogArticleMeta").textContent = `${dateStr} · By ${blog.author || "Diamond Tip"}`;
+    const imgEl = modal.querySelector("#blogArticleImage");
+    imgEl.src = image;
+    imgEl.alt = title;
+    modal.querySelector("#blogArticleBody").innerHTML = bodyHtml;
+    modal.querySelector("#blogShareFacebook").href = shares.facebook;
+    modal.querySelector("#blogShareTwitter").href = shares.twitter;
+    modal.querySelector("#blogShareWhatsApp").href = shares.whatsapp;
+    modal.querySelector("#blogShareLinkedIn").href = shares.linkedin;
+    modal.querySelector("#blogShareEmail").href = shares.email;
+    modal.querySelector("#blogShareNative").onclick = async () => {
+        try {
+            if (navigator.share) {
+                await navigator.share({ title, text: desc, url: shareUrl });
+            } else {
+                await navigator.clipboard.writeText(shareUrl);
+                alert("Link copied — paste it anywhere to share.");
+            }
+        } catch (_) { /* cancelled */ }
+    };
+    modal.querySelector("#blogCopyLink").onclick = async () => {
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+            const btn = modal.querySelector("#blogCopyLink");
+            const prev = btn.textContent;
+            btn.textContent = "Copied!";
+            setTimeout(() => { btn.textContent = prev; }, 1600);
+        } catch (_) {
+            prompt("Copy this link:", shareUrl);
+        }
+    };
+    const fullLink = modal.querySelector("#blogFullPageLink");
+    if (fullLink) fullLink.href = `blog/${blogSlug(blog)}.html`;
+
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    try {
+        trackEvent("blog_open", { id: blog.id, title });
+    } catch (_) {}
+};
+
+window.closeBlogArticle = function closeBlogArticle() {
+    const modal = document.getElementById("blogArticleModal");
+    if (!modal) return;
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    // Restore home SEO
+    if (typeof updateSEOMeta === "function") updateSEOMeta("#blog");
+};
+
+async function loadLocalBlogPosts() {
+    if (window.__localBlogPosts) return window.__localBlogPosts;
+    try {
+        const res = await fetch("blog/posts.json", { cache: "no-cache" });
+        if (!res.ok) throw new Error("no posts.json");
+        window.__localBlogPosts = await res.json();
+    } catch (e) {
+        window.__localBlogPosts = [];
+    }
+    return window.__localBlogPosts;
 }
 
 window.loadBlogWebsite = async function() {
     const blogGrid = document.getElementById('blogGrid');
     if (!blogGrid) return;
 
-    // Local fallback cards (always real photos) if Firestore empty/offline
-    const fallbackBlogs = [
+    const localPosts = await loadLocalBlogPosts();
+    const fallbackBlogs = (localPosts.length ? localPosts : [
         {
-            id: "local-aftercare",
+            id: "aftercare-heal-perfectly",
+            slug: "aftercare-heal-perfectly",
             title: "Aftercare: How to Heal Your Tattoo Perfectly",
             author: "Steven Benn",
             image: "assets/brand/blog-aftercare.jpg",
-            content: "Taking care of your new tattoo is just as important as the tattooing process itself. Keep it clean, use premium vegan aftercare cream, avoid long soaking in water, and protect it from direct sunlight. Your skin notes are valuable here!",
-            createdAt: new Date().toISOString()
-        },
-        {
-            id: "local-placement",
-            title: "Tattoo Placements: Finding the Perfect Spot",
-            author: "Scotty",
-            image: "assets/brand/blog-placement.jpg",
-            content: "Tattoo placement can make or break a design. Fine line work looks gorgeous on wrists and collarbones, whereas large realism designs require larger canvases like sleeves or chests. Let's consult and design something custom.",
+            content: "Taking care of your new tattoo is just as important as the tattooing process itself.",
             createdAt: new Date().toISOString()
         }
-    ];
+    ]).map((p) => ({ ...p, id: p.id || p.slug }));
 
     const renderBlogs = (blogs) => {
-        window.dbBlogs = blogs;
-        if (!blogs.length) {
+        // Merge: local SEO posts first, then any unique Firestore posts
+        const byKey = new Map();
+        fallbackBlogs.forEach((b) => byKey.set(blogSlug(b), b));
+        (blogs || []).forEach((b) => {
+            const key = blogSlug(b);
+            if (!byKey.has(key)) byKey.set(key, b);
+            else {
+                // prefer longer content
+                const existing = byKey.get(key);
+                if ((b.content || "").length > (existing.content || "").length) {
+                    byKey.set(key, { ...existing, ...b, slug: key });
+                }
+            }
+        });
+        const merged = Array.from(byKey.values()).sort(
+            (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+        );
+        window.dbBlogs = merged;
+        if (!merged.length) {
             blogGrid.innerHTML = `<p style="color: var(--text-secondary);">Check back soon for updates and stories from Diamond Tip.</p>`;
             return;
         }
-        blogGrid.innerHTML = blogs.map((blog) => {
+        blogGrid.innerHTML = merged.map((blog) => {
             const dateStr = new Date(blog.createdAt || Date.now()).toLocaleDateString(undefined, {
                 month: "short", day: "numeric", year: "numeric"
             });
             const image = resolveBlogImage(blog);
-            const safeTitle = String(blog.title || "").replace(/`/g, "'");
-            const excerpt = String(blog.content || "").substring(0, 120);
+            const safeTitle = String(blog.title || "").replace(/"/g, "&quot;").replace(/`/g, "'");
+            const excerpt = String(blog.excerpt || blog.content || "").substring(0, 130);
+            const slug = blogSlug(blog);
+            const shareUrl = blogShareUrl(blog);
+            const shares = shareLinksFor(shareUrl, blog.title || "Diamond Tip Tattoo");
+            const idAttr = String(blog.id || slug).replace(/'/g, "\\'");
             return `
-                <article class="blog-card">
-                    <img src="${image}" alt="${safeTitle}" loading="lazy"
-                         onerror="this.onerror=null;this.src='assets/brand/studio-parlour.jpg';">
+                <article class="blog-card" data-blog-id="${idAttr}">
+                    <a href="blog/${slug}.html" class="blog-card-image-link" data-blog-open="${idAttr}">
+                        <img src="${image}" alt="${safeTitle}" loading="lazy"
+                             onerror="this.onerror=null;this.src='assets/brand/studio-parlour.jpg';">
+                    </a>
                     <div class="blog-card-content">
                         <div class="blog-meta">${dateStr} | BY ${blog.author || "Diamond Tip"}</div>
-                        <h3>${safeTitle}</h3>
-                        <p>${excerpt}...</p>
-                        <a href="#book" class="explore">Book a consult about this →</a>
+                        <h3><a href="blog/${slug}.html" data-blog-open="${idAttr}">${safeTitle}</a></h3>
+                        <p>${excerpt}${excerpt.length >= 130 ? "…" : ""}</p>
+                        <div class="blog-card-actions">
+                            <a href="blog/${slug}.html" class="explore" data-blog-open="${idAttr}">Read article →</a>
+                            <a href="#book" class="explore blog-card-book">Book consult →</a>
+                        </div>
+                        <div class="blog-share-row" aria-label="Share ${safeTitle}">
+                            <span class="blog-share-label">Share</span>
+                            <a href="${shares.facebook}" target="_blank" rel="noopener noreferrer" class="blog-share-icon" title="Share on Facebook" data-track="blog_share_fb" onclick="event.stopPropagation()">
+                                <img src="assets/brand/platforms/facebook.svg" width="22" height="22" alt="Facebook">
+                            </a>
+                            <a href="${shares.twitter}" target="_blank" rel="noopener noreferrer" class="blog-share-icon" title="Share on X" data-track="blog_share_x" onclick="event.stopPropagation()">X</a>
+                            <a href="${shares.whatsapp}" target="_blank" rel="noopener noreferrer" class="blog-share-icon" title="Share on WhatsApp" data-track="blog_share_wa" onclick="event.stopPropagation()">WA</a>
+                            <a href="blog/${slug}.html" class="blog-share-icon" title="Open full page for sharing" onclick="event.stopPropagation()">Link</a>
+                        </div>
                     </div>
                 </article>`;
         }).join("");
+
+        blogGrid.querySelectorAll("[data-blog-open]").forEach((el) => {
+            el.addEventListener("click", (e) => {
+                // Allow cmd/ctrl open static page; otherwise open modal for in-site read
+                if (e.metaKey || e.ctrlKey) return;
+                e.preventDefault();
+                window.openBlogArticle(el.getAttribute("data-blog-open"));
+            });
+        });
     };
 
     renderBlogs(fallbackBlogs);
@@ -2983,7 +3244,6 @@ window.loadBlogWebsite = async function() {
         snap.forEach((d) => {
             const blog = { id: d.id, ...d.data() };
             const resolved = resolveBlogImage(blog);
-            // Silently upgrade legacy fake images in Firestore when we can write
             if (blog.image !== resolved && (
                 !blog.image ||
                 String(blog.image).includes("tattoo_workspace_") ||
@@ -2999,7 +3259,6 @@ window.loadBlogWebsite = async function() {
         if (blogs.length) renderBlogs(blogs);
     } catch (e) {
         console.error(e);
-        // keep fallback cards
     }
 }
 

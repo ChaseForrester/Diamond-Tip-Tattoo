@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Yellow Pages">
+  <rect width="48" height="48" rx="8" fill="#FFD100"/>
+  <path fill="#111" d="M12.5 34V14h5.2l4.4 11.6L26.6 14H32v20h-4.3V20.2L23.2 34h-3.4l-4.5-13.8V34H12.5z"/>
+  <path fill="#111" d="M34 14h3.8v20H34z"/>
+</svg>

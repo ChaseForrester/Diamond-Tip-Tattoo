@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Fresha">
+  <rect width="48" height="48" rx="12" fill="#6B4EFF"/>
+  <path fill="#fff" d="M16 12h16.5v4.6H21.4v5.1H31v4.5H21.4V36H16V12z"/>
+  <circle cx="36" cy="14" r="2.2" fill="#B8A9FF"/>
+</svg>
