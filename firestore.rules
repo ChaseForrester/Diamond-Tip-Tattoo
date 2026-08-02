@@ -45,6 +45,18 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // Outbound notification queue (Trigger Email extension / CRM mail log)
+    match /mail/{mailId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Lightweight lead log for CRM dashboards
+    match /leads/{leadId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
     match /giftcards/{cardId} {
       allow create: if true;
       allow read: if request.auth != null;

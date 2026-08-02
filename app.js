@@ -1380,16 +1380,36 @@ document.addEventListener("DOMContentLoaded", () => {
                 const bookingId = bookingRef.id;
 
                 const uploadedUrls = [];
+                let tryOnImageUrl = null;
+                let hasTryOn = false;
 
-                // Attach AI generated tattoo if present
+                uploadProgressContainer.style.display = 'block';
+                uploadProgressLabel.textContent = 'Preparing booking files...';
+                uploadProgressFill.style.width = '5%';
+
+                // Attach try-on / AI preview — upload data URLs to Storage (not raw base64 in Firestore)
                 if (aiGeneratedTattooUrl) {
-                    uploadedUrls.push(aiGeneratedTattooUrl);
+                    hasTryOn = true;
+                    try {
+                        uploadProgressLabel.textContent = 'Uploading try-on preview...';
+                        tryOnImageUrl = await uploadDataUrlOrBlobToStorage(
+                            aiGeneratedTattooUrl,
+                            `bookings/${bookingId}/try-on-preview-${Date.now()}.png`
+                        );
+                        uploadedUrls.push(tryOnImageUrl);
+                        uploadProgressFill.style.width = '25%';
+                    } catch (upErr) {
+                        console.warn("Try-on upload failed, keeping inline if small:", upErr);
+                        // Only store data URL if short enough; otherwise skip image but keep meta
+                        if (String(aiGeneratedTattooUrl).length < 900000) {
+                            uploadedUrls.push(aiGeneratedTattooUrl);
+                        }
+                    }
                 }
 
                 // 2. Upload Reference Images to Storage
                 if (selectedBookingFiles.length > 0) {
-                    uploadProgressContainer.style.display = 'block';
-                    let totalBytes = selectedBookingFiles.reduce((acc, f) => acc + f.size, 0);
+                    let totalBytes = selectedBookingFiles.reduce((acc, f) => acc + f.size, 0) || 1;
                     let uploadedBytes = 0;
 
                     for (let i = 0; i < selectedBookingFiles.length; i++) {
@@ -1405,7 +1425,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     const delta = snapshot.bytesTransferred - lastTransferred;
                                     lastTransferred = snapshot.bytesTransferred;
                                     uploadedBytes += delta;
-                                    const percent = Math.min(Math.round((uploadedBytes / totalBytes) * 100), 99);
+                                    const percent = 25 + Math.min(Math.round((uploadedBytes / totalBytes) * 65), 65);
                                     uploadProgressLabel.textContent = `Uploading references... ${percent}%`;
                                     uploadProgressFill.style.width = `${percent}%`;
                                 }, 
@@ -1422,9 +1442,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     uploadProgressLabel.textContent = `Upload complete!`;
                     uploadProgressFill.style.width = `100%`;
+                } else {
+                    uploadProgressFill.style.width = '90%';
                 }
 
-                // 3. Save booking details to Firestore
+                // Build CRM try-on payload
+                const tryOnPayload = (hasTryOn || tryOnMeta) ? {
+                    ...(tryOnMeta || {}),
+                    previewUrl: tryOnImageUrl || (uploadedUrls[0] || null),
+                    prompt: aiGeneratedTattooPrompt || tryOnMeta?.notes || null,
+                    attachedAt: new Date().toISOString()
+                } : null;
+
+                const source = hasTryOn || tryOnMeta
+                    ? "website_try_on_booking"
+                    : "website_booking_form";
+
+                // 3. Save booking details to Firestore (CRM)
                 const bookingData = {
                     id: bookingId,
                     name,
@@ -1436,22 +1470,41 @@ document.addEventListener("DOMContentLoaded", () => {
                     idea,
                     preferredArtist,
                     referenceImages: uploadedUrls,
+                    tryOn: tryOnPayload,
+                    tryOnPreviewUrl: tryOnImageUrl || null,
                     createdAt: new Date().toISOString(),
                     status: "Pending",
                     assignedArtist: preferredArtist && preferredArtist !== "Either / No preference" ? preferredArtist : "Unassigned",
-                    internalNotes: preferredArtist ? `Client preferred: ${preferredArtist}` : "",
+                    internalNotes: [
+                        preferredArtist ? `Client preferred: ${preferredArtist}` : "",
+                        tryOnPayload ? `Try-on attached (${tryOnPayload.placementLabel || tryOnPayload.placement || "custom"})` : ""
+                    ].filter(Boolean).join(" · "),
                     userId: currentUser ? currentUser.uid : null,
-                    source: "website_booking_form"
+                    source,
+                    channel: "website",
+                    type: "consultation_request"
                 };
 
                 await setDoc(bookingRef, bookingData);
+                uploadProgressLabel.textContent = 'Saving to CRM & notifying studio...';
+                uploadProgressFill.style.width = '95%';
+
+                // Email studio + CRM lead mirror (non-blocking for user if email fails)
+                try {
+                    await notifyStudioOfBooking(bookingData);
+                } catch (notifyErr) {
+                    console.warn("Studio notify failed:", notifyErr);
+                }
+                uploadProgressFill.style.width = '100%';
 
                 // Conversion tracking (GA4 / Meta if loaded)
                 if (typeof window.trackConversion === "function") {
                     window.trackConversion("booking_request", {
                         style,
                         preferredArtist,
-                        has_refs: uploadedUrls.length > 0
+                        has_refs: uploadedUrls.length > 0,
+                        has_try_on: !!tryOnPayload,
+                        source
                     });
                 }
 
@@ -2212,21 +2265,35 @@ window.openBookingModal = function(bookingId) {
     activeBookingId = bookingId;
 
     document.getElementById('modalBookingClient').textContent = booking.name;
-    document.getElementById('modalBookingId').textContent = `ID: ${booking.id}`;
+    document.getElementById('modalBookingId').textContent = `ID: ${booking.id}${booking.source ? " · " + booking.source : ""}`;
     document.getElementById('mBookingEmail').textContent = booking.email;
     document.getElementById('mBookingPhone').textContent = booking.phone || 'Not provided';
-    document.getElementById('mBookingDate').textContent = booking.date || 'Flexible';
-    document.getElementById('mBookingStyle').textContent = booking.style;
-    document.getElementById('mBookingIdea').textContent = booking.idea;
+    document.getElementById('mBookingDate').textContent = `${booking.date || 'Flexible'}${booking.time ? " · " + booking.time : ""}`;
+    document.getElementById('mBookingStyle').textContent = booking.style + (booking.preferredArtist ? ` · Artist: ${booking.preferredArtist}` : "");
+    
+    let ideaText = booking.idea || "";
+    if (booking.tryOn) {
+        const t = booking.tryOn;
+        ideaText += `\n\n— Try-on —\nPlacement: ${t.placementLabel || t.placement || "—"}\nSize: ${t.scale ?? "—"}% · Rotation: ${t.rotation ?? 0}° · Wrap: ${t.wrap ?? 0}%\nBody zoom: ${t.bodyZoom ?? 100}%`;
+        if (t.notes) ideaText += `\nNotes: ${t.notes}`;
+    }
+    document.getElementById('mBookingIdea').textContent = ideaText;
 
     const imagesGrid = document.getElementById('mBookingImagesGrid');
     const container = document.getElementById('mBookingImagesContainer');
+    const imgs = [];
+    if (booking.tryOnPreviewUrl) imgs.push(booking.tryOnPreviewUrl);
+    if (booking.referenceImages && booking.referenceImages.length) {
+        booking.referenceImages.forEach((u) => {
+            if (u && !imgs.includes(u)) imgs.push(u);
+        });
+    }
     
-    if (booking.referenceImages && booking.referenceImages.length > 0) {
+    if (imgs.length > 0) {
         container.style.display = 'block';
-        imagesGrid.innerHTML = booking.referenceImages.map(img => `
-            <div class="file-preview-item" style="cursor: pointer;" onclick="window.open('${img}', '_blank')">
-                <img src="${img}" alt="Reference Work">
+        imagesGrid.innerHTML = imgs.map((img, idx) => `
+            <div class="file-preview-item" style="cursor: pointer;" onclick="window.open('${img}', '_blank')" title="${idx === 0 && booking.tryOnPreviewUrl ? 'Try-on preview' : 'Reference'}">
+                <img src="${img}" alt="Reference">
             </div>
         `).join('');
     } else {
@@ -2235,8 +2302,8 @@ window.openBookingModal = function(bookingId) {
     }
 
     // Set dropdown selections
-    document.getElementById('mBookingStatusSelect').value = booking.status;
-    document.getElementById('mBookingArtistSelect').value = booking.assignedArtist;
+    document.getElementById('mBookingStatusSelect').value = booking.status || 'Pending';
+    document.getElementById('mBookingArtistSelect').value = booking.assignedArtist || 'Unassigned';
     document.getElementById('mBookingNotes').value = booking.internalNotes || '';
 
     // Show modal
@@ -3892,6 +3959,21 @@ let tryOnDragging = false;
 let tryOnOffset = { x: 0.5, y: 0.45 }; // normalized placement center
 let tryOnRotationDeg = 0; // design rotation in degrees
 let tryOnLastPreviewUrl = null;
+let tryOnMeta = null; // last try-on settings for CRM
+
+// Default wrap amount (0–100) by body placement — arm/leg wrap more than flat areas
+const TRYON_WRAP_DEFAULTS = {
+  forearm: 55,
+  "upper-arm": 60,
+  chest: 35,
+  back: 25,
+  ribs: 50,
+  thigh: 55,
+  calf: 50,
+  wrist: 45,
+  neck: 20,
+  custom: 30
+};
 
 const TRYON_PLACEMENT_DEFAULTS = {
   forearm: { x: 0.5, y: 0.48 },
@@ -3905,6 +3987,187 @@ const TRYON_PLACEMENT_DEFAULTS = {
   neck: { x: 0.5, y: 0.28 },
   custom: { x: 0.5, y: 0.5 }
 };
+
+/** Upload a data: URL (or remote URL) to Firebase Storage; returns download URL */
+async function uploadDataUrlOrBlobToStorage(dataUrlOrHttp, storagePath) {
+  let blob;
+  if (typeof dataUrlOrHttp === "string" && dataUrlOrHttp.startsWith("data:")) {
+    const res = await fetch(dataUrlOrHttp);
+    blob = await res.blob();
+  } else if (typeof dataUrlOrHttp === "string" && /^https?:/i.test(dataUrlOrHttp)) {
+    // Already hosted — keep as-is
+    return dataUrlOrHttp;
+  } else {
+    throw new Error("Invalid image data for upload");
+  }
+  const fileRef = ref(storage, storagePath);
+  await uploadBytesResumable(fileRef, blob);
+  return getDownloadURL(fileRef);
+}
+
+/** Notify studio by email + CRM mail queue (best-effort, never blocks booking) */
+async function notifyStudioOfBooking(bookingData) {
+  const studioEmails = [
+    "hello@diamondtiptattoo.com",
+    "stormychaseforrester@gmail.com"
+  ];
+  const subject = `New booking request — ${bookingData.name} (${bookingData.date} ${bookingData.time})`;
+  const lines = [
+    `New consultation request from diamondtiptattoo website`,
+    ``,
+    `Name: ${bookingData.name}`,
+    `Email: ${bookingData.email}`,
+    `Phone: ${bookingData.phone || "—"}`,
+    `Preferred date: ${bookingData.date}`,
+    `Preferred time: ${bookingData.time}`,
+    `Style: ${bookingData.style}`,
+    `Preferred artist: ${bookingData.preferredArtist || "—"}`,
+    `Source: ${bookingData.source || "website"}`,
+    ``,
+    `Idea:`,
+    bookingData.idea || "—",
+    ``,
+    bookingData.tryOn
+      ? `Try-on: placement=${bookingData.tryOn.placement}, size=${bookingData.tryOn.scale}%, rotation=${bookingData.tryOn.rotation}°, wrap=${bookingData.tryOn.wrap}%`
+      : `Try-on: none`,
+    ``,
+    `Reference images: ${(bookingData.referenceImages || []).length}`,
+    ...(bookingData.referenceImages || []).map((u, i) => `  ${i + 1}. ${u}`),
+    ``,
+    `Booking ID: ${bookingData.id}`,
+    `Created: ${bookingData.createdAt}`
+  ];
+  const text = lines.join("\n");
+  const html = `<pre style="font-family:system-ui,sans-serif;white-space:pre-wrap;line-height:1.45">${text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")}</pre>`;
+
+  // 1) Firestore mail queue — works with Firebase "Trigger Email" extension
+  try {
+    await addDoc(collection(db, "mail"), {
+      to: studioEmails,
+      message: { subject, text, html },
+      createdAt: new Date().toISOString(),
+      type: "booking_request",
+      bookingId: bookingData.id,
+      status: "pending"
+    });
+  } catch (e) {
+    console.warn("mail queue write failed:", e);
+  }
+
+  // 2) CRM lead mirror for dashboards
+  try {
+    await setDoc(doc(db, "leads", bookingData.id), {
+      ...bookingData,
+      type: "booking_consultation",
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+  } catch (e) {
+    console.warn("leads write failed:", e);
+  }
+
+  // 3) FormSubmit email (no API key) — best-effort external notify
+  try {
+    await fetch("https://formsubmit.co/ajax/hello@diamondtiptattoo.com", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify({
+        _subject: subject,
+        _template: "table",
+        _captcha: "false",
+        name: bookingData.name,
+        email: bookingData.email,
+        phone: bookingData.phone || "",
+        date: bookingData.date,
+        time: bookingData.time,
+        style: bookingData.style,
+        preferredArtist: bookingData.preferredArtist || "",
+        idea: bookingData.idea || "",
+        bookingId: bookingData.id,
+        tryOn: bookingData.tryOn ? JSON.stringify(bookingData.tryOn) : "",
+        references: (bookingData.referenceImages || []).join("\n"),
+        message: text
+      })
+    });
+  } catch (e) {
+    console.warn("FormSubmit notify failed:", e);
+  }
+}
+
+/**
+ * Draw design with optional cylindrical wrap (bends around limb/torso).
+ * amount: 0 = flat, 1 = strong wrap
+ */
+function drawWrappedDesign(ctx, img, cx, cy, destW, destH, rotRad, amount, opacity) {
+  const w = Math.max(2, Math.round(destW));
+  const h = Math.max(2, Math.round(destH));
+  const amp = clampNumber(amount, 0, 1);
+
+  // Rasterize design to offscreen at target size (full image, aspect preserved already in w/h)
+  const src = document.createElement("canvas");
+  src.width = w;
+  src.height = h;
+  const sctx = src.getContext("2d");
+  sctx.clearRect(0, 0, w, h);
+  sctx.drawImage(img, 0, 0, w, h);
+
+  if (amp < 0.02) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rotRad);
+    ctx.globalAlpha = opacity;
+    ctx.globalCompositeOperation = "multiply";
+    ctx.drawImage(src, -w / 2, -h / 2, w, h);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = Math.min(0.45, opacity * 0.4);
+    ctx.drawImage(src, -w / 2, -h / 2, w, h);
+    ctx.restore();
+    return { w, h };
+  }
+
+  // Cylindrical horizontal wrap: vertical strips foreshorten at edges
+  const strips = Math.min(160, Math.max(48, w));
+  const maxAngle = (Math.PI / 2) * (0.35 + amp * 0.65); // stronger bend at high wrap
+
+  const paintLayer = (alpha, composite) => {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rotRad);
+    ctx.globalAlpha = alpha;
+    ctx.globalCompositeOperation = composite;
+
+    for (let i = 0; i < strips; i++) {
+      const u = (i + 0.5) / strips - 0.5; // -0.5 .. 0.5
+      const t = u * 2; // -1 .. 1
+      const angle = t * maxAngle;
+      const cosA = Math.cos(angle);
+      // Map to curved X; preserve roughly same total width
+      const xNorm = Math.sin(angle) / Math.sin(maxAngle || 0.001);
+      const dx = xNorm * (w / 2);
+      // Edges of cylinder appear shorter (height)
+      const hScale = 0.42 + 0.58 * Math.max(0.15, cosA);
+      const stripH = h * hScale;
+      // Subtle vertical barrel for chest/torso feel when wrap is high
+      const barrel = 1 + amp * 0.12 * Math.cos(t * Math.PI);
+      const finalH = stripH * barrel;
+
+      const sx = (i / strips) * w;
+      const sw = w / strips + 1.25;
+      const dw = w / strips + 1.25;
+
+      ctx.drawImage(src, sx, 0, sw, h, dx - dw / 2, -finalH / 2, dw, finalH);
+    }
+    ctx.restore();
+  };
+
+  paintLayer(Math.min(1, opacity), "multiply");
+  paintLayer(Math.min(0.4, opacity * 0.35), "source-over");
+  return { w, h };
+}
 
 function loadImageFromFile(file) {
   return new Promise((resolve, reject) => {
@@ -4028,28 +4291,38 @@ function drawTryOnPreview() {
   const ch = canvas.height;
   ctx.clearRect(0, 0, cw, ch);
 
-  // Fit body photo cover-style
+  // Fit WHOLE body photo (contain), then apply zoom so any aspect ratio works
+  const bodyZoom = Number(document.getElementById("tryOnBodyZoom")?.value || 100) / 100;
   const br = tryOnBodyImg.width / tryOnBodyImg.height;
   const cr = cw / ch;
-  let dw, dh, dx, dy;
+  let baseW, baseH;
   if (br > cr) {
-    dh = ch;
-    dw = ch * br;
-    dx = (cw - dw) / 2;
-    dy = 0;
+    // image wider than canvas — fit width
+    baseW = cw;
+    baseH = cw / br;
   } else {
-    dw = cw;
-    dh = cw / br;
-    dx = 0;
-    dy = (ch - dh) / 2;
+    // image taller — fit height
+    baseH = ch;
+    baseW = ch * br;
   }
+  const dw = baseW * bodyZoom;
+  const dh = baseH * bodyZoom;
+  const dx = (cw - dw) / 2;
+  const dy = (ch - dh) / 2;
+
+  // Letterbox background
+  ctx.fillStyle = "#0a0a0a";
+  ctx.fillRect(0, 0, cw, ch);
   ctx.drawImage(tryOnBodyImg, dx, dy, dw, dh);
 
   if (tryOnDesignImg) {
     const scalePct = Number(document.getElementById("tryOnScale")?.value || 35) / 100;
     const opacity = Number(document.getElementById("tryOnOpacity")?.value || 88) / 100;
+    const wrapAmt = Number(document.getElementById("tryOnWrap")?.value || 0) / 100;
     const rotInput = document.getElementById("tryOnRotation");
     if (rotInput) tryOnRotationDeg = Number(rotInput.value) || 0;
+
+    // Full design always drawn — scale preserves aspect ratio (never crops design)
     const maxSide = Math.min(cw, ch) * scalePct;
     const ir = tryOnDesignImg.width / tryOnDesignImg.height;
     let iw, ih;
@@ -4064,19 +4337,17 @@ function drawTryOnPreview() {
     const cy = Math.max(0, Math.min(1, tryOnOffset.y)) * ch;
     const rad = (tryOnRotationDeg * Math.PI) / 180;
 
-    const drawDesignAt = (alpha, composite) => {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(rad);
-      ctx.globalAlpha = alpha;
-      ctx.globalCompositeOperation = composite;
-      ctx.drawImage(tryOnDesignImg, -iw / 2, -ih / 2, iw, ih);
-      ctx.restore();
-    };
-
-    // Soft blend so ink sits on skin
-    drawDesignAt(Math.min(1, opacity), "multiply");
-    drawDesignAt(Math.min(0.45, opacity * 0.4), "source-over");
+    drawWrappedDesign(
+      ctx,
+      tryOnDesignImg,
+      cx,
+      cy,
+      iw,
+      ih,
+      rad,
+      wrapAmt,
+      Math.min(1, opacity)
+    );
 
     // Subtle placement guide (only while dragging / adjusting)
     if (tryOnDragging) {
@@ -4089,6 +4360,19 @@ function drawTryOnPreview() {
       ctx.strokeRect(-iw / 2 - 4, -ih / 2 - 4, iw + 8, ih + 8);
       ctx.restore();
     }
+
+    const placeEl = document.getElementById("tryOnPlacement");
+    tryOnMeta = {
+      placement: placeEl?.value || "custom",
+      placementLabel: placeEl?.selectedOptions?.[0]?.text || "Custom",
+      scale: Number(document.getElementById("tryOnScale")?.value || 35),
+      rotation: Math.round(tryOnRotationDeg),
+      wrap: Number(document.getElementById("tryOnWrap")?.value || 0),
+      bodyZoom: Number(document.getElementById("tryOnBodyZoom")?.value || 100),
+      opacity: Number(document.getElementById("tryOnOpacity")?.value || 88),
+      notes: document.getElementById("tryOnNotes")?.value?.trim() || "",
+      offset: { ...tryOnOffset }
+    };
   }
 
   const placeholder = document.getElementById("tryOnPlaceholder");
@@ -4115,6 +4399,8 @@ window.initTattooTryOn = function initTattooTryOn() {
   const scale = document.getElementById("tryOnScale");
   const opacity = document.getElementById("tryOnOpacity");
   const rotation = document.getElementById("tryOnRotation");
+  const wrapInput = document.getElementById("tryOnWrap");
+  const bodyZoom = document.getElementById("tryOnBodyZoom");
   const stitchBtn = document.getElementById("tryOnStitchBtn");
   const resetBtn = document.getElementById("tryOnResetBtn");
   const downloadBtn = document.getElementById("tryOnDownloadBtn");
@@ -4130,10 +4416,16 @@ window.initTattooTryOn = function initTattooTryOn() {
   const scaleLabel = document.getElementById("tryOnScaleLabel");
   const opacityLabel = document.getElementById("tryOnOpacityLabel");
   const rotationLabel = document.getElementById("tryOnRotationLabel");
+  const wrapLabel = document.getElementById("tryOnWrapLabel");
+  const bodyZoomLabel = document.getElementById("tryOnBodyZoomLabel");
   const scaleUp = document.getElementById("tryOnScaleUp");
   const scaleDown = document.getElementById("tryOnScaleDown");
   const rotateLeft = document.getElementById("tryOnRotateLeft");
   const rotateRight = document.getElementById("tryOnRotateRight");
+  const wrapUp = document.getElementById("tryOnWrapUp");
+  const wrapDown = document.getElementById("tryOnWrapDown");
+  const bodyZoomUp = document.getElementById("tryOnBodyZoomUp");
+  const bodyZoomDown = document.getElementById("tryOnBodyZoomDown");
 
   const syncScaleLabel = () => {
     const v = Number(scale?.value || 35);
@@ -4149,6 +4441,25 @@ window.initTattooTryOn = function initTattooTryOn() {
     tryOnRotationDeg = v;
     if (rotationLabel) rotationLabel.textContent = rotationLabelFromValue(v);
     if (rotation) rotation.setAttribute("aria-valuetext", rotationLabelFromValue(v));
+  };
+  const syncWrapLabel = () => {
+    const v = Number(wrapInput?.value || 0);
+    if (wrapLabel) {
+      wrapLabel.textContent = v <= 0 ? "Off" : v < 35 ? "Light" : v < 70 ? "Medium" : "Strong";
+    }
+    if (wrapInput) wrapInput.setAttribute("aria-valuetext", `${v} percent wrap`);
+  };
+  const syncBodyZoomLabel = () => {
+    const v = Number(bodyZoom?.value || 100);
+    if (bodyZoomLabel) {
+      bodyZoomLabel.textContent = v <= 100 ? "Fit whole" : `${v}%`;
+    }
+  };
+  const applyWrapForPlacement = (key) => {
+    if (!wrapInput) return;
+    const def = TRYON_WRAP_DEFAULTS[key] ?? TRYON_WRAP_DEFAULTS.custom;
+    wrapInput.value = String(def);
+    syncWrapLabel();
   };
 
   const openModal = (e) => {
@@ -4250,9 +4561,9 @@ window.initTattooTryOn = function initTattooTryOn() {
   // Placement chips
   if (chips) {
     chips.addEventListener("click", (e) => {
-      const chip = e.target.closest(".try-on-chip");
+      const chip = e.target.closest(".try-on-chip[data-place]");
       if (!chip) return;
-      chips.querySelectorAll(".try-on-chip").forEach((c) => {
+      chips.querySelectorAll(".try-on-chip[data-place]").forEach((c) => {
         c.classList.remove("is-active");
         c.setAttribute("aria-selected", "false");
       });
@@ -4261,6 +4572,7 @@ window.initTattooTryOn = function initTattooTryOn() {
       const key = chip.getAttribute("data-place") || "custom";
       if (placement) placement.value = key;
       tryOnOffset = { ...(TRYON_PLACEMENT_DEFAULTS[key] || TRYON_PLACEMENT_DEFAULTS.custom) };
+      applyWrapForPlacement(key);
       if (tryOnBodyImg && tryOnDesignImg) drawTryOnPreview();
     });
   }
@@ -4269,11 +4581,12 @@ window.initTattooTryOn = function initTattooTryOn() {
     placement.onchange = () => {
       const key = placement.value;
       tryOnOffset = { ...(TRYON_PLACEMENT_DEFAULTS[key] || TRYON_PLACEMENT_DEFAULTS.custom) };
-      chips?.querySelectorAll(".try-on-chip").forEach((c) => {
+      chips?.querySelectorAll(".try-on-chip[data-place]").forEach((c) => {
         const on = c.getAttribute("data-place") === key;
         c.classList.toggle("is-active", on);
         c.setAttribute("aria-selected", on ? "true" : "false");
       });
+      applyWrapForPlacement(key);
       if (tryOnBodyImg && tryOnDesignImg) drawTryOnPreview();
     };
   }
@@ -4320,6 +4633,54 @@ window.initTattooTryOn = function initTattooTryOn() {
     });
   });
 
+  if (wrapInput) {
+    syncWrapLabel();
+    wrapInput.oninput = () => {
+      syncWrapLabel();
+      if (tryOnBodyImg && tryOnDesignImg) drawTryOnPreview();
+    };
+  }
+  if (wrapUp) {
+    wrapUp.onclick = () => {
+      if (!wrapInput) return;
+      wrapInput.value = String(clampNumber(Number(wrapInput.value) + 10, 0, 100));
+      syncWrapLabel();
+      if (tryOnBodyImg && tryOnDesignImg) drawTryOnPreview();
+    };
+  }
+  if (wrapDown) {
+    wrapDown.onclick = () => {
+      if (!wrapInput) return;
+      wrapInput.value = String(clampNumber(Number(wrapInput.value) - 10, 0, 100));
+      syncWrapLabel();
+      if (tryOnBodyImg && tryOnDesignImg) drawTryOnPreview();
+    };
+  }
+
+  if (bodyZoom) {
+    syncBodyZoomLabel();
+    bodyZoom.oninput = () => {
+      syncBodyZoomLabel();
+      if (tryOnBodyImg) drawTryOnPreview();
+    };
+  }
+  if (bodyZoomUp) {
+    bodyZoomUp.onclick = () => {
+      if (!bodyZoom) return;
+      bodyZoom.value = String(clampNumber(Number(bodyZoom.value) + 10, 50, 200));
+      syncBodyZoomLabel();
+      if (tryOnBodyImg) drawTryOnPreview();
+    };
+  }
+  if (bodyZoomDown) {
+    bodyZoomDown.onclick = () => {
+      if (!bodyZoom) return;
+      bodyZoom.value = String(clampNumber(Number(bodyZoom.value) - 10, 50, 200));
+      syncBodyZoomLabel();
+      if (tryOnBodyImg) drawTryOnPreview();
+    };
+  }
+
   if (opacity) {
     syncOpacityLabel();
     opacity.oninput = () => {
@@ -4363,6 +4724,7 @@ window.initTattooTryOn = function initTattooTryOn() {
       tryOnDesignImg = null;
       tryOnBodyImg = null;
       tryOnLastPreviewUrl = null;
+      tryOnMeta = null;
       tryOnOffset = { x: 0.5, y: 0.5 };
       tryOnRotationDeg = 0;
       tryOnDragging = false;
@@ -4371,6 +4733,8 @@ window.initTattooTryOn = function initTattooTryOn() {
       if (scale) scale.value = "35";
       if (opacity) opacity.value = "88";
       if (rotation) rotation.value = "0";
+      if (wrapInput) wrapInput.value = "0";
+      if (bodyZoom) bodyZoom.value = "100";
       const notes = document.getElementById("tryOnNotes");
       if (notes) notes.value = "";
       clearUploadCard("tryOnDesignCard", designPreview, "tryOnDesignLabel", "Sketch, flash, or reference");
@@ -4378,6 +4742,8 @@ window.initTattooTryOn = function initTattooTryOn() {
       syncScaleLabel();
       syncOpacityLabel();
       syncRotationLabel();
+      syncWrapLabel();
+      syncBodyZoomLabel();
       const ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       document.getElementById("tryOnPlaceholder")?.classList.remove("is-hidden");

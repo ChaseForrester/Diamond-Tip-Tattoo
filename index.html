@@ -702,14 +702,14 @@
 
             <div class="form-footer">
                 <button type="submit" id="bookingSubmitBtn" class="btn btn-solid" data-track="cta_form_submit">REQUEST FREE CONSULTATION</button>
-                <span class="privacy-note">No spam. We only use your details to reply about this booking. <a href="#privacy" class="inline-legal">Privacy</a></span>
+                <span class="privacy-note">Goes straight to the studio CRM. We only use your details for this booking. <a href="#privacy" class="inline-legal">Privacy</a></span>
             </div>
             <p class="booking-reassure">Prefer to talk first? Call <a href="tel:+61242614311">(02) 4261 4311</a> · Tue–Sat 10am–6pm · or message us on <a href="https://www.facebook.com/profile.php?id=100049840695666" target="_blank" rel="noopener noreferrer">Facebook</a> / <a href="https://www.instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener noreferrer">Instagram</a>.</p>
         </form>
         <div id="bookingSuccess" class="booking-success" hidden>
             <div class="booking-success-icon" aria-hidden="true">✓</div>
             <h3>Request received</h3>
-            <p>Thanks — we’ll review your idea and get back within <strong>1–2 business days</strong>. Check your email (and spam) for our reply.</p>
+            <p>Thanks — your details are in our studio CRM. We’ll reply within <strong>1–2 business days</strong> (check email + spam).</p>
             <div class="booking-success-actions">
                 <a href="#portfolio" class="btn btn-outline">Browse more work</a>
                 <button type="button" class="btn btn-solid" id="bookingSuccessClose">Book another idea</button>
@@ -1106,13 +1106,30 @@
 
                 <div class="try-on-control-block">
                     <div class="try-on-control-head">
-                        <label for="tryOnScale">Size</label>
+                        <label for="tryOnBodyZoom">Body photo zoom</label>
+                        <span class="try-on-scale-value" id="tryOnBodyZoomLabel">Fit whole</span>
+                    </div>
+                    <div class="try-on-slider-wrap">
+                        <button type="button" class="try-on-nudge-btn" id="tryOnBodyZoomDown" aria-label="Zoom out body">−</button>
+                        <input type="range" id="tryOnBodyZoom" min="50" max="200" value="100" step="1" aria-valuetext="Fit whole photo">
+                        <button type="button" class="try-on-nudge-btn" id="tryOnBodyZoomUp" aria-label="Zoom in body">+</button>
+                    </div>
+                    <div class="try-on-slider-ends-row" aria-hidden="true">
+                        <span>Whole photo</span>
+                        <span>Close-up</span>
+                    </div>
+                    <p class="try-on-control-note">Any photo size works — we always show the full image, then you zoom.</p>
+                </div>
+
+                <div class="try-on-control-block">
+                    <div class="try-on-control-head">
+                        <label for="tryOnScale">Tattoo size</label>
                         <span class="try-on-scale-value" id="tryOnScaleLabel">35%</span>
                     </div>
                     <div class="try-on-slider-wrap">
-                        <button type="button" class="try-on-nudge-btn" id="tryOnScaleDown" aria-label="Make smaller">−</button>
+                        <button type="button" class="try-on-nudge-btn" id="tryOnScaleDown" aria-label="Make tattoo smaller">−</button>
                         <input type="range" id="tryOnScale" min="8" max="120" value="35" step="1" aria-valuetext="35 percent">
-                        <button type="button" class="try-on-nudge-btn" id="tryOnScaleUp" aria-label="Make bigger">+</button>
+                        <button type="button" class="try-on-nudge-btn" id="tryOnScaleUp" aria-label="Make tattoo bigger">+</button>
                     </div>
                     <div class="try-on-slider-ends-row" aria-hidden="true">
                         <span>Smaller</span>
@@ -1138,6 +1155,23 @@
                         <button type="button" class="try-on-chip try-on-rotate-preset" data-rotate="90">+90°</button>
                         <button type="button" class="try-on-chip try-on-rotate-preset" data-rotate="180">180°</button>
                     </div>
+                </div>
+
+                <div class="try-on-control-block">
+                    <div class="try-on-control-head">
+                        <label for="tryOnWrap">Body wrap (bend)</label>
+                        <span class="try-on-scale-value" id="tryOnWrapLabel">Off</span>
+                    </div>
+                    <div class="try-on-slider-wrap">
+                        <button type="button" class="try-on-nudge-btn" id="tryOnWrapDown" aria-label="Less wrap">−</button>
+                        <input type="range" id="tryOnWrap" min="0" max="100" value="0" step="1" aria-valuetext="No wrap">
+                        <button type="button" class="try-on-nudge-btn" id="tryOnWrapUp" aria-label="More wrap">+</button>
+                    </div>
+                    <div class="try-on-slider-ends-row" aria-hidden="true">
+                        <span>Flat</span>
+                        <span>Wraps limb</span>
+                    </div>
+                    <p class="try-on-control-note">Curves the design around arm, chest, leg — auto-suggests by placement.</p>
                 </div>
 
                 <div class="try-on-control-block">

@@ -3949,6 +3949,12 @@ body.modal-open { overflow: hidden; }
     padding: 0.35rem 0.55rem;
     font-size: 0.72rem;
 }
+.try-on-control-note {
+    margin: 0.4rem 0 0;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
 
 .try-on-notes-block textarea {
     width: 100%;
