@@ -141,6 +141,7 @@
     <div class="journey-motif motif-skull m12" data-parallax="-0.12"><svg viewBox="0 0 64 64"><use href="#icon-skull"/></svg></div>
 </div>
 
+<div id="navDrawerBackdrop" class="nav-drawer-backdrop" aria-hidden="true"></div>
 <nav class="navbar">
     <div class="nav-left-group">
         <a href="#home" class="logo" aria-label="Diamond Tip Tattoo Home">
@@ -149,13 +150,14 @@
         <span class="nav-location-tag">Dapto, NSW, Australia</span>
     </div>
     
-    <ul class="nav-links" id="navbarLinks">
+    <ul class="nav-links" id="navbarLinks" aria-label="Site menu">
         <li><a href="#home">Home</a></li>
         <li><a href="#specialties">Specialties</a></li>
         <li><a href="#artists">Artists</a></li>
         <li><a href="#portfolio">Portfolio</a></li>
         <li><a href="#process">Process</a></li>
         <li><a href="#blog">Blog</a></li>
+        <li><a href="#social">Facebook</a></li>
         <li><a href="#shop">Shop</a></li>
         <li><a href="#find-us">Find Us</a></li>
         <li><a href="#faq">FAQ</a></li>
@@ -181,7 +183,7 @@
             <a href="https://www.instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" data-track="social_instagram">Instagram</a>
         </div>
         
-        <button id="menuToggleBtn" class="menu-toggle-btn" aria-label="Toggle Menu">
+        <button id="menuToggleBtn" class="menu-toggle-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navbarLinks">
             <span></span>
             <span></span>
             <span></span>
@@ -759,6 +761,50 @@
     </div>
     <div id="blogGrid" class="blog-grid">
         <!-- Dynamic Blog Posts -->
+    </div>
+</section>
+
+<!-- Facebook feed -->
+<section id="social" class="section dark-bg fade-in social-feed-section">
+    <div class="section-header center">
+        <p class="subtitle">FOLLOW THE STUDIO</p>
+        <h2>From our Facebook</h2>
+        <p class="shop-intro">Fresh work, studio life and updates — follow Diamond Tip Tattoo on Facebook for the latest.</p>
+    </div>
+    <div class="social-feed-layout">
+        <div class="fb-page-wrap">
+            <div id="fb-root"></div>
+            <div
+                class="fb-page"
+                data-href="https://www.facebook.com/profile.php?id=100049840695666"
+                data-tabs="timeline"
+                data-width="500"
+                data-height="520"
+                data-small-header="false"
+                data-adapt-container-width="true"
+                data-hide-cover="false"
+                data-show-facepile="true">
+                <blockquote cite="https://www.facebook.com/profile.php?id=100049840695666" class="fb-xfbml-parse-ignore">
+                    <a href="https://www.facebook.com/profile.php?id=100049840695666">Diamond Tip Tattoo on Facebook</a>
+                </blockquote>
+            </div>
+        </div>
+        <div class="social-fallback">
+            <a class="social-tile" href="https://www.facebook.com/profile.php?id=100049840695666" target="_blank" rel="noopener noreferrer" data-track="social_fb_studio">
+                <img src="assets/brand/studio-parlour.jpg" alt="Diamond Tip studio floor" loading="lazy">
+                <span>Studio floor</span>
+            </a>
+            <a class="social-tile" href="https://www.facebook.com/profile.php?id=100049840695666" target="_blank" rel="noopener noreferrer" data-track="social_fb_work">
+                <img src="assets/brand/blog-placement.jpg" alt="Recent tattoo work" loading="lazy">
+                <span>Recent work</span>
+            </a>
+            <a class="social-tile" href="https://www.facebook.com/profile.php?id=100049840695666" target="_blank" rel="noopener noreferrer" data-track="social_fb_awards">
+                <img src="assets/brand/awards.png" alt="Studio awards wall" loading="lazy">
+                <span>Awards wall</span>
+            </a>
+            <a class="btn btn-solid social-follow-btn" href="https://www.facebook.com/profile.php?id=100049840695666" target="_blank" rel="noopener noreferrer" data-track="social_fb_follow">Follow on Facebook</a>
+            <a class="btn btn-outline social-follow-btn" href="https://www.instagram.com/diamondtiptattoodapto/" target="_blank" rel="noopener noreferrer" data-track="social_ig_follow">Follow on Instagram</a>
+        </div>
     </div>
 </section>
 

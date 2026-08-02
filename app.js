@@ -775,29 +775,47 @@ document.addEventListener("DOMContentLoaded", () => {
     // No intro animation — page is ready immediately
     document.body.classList.add('page-ready');
 
-    // Mobile Hamburger Menu Toggle
+    // Mobile Hamburger Menu Toggle — open/close reliably
     const menuToggle = document.getElementById('menuToggleBtn');
     const navLinks = document.getElementById('navbarLinks');
+    const navBackdrop = document.getElementById('navDrawerBackdrop');
+
+    const setNavOpen = (open) => {
+        if (!menuToggle || !navLinks) return;
+        menuToggle.classList.toggle('open', open);
+        navLinks.classList.toggle('open', open);
+        document.body.classList.toggle('nav-open', open);
+        menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        menuToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        if (navBackdrop) {
+            navBackdrop.classList.toggle('is-open', open);
+            navBackdrop.setAttribute('aria-hidden', open ? 'false' : 'true');
+        }
+    };
+
     if (menuToggle && navLinks) {
-        menuToggle.onclick = () => {
-            menuToggle.classList.toggle('open');
-            navLinks.classList.toggle('open');
-        };
-
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                menuToggle.classList.remove('open');
-                navLinks.classList.remove('open');
-            });
+        menuToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setNavOpen(!navLinks.classList.contains('open'));
         });
 
-        // Close drawer when action buttons are clicked
-        navLinks.querySelectorAll('button').forEach(btn => {
-            btn.addEventListener('click', () => {
-                menuToggle.classList.remove('open');
-                navLinks.classList.remove('open');
-            });
+        if (navBackdrop) {
+            navBackdrop.addEventListener('click', () => setNavOpen(false));
+        }
+
+        navLinks.querySelectorAll('a, button').forEach((el) => {
+            el.addEventListener('click', () => setNavOpen(false));
         });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && navLinks.classList.contains('open')) {
+                setNavOpen(false);
+            }
+        });
+
+        // Ensure drawer starts closed
+        setNavOpen(false);
     }
 
     // Hero Slider Functionality
@@ -1707,6 +1725,7 @@ onAuthStateChanged(auth, async (user) => {
 
     loadBlogWebsite();
     loadShopWebsite();
+    if (typeof window.initFacebookFeed === "function") window.initFacebookFeed();
     handleRouting();
 });
 
@@ -1728,17 +1747,14 @@ function enterPortal() {
     if (tryonHome) tryonHome.style.display = 'none';
     const awardsEl = document.getElementById('awards');
     if (awardsEl) awardsEl.style.display = 'none';
+    const socialEl = document.getElementById('social');
+    if (socialEl) socialEl.style.display = 'none';
     const bookEl = document.getElementById('book');
     if (bookEl) bookEl.style.display = 'none';
     document.getElementById('info').style.display = 'none';
     document.querySelector('footer').style.display = 'none';
     document.querySelector('.features-bar').style.display = 'none';
     document.querySelector('.sterilization-bar').style.display = 'none';
-    const journeyLayer = document.getElementById('journeyLayer');
-    if (journeyLayer) journeyLayer.style.display = 'none';
-    const scrollProgress = document.getElementById('scrollProgress');
-    if (scrollProgress) scrollProgress.style.display = 'none';
-    document.querySelectorAll('.motif-divider').forEach(el => { el.style.display = 'none'; });
 
     // Keep site navbar visible (portal has its own back control)
     // Do not hide navLinks with display:none — it breaks the mobile drawer permanently
@@ -1767,23 +1783,28 @@ function exitPortal() {
     if (tryonHome) tryonHome.style.display = '';
     const awardsEl = document.getElementById('awards');
     if (awardsEl) awardsEl.style.display = '';
+    const socialEl = document.getElementById('social');
+    if (socialEl) socialEl.style.display = '';
     const bookEl = document.getElementById('book');
     if (bookEl) bookEl.style.display = '';
     document.getElementById('info').style.display = '';
     document.querySelector('footer').style.display = '';
     document.querySelector('.features-bar').style.display = '';
     document.querySelector('.sterilization-bar').style.display = '';
-    const journeyLayer = document.getElementById('journeyLayer');
-    if (journeyLayer) journeyLayer.style.display = '';
-    const scrollProgress = document.getElementById('scrollProgress');
-    if (scrollProgress) scrollProgress.style.display = '';
-    document.querySelectorAll('.motif-divider').forEach(el => { el.style.display = ''; });
 
     // Restore drawer styles if anything left inline
     const navLinks = document.getElementById('navbarLinks');
-    if (navLinks) navLinks.style.display = '';
+    if (navLinks) {
+        navLinks.style.display = '';
+        navLinks.classList.remove('open');
+    }
     const bookNavBtn = document.getElementById('bookNavBtn');
     if (bookNavBtn) bookNavBtn.style.display = '';
+    document.body.classList.remove('nav-open');
+    const menuToggle = document.getElementById('menuToggleBtn');
+    if (menuToggle) menuToggle.classList.remove('open');
+    const navBackdrop = document.getElementById('navDrawerBackdrop');
+    if (navBackdrop) navBackdrop.classList.remove('is-open');
 
     // Hide Portal
     document.getElementById('portalSection').style.display = 'none';
@@ -1898,19 +1919,19 @@ async function seedDatabaseIfNeeded() {
             await setDoc(doc(db, "admins", "chaseforrester@gmail.com"), { role: "super_admin" });
             await setDoc(doc(db, "admins", "hello@diamondtiptattoo.com"), { role: "super_admin" });
 
-            // Seed Default Blogs
+            // Seed Default Blogs (real studio photography)
             const defaultBlogs = [
                 {
                     title: "Aftercare: How to Heal Your Tattoo Perfectly",
                     author: "Steven Benn",
-                    image: "assets/tattoo_workspace_1781911831357.png",
+                    image: "assets/brand/blog-aftercare.jpg",
                     content: "Taking care of your new tattoo is just as important as the tattooing process itself. Keep it clean, use premium vegan aftercare cream, avoid long soaking in water, and protect it from direct sunlight. Your skin notes are valuable here!",
                     createdAt: new Date().toISOString()
                 },
                 {
                     title: "Tattoo Placements: Finding the Perfect Spot",
                     author: "Scotty",
-                    image: "assets/tattoo_artist_1781911870037.png",
+                    image: "assets/brand/blog-placement.jpg",
                     content: "Tattoo placement can make or break a design. Fine line work looks gorgeous on wrists and collarbones, whereas large realism designs require larger canvases like sleeves or chests. Let's consult and design something custom.",
                     createdAt: new Date().toISOString()
                 }
@@ -2878,41 +2899,134 @@ window.loadShopWebsite = async function() {
 // Blog Articles Website
 window.dbBlogs = [];
 
+/** Prefer real studio photos; replace legacy seeded AI/stock paths */
+function resolveBlogImage(blog) {
+    const title = (blog.title || "").toLowerCase();
+    const img = blog.image || "";
+    const isLegacyFake =
+        !img ||
+        img.includes("tattoo_workspace_") ||
+        img.includes("tattoo_artist_") ||
+        img.includes("tattoo_front_desk_") ||
+        img.includes("unsplash") ||
+        img.includes("placeholder");
+
+    if (title.includes("placement") || title.includes("perfect spot")) {
+        return "assets/brand/blog-placement.jpg";
+    }
+    if (title.includes("aftercare") || title.includes("heal")) {
+        return "assets/brand/blog-aftercare.jpg";
+    }
+    if (!isLegacyFake) return img;
+    return "assets/brand/studio-parlour.jpg";
+}
+
 window.loadBlogWebsite = async function() {
     const blogGrid = document.getElementById('blogGrid');
     if (!blogGrid) return;
 
-    try {
-        const snap = await getDocs(query(collection(db, "blogs"), orderBy("createdAt", "desc")));
-        window.dbBlogs = [];
-        if (snap.empty) {
+    // Local fallback cards (always real photos) if Firestore empty/offline
+    const fallbackBlogs = [
+        {
+            id: "local-aftercare",
+            title: "Aftercare: How to Heal Your Tattoo Perfectly",
+            author: "Steven Benn",
+            image: "assets/brand/blog-aftercare.jpg",
+            content: "Taking care of your new tattoo is just as important as the tattooing process itself. Keep it clean, use premium vegan aftercare cream, avoid long soaking in water, and protect it from direct sunlight. Your skin notes are valuable here!",
+            createdAt: new Date().toISOString()
+        },
+        {
+            id: "local-placement",
+            title: "Tattoo Placements: Finding the Perfect Spot",
+            author: "Scotty",
+            image: "assets/brand/blog-placement.jpg",
+            content: "Tattoo placement can make or break a design. Fine line work looks gorgeous on wrists and collarbones, whereas large realism designs require larger canvases like sleeves or chests. Let's consult and design something custom.",
+            createdAt: new Date().toISOString()
+        }
+    ];
+
+    const renderBlogs = (blogs) => {
+        window.dbBlogs = blogs;
+        if (!blogs.length) {
             blogGrid.innerHTML = `<p style="color: var(--text-secondary);">Check back soon for updates and stories from Diamond Tip.</p>`;
             return;
         }
-
-        let html = '';
-        snap.forEach(d => {
-            const blog = d.data();
-            window.dbBlogs.push({ id: d.id, ...blog });
-            const dateStr = new Date(blog.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-            
-            html += `
-                <div class="blog-card">
-                    <img src="${blog.image || 'assets/tattoo_workspace_1781911831357.png'}" alt="${blog.title}">
+        blogGrid.innerHTML = blogs.map((blog) => {
+            const dateStr = new Date(blog.createdAt || Date.now()).toLocaleDateString(undefined, {
+                month: "short", day: "numeric", year: "numeric"
+            });
+            const image = resolveBlogImage(blog);
+            const safeTitle = String(blog.title || "").replace(/`/g, "'");
+            const excerpt = String(blog.content || "").substring(0, 120);
+            return `
+                <article class="blog-card">
+                    <img src="${image}" alt="${safeTitle}" loading="lazy"
+                         onerror="this.onerror=null;this.src='assets/brand/studio-parlour.jpg';">
                     <div class="blog-card-content">
-                        <div class="blog-meta">${dateStr} | BY ${blog.author}</div>
-                        <h3>${blog.title}</h3>
-                        <p>${blog.content.substring(0, 120)}...</p>
-                        <a href="#blog" class="explore" onclick="alert('Article:\\n\\n' + \`${blog.title}\\n\\n\` + \`${blog.content}\`); return false;">READ MORE &rarr;</a>
+                        <div class="blog-meta">${dateStr} | BY ${blog.author || "Diamond Tip"}</div>
+                        <h3>${safeTitle}</h3>
+                        <p>${excerpt}...</p>
+                        <a href="#book" class="explore">Book a consult about this →</a>
                     </div>
-                </div>
-            `;
+                </article>`;
+        }).join("");
+    };
+
+    renderBlogs(fallbackBlogs);
+
+    try {
+        const snap = await getDocs(query(collection(db, "blogs"), orderBy("createdAt", "desc")));
+        if (snap.empty) return;
+
+        const blogs = [];
+        const updates = [];
+        snap.forEach((d) => {
+            const blog = { id: d.id, ...d.data() };
+            const resolved = resolveBlogImage(blog);
+            // Silently upgrade legacy fake images in Firestore when we can write
+            if (blog.image !== resolved && (
+                !blog.image ||
+                String(blog.image).includes("tattoo_workspace_") ||
+                String(blog.image).includes("tattoo_artist_") ||
+                String(blog.image).includes("tattoo_front_desk_")
+            )) {
+                updates.push(setDoc(doc(db, "blogs", d.id), { image: resolved }, { merge: true }).catch(() => {}));
+                blog.image = resolved;
+            }
+            blogs.push(blog);
         });
-        blogGrid.innerHTML = html;
+        if (updates.length) Promise.all(updates);
+        if (blogs.length) renderBlogs(blogs);
     } catch (e) {
         console.error(e);
+        // keep fallback cards
     }
 }
+
+// Facebook Page Plugin SDK (timeline embed)
+window.initFacebookFeed = function initFacebookFeed() {
+    if (window.__fbSdkLoading) return;
+    window.__fbSdkLoading = true;
+    window.fbAsyncInit = function () {
+        try {
+            // eslint-disable-next-line no-undef
+            FB.init({ xfbml: true, version: "v19.0" });
+        } catch (e) {
+            console.warn("FB init failed", e);
+        }
+    };
+    if (!document.getElementById("facebook-jssdk")) {
+        const js = document.createElement("script");
+        js.id = "facebook-jssdk";
+        js.async = true;
+        js.defer = true;
+        js.crossOrigin = "anonymous";
+        js.src = "https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v19.0";
+        document.body.appendChild(js);
+    } else if (window.FB && typeof window.FB.XFBML !== "undefined") {
+        try { window.FB.XFBML.parse(); } catch (_) { /* ignore */ }
+    }
+};
 
 // Live Chat real-time sync (Client-side)
 window.chatUnsubscribe = null;
