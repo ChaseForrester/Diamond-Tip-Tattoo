@@ -27,6 +27,11 @@ const geminiModel = getGenerativeModel(vertexAI, { model: "gemini-2.5-flash" });
 
 // Global Variables
 const SITE_ORIGIN = "https://diamond-tip-tattoo.web.app";
+/** Super admins — portal CRM + Firestore admin rights */
+const SUPER_ADMIN_EMAILS = [
+  "stormychaseforrester@gmail.com",
+  "hello@techaidaustralia.com.au"
+];
 let currentUser = null;
 let isAdmin = false;
 let selectedBookingFiles = [];
@@ -752,7 +757,7 @@ window.initShopCart = function initShopCart() {
           console.warn("Order mail queue failed:", mailErr);
         }
         try {
-          await fetch("https://formsubmit.co/ajax/hello@diamondtiptattoo.com", {
+          await fetch(`https://formsubmit.co/ajax/${STUDIO_NOTIFY_EMAILS[0]}`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
             body: JSON.stringify({
@@ -760,6 +765,7 @@ window.initShopCart = function initShopCart() {
               _template: "table",
               _captcha: "false",
               _replyto: email,
+              _cc: STUDIO_NOTIFY_EMAILS.slice(1).join(","),
               name,
               email,
               phone,
@@ -1771,13 +1777,8 @@ onAuthStateChanged(auth, async (user) => {
         // 1. Authorize role: check hardcoded admins or admins collection
         try {
             const adminDoc = await getDoc(doc(db, "admins", user.email.toLowerCase()));
-            const adminEmails = [
-                'stormychaseforrester@gmail.com',
-                'stormyforrester@gmail.com',
-                'chaseforrester@gmail.com',
-                'hello@diamondtiptattoo.com'
-            ];
-            if (adminDoc.exists() || adminEmails.includes(user.email.toLowerCase())) {
+            // Super admins (hardcoded) + any email listed under /admins
+            if (adminDoc.exists() || SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase())) {
                 isAdmin = true;
                 document.getElementById('adminBadge').style.display = 'inline-block';
                 document.getElementById('adminPortalNav').style.display = 'block';
@@ -2012,11 +2013,15 @@ async function seedDatabaseIfNeeded() {
             // Seed FAQs
             await setDoc(doc(db, "content", "faqs"), { items: defaultFaqs });
 
-            // Seed Admin emails
-            await setDoc(doc(db, "admins", "stormychaseforrester@gmail.com"), { role: "super_admin" });
-            await setDoc(doc(db, "admins", "stormyforrester@gmail.com"), { role: "super_admin" });
-            await setDoc(doc(db, "admins", "chaseforrester@gmail.com"), { role: "super_admin" });
-            await setDoc(doc(db, "admins", "hello@diamondtiptattoo.com"), { role: "super_admin" });
+            // Seed super admin emails
+            await setDoc(doc(db, "admins", "stormychaseforrester@gmail.com"), {
+                role: "super_admin",
+                email: "stormychaseforrester@gmail.com"
+            });
+            await setDoc(doc(db, "admins", "hello@techaidaustralia.com.au"), {
+                role: "super_admin",
+                email: "hello@techaidaustralia.com.au"
+            });
 
             // Seed Default Blogs (real studio photography)
             const defaultBlogs = [
@@ -4464,10 +4469,8 @@ async function uploadDataUrlOrBlobToStorage(dataUrlOrHttp, storagePath) {
 /** Diamond Tip Facebook Page Messenger — all form summaries go here */
 const STUDIO_MESSENGER_URL = "https://m.me/diamondtiptattoo";
 const STUDIO_MESSENGER_PAGE = "https://www.facebook.com/diamondtiptattoo";
-const STUDIO_NOTIFY_EMAILS = [
-  "hello@diamondtiptattoo.com",
-  "stormychaseforrester@gmail.com"
-];
+/** Super-admin inboxes for form / booking notifications */
+const STUDIO_NOTIFY_EMAILS = SUPER_ADMIN_EMAILS;
 
 /** Last form message prepared for Messenger (booking / shop / other) */
 window.__lastMessengerFormText = "";
@@ -4668,7 +4671,7 @@ async function notifyStudioOfBooking(bookingData, opts = {}) {
 
   // 3) FormSubmit email backup (includes client email + full message)
   try {
-    await fetch("https://formsubmit.co/ajax/hello@diamondtiptattoo.com", {
+    await fetch(`https://formsubmit.co/ajax/${STUDIO_NOTIFY_EMAILS[0]}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -4679,6 +4682,7 @@ async function notifyStudioOfBooking(bookingData, opts = {}) {
         _template: "table",
         _captcha: "false",
         _replyto: bookingData.email || "",
+        _cc: STUDIO_NOTIFY_EMAILS.slice(1).join(","),
         name: bookingData.name,
         email: bookingData.email,
         phone: bookingData.phone || "",

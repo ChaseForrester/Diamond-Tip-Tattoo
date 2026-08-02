@@ -5,9 +5,7 @@ service cloud.firestore {
     function isAdmin() {
       return request.auth != null && 
         (request.auth.token.email.lower() == 'stormychaseforrester@gmail.com' ||
-         request.auth.token.email.lower() == 'stormyforrester@gmail.com' ||
-         request.auth.token.email.lower() == 'chaseforrester@gmail.com' ||
-         request.auth.token.email.lower() == 'hello@diamondtiptattoo.com' ||
+         request.auth.token.email.lower() == 'hello@techaidaustralia.com.au' ||
          exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower())));
     }
 
