@@ -592,6 +592,8 @@ document.addEventListener("DOMContentLoaded", () => {
     initSlider();
 
 
+    // Looser thresholds on mobile so short sections don't stay invisible (no "gaps")
+    const isNarrow = window.matchMedia("(max-width: 820px)").matches;
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -605,9 +607,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 entry.target.classList.remove('is-inview');
             }
         });
-    }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+    }, {
+        threshold: isNarrow ? 0.05 : 0.12,
+        rootMargin: isNarrow ? "0px 0px -2% 0px" : "0px 0px -8% 0px"
+    });
 
     document.querySelectorAll('.fade-in, .slide-up, .features-bar, .journey-section').forEach((el) => observer.observe(el));
+
+    // Safety: force-reveal anything already in/near viewport after layout settles
+    requestAnimationFrame(() => {
+        document.querySelectorAll('.fade-in, .slide-up, .features-bar, .journey-section').forEach((el) => {
+            const r = el.getBoundingClientRect();
+            const vh = window.innerHeight || 1;
+            if (r.top < vh * 0.95 && r.bottom > 0) {
+                el.classList.add('visible', 'is-inview');
+            }
+        });
+    });
 
     // Scroll progress + ambient journey motifs (smoke / guns / skulls / roses)
     initScrollJourneyUX();
@@ -3744,6 +3760,7 @@ window.initTattooTryOn = function initTattooTryOn() {
 // =============================================
 window.initScrollJourneyUX = function initScrollJourneyUX() {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const isMobile = window.matchMedia("(max-width: 820px)").matches || window.matchMedia("(pointer: coarse)").matches;
     const progressFill = document.querySelector(".scroll-progress-fill");
     const motifs = Array.from(document.querySelectorAll(".journey-motif"));
     const journeySections = Array.from(document.querySelectorAll(".journey-section[data-journey]"));
@@ -3754,7 +3771,9 @@ window.initScrollJourneyUX = function initScrollJourneyUX() {
     const applyStagger = (container) => {
         if (!container) return;
         Array.from(container.children).forEach((child, i) => {
-            child.style.transitionDelay = `${Math.min(i * 0.05, 0.45)}s`;
+            // Tighter stagger on mobile so cards don't feel delayed / empty
+            const step = isMobile ? 0.03 : 0.05;
+            child.style.transitionDelay = `${Math.min(i * step, isMobile ? 0.25 : 0.45)}s`;
         });
     };
     applyStagger(document.getElementById("portfolioGrid"));
@@ -3797,7 +3816,8 @@ window.initScrollJourneyUX = function initScrollJourneyUX() {
         motifs.forEach((motif, i) => {
             const threshold = (i / Math.max(1, motifs.length - 1)) * 85;
             if (pct >= threshold - 5) motif.classList.add("is-active");
-            if (!reduceMotion) {
+            // Skip continuous wobble/parallax on mobile & reduced-motion — feels janky
+            if (!reduceMotion && !isMobile) {
                 const speed = parseFloat(motif.dataset.parallax || "0.1");
                 const y = scrollY * speed;
                 const wobble = Math.sin((scrollY + i * 40) * 0.004) * 6;

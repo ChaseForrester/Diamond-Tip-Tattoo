@@ -2,12 +2,15 @@
     --bg-dark: #0a0a0a;
     --bg-light: #111111;
     --bg-box: #151515;
+    --bg: #0a0a0a; /* alias used by inline portal/modal styles */
     --accent: #e63946;
     /* Premium Red */
     --accent-hover: #ff4d5a;
     --text-primary: #eaeaea;
     --text-secondary: #888888;
+    --text: #eaeaea; /* alias for legacy inline styles */
     --font-heading: 'Cinzel', serif;
+    --font-display: 'Cinzel', serif;
     --font-body: 'Inter', sans-serif;
     --border: #222222;
 }
@@ -86,8 +89,10 @@ p {
     letter-spacing: 1px;
     text-transform: uppercase;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
     cursor: pointer;
+    line-height: 1.3;
+    text-align: center;
 }
 
 .btn-solid {
@@ -270,15 +275,20 @@ p {
     position: fixed;
     top: 0;
     right: -100%;
-    width: 320px;
-    height: 100vh;
+    width: min(320px, 88vw);
+    height: 100%;
+    height: 100dvh;
     background: rgba(10, 10, 10, 0.98);
     backdrop-filter: blur(15px);
     border-left: 1px solid var(--border);
-    padding: 6rem 3rem 3rem 3rem;
-    gap: 1.5rem;
-    transition: right 0.5s cubic-bezier(0.77, 0, 0.175, 1);
-    z-index: 100;
+    padding: 6rem 1.75rem 2.5rem;
+    padding-bottom: max(2.5rem, env(safe-area-inset-bottom));
+    gap: 1.15rem;
+    transition: right 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 999; /* under navbar (1000) so hamburger stays tappable */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: -12px 0 40px rgba(0,0,0,0.45);
 }
 
 .nav-links.open {
@@ -1238,46 +1248,93 @@ p {
 .box {
     background: var(--bg-box);
     border: 1px solid var(--border);
-    padding: 3rem;
+    padding: clamp(1.25rem, 3.5vw, 3rem);
 }
 
 .box-inner {
     border: 1px solid var(--border);
-    padding: 2rem;
-    margin-top: 2rem;
+    padding: clamp(1.25rem, 2.5vw, 2rem);
+    margin-top: 1.5rem;
 }
 
 form .form-row {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+form .form-row:last-of-type {
+    margin-bottom: 0;
 }
 
 form input,
-form textarea {
+form textarea,
+form select {
     width: 100%;
     background: transparent;
     border: 1px solid var(--border);
-    padding: 1rem;
+    padding: 0.9rem 1rem;
     color: #fff;
     font-family: var(--font-body);
-    margin-bottom: 1rem;
+    font-size: 1rem; /* prevents iOS zoom on focus */
+    margin-bottom: 0.75rem;
+    border-radius: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: border-color 0.2s ease;
+}
+
+form .form-row > input,
+form .form-row > textarea,
+form .form-row > select {
+    margin-bottom: 0; /* row gap handles spacing */
 }
 
 form input:focus,
-form textarea:focus {
+form textarea:focus,
+form select:focus {
     outline: none;
     border-color: var(--accent);
+}
+
+form select {
+    background-color: var(--bg-box);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23888888' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+    cursor: pointer;
+}
+
+form select option {
+    background: #151515;
+    color: #eaeaea;
 }
 
 .form-footer {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    margin-top: 0.5rem;
 }
 
 .form-footer .btn {
     flex-shrink: 0;
+}
+
+/* Booking form calendar nest — avoid double heavy padding */
+.booking-form .pub-calendar-container.box,
+.booking-calendar-wrapper .box {
+    padding: 1.25rem;
+}
+
+.booking-form > h2 {
+    margin-bottom: 0.35rem;
+}
+
+.booking-form > p {
+    margin-bottom: 1.25rem;
 }
 
 .privacy-note {
@@ -1532,8 +1589,13 @@ footer {
 }
 
 @media(max-width: 768px) {
+    /* Keep drawer available — never hide .nav-links with display:none */
     .nav-links {
-        display: none;
+        width: min(100vw, 320px);
+        padding: 5.5rem 1.5rem 2rem;
+        gap: 1.1rem;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .hero-content h1 {
@@ -1542,19 +1604,47 @@ footer {
 
     .features-bar {
         flex-direction: column;
-        gap: 1.5rem;
+        gap: 0.75rem;
+        padding: 1.25rem 4%;
     }
 
     .grid-4 {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
 
     form .form-row {
         flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .form-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .form-footer .btn {
+        width: 100%;
+        text-align: center;
     }
 
     .footer-top {
         grid-template-columns: 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .legal-links a {
+        margin-left: 0.75rem;
+        margin-right: 0.75rem;
     }
 }
 
@@ -1572,17 +1662,21 @@ footer {
     backdrop-filter: blur(5px);
     align-items: center;
     justify-content: center;
+    padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
 }
 
 .modal-content {
     background-color: var(--bg-box);
-    padding: 3rem;
+    padding: clamp(1.5rem, 4vw, 3rem);
     border: 1px solid var(--accent);
-    width: 90%;
+    width: min(92vw, 450px);
     max-width: 450px;
+    max-height: min(92vh, 900px);
+    overflow-y: auto;
     position: relative;
     border-radius: 4px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    -webkit-overflow-scrolling: touch;
 }
 
 .close-modal {
@@ -2468,17 +2562,17 @@ body.page-ready .hero-content .hero-btns {
 }
 
 .chat-toggle-btn:hover {
-    transform: scale(1.1) rotate(5deg);
+    transform: scale(1.04);
     background-color: var(--accent-hover) !important;
 }
 
 @keyframes chatPulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.7);
+        box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.45);
     }
 
     70% {
-        box-shadow: 0 0 0 12px rgba(230, 57, 70, 0);
+        box-shadow: 0 0 0 10px rgba(230, 57, 70, 0);
     }
 
     100% {
@@ -2548,13 +2642,14 @@ body.page-ready .hero-content .hero-btns {
 
 @media(max-width: 768px) {
     .navbar {
-        padding: 1rem 4%;
+        padding: 0.85rem 4%;
+        padding-top: max(0.85rem, env(safe-area-inset-top));
     }
     .navbar div {
         gap: 0.5rem;
     }
     .navbar .btn {
-        padding: 0.4rem 0.8rem;
+        padding: 0.45rem 0.75rem;
         font-size: 0.7rem;
     }
     
@@ -2580,15 +2675,62 @@ body.page-ready .hero-content .hero-btns {
         grid-template-columns: 1fr !important;
     }
     
-    /* Sections spacing */
+    /* Sections spacing — tighter, consistent rhythm */
     .section {
-        padding: 3rem 4% !important;
+        padding: 2.5rem 5% !important;
+    }
+    .section-header {
+        margin-bottom: 1.75rem;
+    }
+    .section-header.center {
+        margin-bottom: 1.5rem;
     }
     h2 {
-        font-size: 1.8rem !important;
+        font-size: 1.65rem !important;
+        margin-bottom: 0.75rem;
     }
     h1 {
-        font-size: 2.8rem !important;
+        font-size: 2.4rem !important;
+    }
+
+    .info-col {
+        padding: 1.5rem 0;
+    }
+
+    .bottom-info {
+        gap: 0;
+    }
+
+    .process-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .process-step {
+        padding-right: 0;
+    }
+
+    .blog-grid,
+    .shop-grid {
+        grid-template-columns: 1fr;
+        gap: 1.15rem;
+        margin-top: 1.25rem;
+    }
+
+    .blog-card-content,
+    .shop-card-content {
+        padding: 1.15rem;
+    }
+
+    .sterilization-bar {
+        margin: 1.5rem 5%;
+        gap: 0.75rem;
+    }
+
+    .sterilization-item {
+        padding: 1.15rem;
     }
 }
 
@@ -2833,7 +2975,7 @@ body.page-ready .hero-content .hero-btns {
 }
 
 .try-on-field {
-    margin-top: 1rem;
+    margin-top: 0.85rem;
 }
 
 .try-on-field label,
@@ -2848,16 +2990,26 @@ body.page-ready .hero-content .hero-btns {
 .try-on-field select,
 .try-on-field textarea {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.8rem 0.9rem;
     border: 1px solid var(--border);
     background: #111;
     color: #fff;
     font-family: var(--font-body);
+    font-size: 1rem;
     outline: none;
+    border-radius: 0;
+    margin: 0;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.try-on-field select:focus,
+.try-on-field textarea:focus {
+    border-color: var(--accent);
 }
 
 .try-on-size-row {
-    margin: 1rem 0 1.25rem;
+    margin: 0.85rem 0 1rem;
 }
 
 .try-on-size-row input[type="range"] {
@@ -3189,11 +3341,9 @@ body.journey-theme-smoke .journey-smoke {
 }
 
 @keyframes motifBuzz {
-    0%, 100% { transform: translate(0,0) rotate(0); }
-    20% { transform: translate(0.5px, -0.5px) rotate(-2deg); }
-    40% { transform: translate(-0.5px, 0.5px) rotate(2deg); }
-    60% { transform: translate(0.5px, 0.5px) rotate(-1deg); }
-    80% { transform: translate(-0.5px, -0.5px) rotate(1deg); }
+    /* Subtle pulse only — no jitter */
+    0%, 100% { transform: translate(0, 0) rotate(0); opacity: 0.85; }
+    50% { transform: translate(0, -2px) rotate(0); opacity: 1; }
 }
 
 /* Enhanced section / card UX */
@@ -3687,5 +3837,461 @@ body.page-ready .artists-roster > * {
     body.page-ready .artists-roster > * {
         opacity: 1;
         transform: none;
+    }
+}
+
+/* =========================================================
+   MOBILE UI POLISH — spacing, forms, motion, no gaps
+   ========================================================= */
+
+/* Kill sticky hover transforms on coarse pointers (phones) */
+@media (hover: none), (pointer: coarse) {
+    .blog-card:hover,
+    .shop-card:hover,
+    .artist-row:hover,
+    .artist-profile-card:hover,
+    .feature:hover,
+    .spec-card:hover,
+    .portfolio-item:hover,
+    .shop-card:hover .product-image-wrap img,
+    .artist-row:hover .artist-photo-frame img,
+    .artist-profile-card:hover img,
+    .spec-card:hover img,
+    .btn-solid:hover::after,
+    .chat-toggle-btn:hover {
+        transform: none !important;
+        box-shadow: none;
+    }
+
+    .shop-card:hover .product-image-wrap img,
+    .artist-row:hover .artist-photo-frame img,
+    .artist-profile-card:hover img,
+    .spec-card:hover img {
+        filter: inherit;
+    }
+
+    /* Remove jittery motif buzz on touch devices */
+    .motif-mid.motif-gun {
+        animation: none;
+    }
+}
+
+/* Booking select — fix undefined CSS vars in inline styles */
+#bookingStyle {
+    width: 100%;
+    padding: 0.9rem 2.5rem 0.9rem 1rem;
+    border: 1px solid var(--border);
+    background-color: var(--bg-box);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    border-radius: 0;
+    outline: none;
+    margin-bottom: 0.75rem;
+}
+
+#dropZone {
+    margin-top: 0.5rem !important;
+    padding: 1.15rem !important;
+}
+
+#bookingForm .form-footer {
+    margin-top: 1.25rem !important;
+}
+
+/* Upload zone + calendar: consistent spacing */
+.booking-calendar-wrapper {
+    margin-top: 0.5rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.pub-day-cell {
+    min-height: 0;
+    font-size: clamp(0.75rem, 2.8vw, 0.9rem);
+    padding: 0.15rem;
+}
+
+.time-slot-btn {
+    padding: 0.7rem 0.4rem;
+    font-size: 0.8rem;
+    min-height: 44px; /* touch target */
+}
+
+@media (max-width: 820px) {
+    /* Primary CTAs: comfortable touch targets (exclude tiny icon buttons) */
+    .btn-solid,
+    .btn-outline:not([style*="width: 24px"]):not(.try-on-nav-btn) {
+        min-height: 44px;
+    }
+
+    #bookingSubmitBtn,
+    #authSubmitBtn,
+    #tryOnStitchBtn,
+    #googleAuthBtn,
+    .form-footer .btn {
+        min-height: 48px;
+        width: 100%;
+    }
+
+    /* Try-on modal — full-width friendly */
+    .try-on-modal {
+        padding: 0.65rem;
+        align-items: flex-end;
+    }
+
+    .try-on-modal-content {
+        width: 100%;
+        max-height: min(94vh, 100%);
+        padding: 1.15rem 1rem 1.25rem;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .try-on-modal-head {
+        margin-bottom: 0.9rem;
+        padding-right: 1.75rem;
+    }
+
+    .try-on-modal-head h2 {
+        font-size: 1.25rem;
+    }
+
+    .try-on-layout.compact {
+        gap: 1rem;
+    }
+
+    .try-on-layout.compact .try-on-drop {
+        min-height: 96px;
+        padding: 0.75rem 0.5rem;
+    }
+
+    .try-on-layout.compact .try-on-result {
+        min-height: 260px;
+    }
+
+    .try-on-field {
+        margin-bottom: 0.65rem;
+    }
+
+    .try-on-field label,
+    .try-on-size-row label {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 0.85rem;
+    }
+
+    .try-on-field select,
+    .try-on-field textarea {
+        width: 100%;
+        padding: 0.75rem 0.9rem;
+        font-size: 1rem;
+        background: transparent;
+        border: 1px solid var(--border);
+        color: #fff;
+        font-family: var(--font-body);
+        border-radius: 0;
+        margin: 0;
+    }
+
+    .try-on-size-row {
+        margin-bottom: 0.85rem;
+    }
+
+    .try-on-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .try-on-actions .btn {
+        flex: 1 1 auto;
+        text-align: center;
+        min-height: 44px;
+    }
+
+    /* Artist cards */
+    .artist-copy {
+        padding: 1.25rem 1.15rem 1.5rem;
+    }
+
+    .artist-copy h3 {
+        font-size: 1.45rem;
+    }
+
+    .artist-copy .artist-bio {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .artists-roster {
+        gap: 1.25rem;
+    }
+
+    /* Split booking + reviews */
+    .split-section {
+        gap: 1.25rem;
+    }
+
+    .booking-form.box,
+    .reviews.box {
+        padding: 1.25rem 1.1rem 1.5rem;
+    }
+
+    .reviews.box h2 {
+        font-size: 1.35rem !important;
+    }
+
+    .box-inner {
+        margin-top: 1rem;
+        padding: 1.15rem;
+    }
+
+    /* Chat widget fits phone screen */
+    .chat-widget-container {
+        bottom: max(1rem, env(safe-area-inset-bottom));
+        right: max(1rem, env(safe-area-inset-right));
+    }
+
+    .chat-toggle-btn {
+        width: 54px;
+        height: 54px;
+    }
+
+    .chat-window {
+        position: fixed;
+        left: 0.65rem;
+        right: 0.65rem;
+        bottom: max(4.75rem, calc(env(safe-area-inset-bottom) + 4.25rem));
+        width: auto;
+        height: min(70vh, 480px);
+        max-height: calc(100vh - 7rem);
+    }
+
+    /* Hero tighter on phones */
+    .hero-slider-section {
+        height: auto;
+        min-height: 100svh;
+        padding-top: 5rem;
+        padding-bottom: 2rem;
+    }
+
+    .slider-container {
+        margin-top: 1rem;
+        gap: 1.25rem;
+    }
+
+    .slider-main-title {
+        font-size: clamp(1.65rem, 7vw, 2.1rem);
+        margin-bottom: 1.25rem;
+    }
+
+    .slider-action-links {
+        gap: 0.65rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Journey layer: quiet on small screens — no full-bleed float noise */
+    .journey-smoke {
+        animation: none;
+        opacity: 0.12;
+    }
+
+    .journey-motif {
+        transition: opacity 0.4s ease;
+        will-change: auto;
+    }
+
+    .journey-motif.m8,
+    .journey-motif.m3,
+    .journey-motif.m7,
+    .journey-motif.m11,
+    .journey-motif.m12 {
+        display: none;
+    }
+
+    .motif-mid {
+        animation: none !important;
+    }
+
+    .section-motif-edge {
+        opacity: 0.2;
+        animation: none;
+    }
+
+    /* Spec / portfolio smoke — static on mobile (perf + less shitty motion) */
+    .spec-smoke span,
+    .portfolio-smoke .p-smoke,
+    .ambient-smoke {
+        animation: none !important;
+        opacity: 0.15;
+    }
+
+    /* Fade/slide reveals — shorter, less floaty */
+    .fade-in,
+    .slide-up {
+        transform: translateY(16px);
+        transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    body.page-ready .grid-4 > *,
+    body.page-ready .artists-grid-2 > *,
+    body.page-ready .shop-grid > *,
+    body.page-ready .blog-grid > *,
+    body.page-ready .portfolio-grid > *,
+    body.page-ready .artists-roster > * {
+        transform: translateY(12px) scale(1);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .feature.reveal-child {
+        transform: translateY(10px);
+        transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    /* Accordion touch targets */
+    .acc-btn {
+        padding: 1.15rem 0;
+        min-height: 48px;
+        font-size: 0.9rem;
+    }
+
+    /* Portfolio filters wrap cleanly */
+    .portfolio-filters {
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .portfolio-filters button,
+    .filter-btn {
+        padding: 0.55rem 0.85rem;
+        font-size: 0.7rem;
+        min-height: 40px;
+    }
+
+    footer {
+        padding: 2.5rem 5% 1.5rem;
+        padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+    }
+
+    .footer-logo {
+        width: 72px;
+        height: 72px;
+    }
+
+    /* Login form spacing inside modal */
+    #loginForm input {
+        margin-bottom: 0.75rem;
+    }
+
+    #loginForm .btn {
+        margin-top: 0.25rem;
+        min-height: 46px;
+    }
+
+    /* Maps */
+    .google-map {
+        height: 260px;
+    }
+
+    .find-us-card,
+    .location-card {
+        padding: 1.15rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .section {
+        padding: 2rem 4.5% !important;
+    }
+
+    .box {
+        padding: 1.1rem 1rem 1.35rem;
+    }
+
+    .booking-form .pub-calendar-container.box,
+    .booking-calendar-wrapper .box {
+        padding: 0.9rem 0.75rem;
+    }
+
+    .pub-day-cell {
+        font-size: 0.72rem;
+    }
+
+    #pubTimeSlotsGrid {
+        grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)) !important;
+        gap: 0.4rem !important;
+    }
+
+    .navbar .try-on-nav-btn {
+        margin-right: 0.25rem;
+    }
+
+    .slider-center-frame {
+        max-height: 34vh;
+    }
+
+    .modal-content {
+        padding: 1.35rem 1.1rem 1.5rem;
+        width: 100%;
+    }
+
+    .close-modal {
+        right: 0.85rem;
+        top: 0.65rem;
+    }
+
+    h1 {
+        font-size: 2.1rem !important;
+    }
+
+    h2 {
+        font-size: 1.45rem !important;
+    }
+}
+
+/* Ensure staggered children never stay invisible (gap guard) */
+@media (max-width: 820px) {
+    /* After page load, if a section is already past the fold, force content visible when .visible */
+    .section.visible .grid-4 > *,
+    .section.visible .shop-grid > *,
+    .section.visible .blog-grid > *,
+    .section.visible .portfolio-grid > *,
+    .section.visible .artists-roster > *,
+    .fade-in.visible .grid-4 > *,
+    .fade-in.visible .artists-roster > *,
+    .slide-up.visible .box,
+    .slide-up.visible .reviews {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Prefer reduced motion — broaden kill switch */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    .fade-in,
+    .slide-up,
+    .feature.reveal-child,
+    body.page-ready .grid-4 > *,
+    body.page-ready .shop-grid > *,
+    body.page-ready .blog-grid > *,
+    body.page-ready .portfolio-grid > *,
+    body.page-ready .artists-roster > *,
+    body.page-ready .artists-grid-2 > * {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+
+    .spec-smoke span,
+    .portfolio-smoke .p-smoke,
+    .ambient-smoke,
+    .journey-smoke,
+    .motif-mid,
+    .chat-toggle-btn,
+    .btn-solid::after {
+        animation: none !important;
     }
 }
