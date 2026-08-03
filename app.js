@@ -2864,30 +2864,30 @@ async function updateSEOMeta(hash) {
     const defaults = {
         home: {
             title: "Tattoo Dapto NSW | Diamond Tip Tattoo — Realism, Fine Line & Custom Ink",
-            description: "Top-rated private tattoo studio in Dapto NSW · 4.6★ from 64 Google reviews. Custom realism, fine line & black & grey by Steven Benn & Scotty. Free consultation for Wollongong & Illawarra.",
+            description: "Private tattoo studio in Dapto NSW · 4.6★ from 64 Google reviews. Custom realism, fine line & black & grey by Steven Benn & Scotty. Free consultation · Wollongong & Illawarra.",
             keywords: "tattoo Dapto, tattoo Wollongong, Illawarra tattoo, realism, fine line, Steven Benn",
-            image: `${SITE_ORIGIN}/assets/brand/og-share.jpg`,
+            image: `${SITE_ORIGIN}/assets/brand/meta-image.png`,
             url: `${SITE_ORIGIN}/`,
         },
         blog: {
             title: "Diamond Tip Tattoo Blog | Aftercare, Placement & Custom Ink Guides",
             description: "Tattoo aftercare, placement, realism, fine line, cover-ups and first-tattoo guides from Diamond Tip Tattoo Dapto — Illawarra NSW.",
             keywords: "tattoo aftercare, tattoo placement, first tattoo Dapto, realism tattoo guide",
-            image: `${SITE_ORIGIN}/assets/brand/og-share.jpg`,
+            image: `${SITE_ORIGIN}/assets/brand/meta-image.png`,
             url: `${SITE_ORIGIN}/#blog`,
         },
         book: {
             title: "Book Free Tattoo Consultation | Diamond Tip Tattoo Dapto",
             description: "Book a free private consultation at Diamond Tip Tattoo Dapto. Custom designs, realism, fine line — Illawarra & Wollongong clients welcome.",
             keywords: "book tattoo Dapto, tattoo consultation Wollongong",
-            image: `${SITE_ORIGIN}/assets/brand/og-share.jpg`,
+            image: `${SITE_ORIGIN}/assets/brand/meta-image.png`,
             url: `${SITE_ORIGIN}/#book`,
         },
         reviews: {
             title: "Google Reviews | Diamond Tip Tattooing Dapto 4.6★",
             description: "Read Google reviews for Diamond Tip Tattooing Dapto NSW — 4.6 stars from 64 clients. Also on Facebook, Yellow Pages, Instagram & TikTok.",
             keywords: "Diamond Tip Tattoo reviews, tattoo Dapto reviews",
-            image: `${SITE_ORIGIN}/assets/brand/og-share.jpg`,
+            image: `${SITE_ORIGIN}/assets/brand/meta-image.png`,
             url: `${SITE_ORIGIN}/#reviews`,
         },
     };
@@ -3249,11 +3249,13 @@ function setSocialMeta({ title, description, image, url }) {
     if (titleEl) titleEl.textContent = title;
     const descMeta = document.getElementById("seoDesc");
     if (descMeta) descMeta.setAttribute("content", description);
+    const isPng = image && /\.png(\?|$)/i.test(image);
     const pairs = [
         ['meta[property="og:title"]', title],
         ['meta[property="og:description"]', description],
         ['meta[property="og:image"]', image],
         ['meta[property="og:image:secure_url"]', image],
+        ['meta[property="og:image:type"]', isPng ? "image/png" : "image/jpeg"],
         ['meta[property="og:url"]', url],
         ['meta[name="twitter:title"]', title],
         ['meta[name="twitter:description"]', description],
