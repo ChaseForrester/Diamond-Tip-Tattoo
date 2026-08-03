@@ -13,6 +13,13 @@
     --font-display: 'Cinzel', serif;
     --font-body: 'Inter', sans-serif;
     --border: #222222;
+    /* Unified layout system — one column, one gutter, everywhere */
+    --content-max: 1120px;
+    --gutter: clamp(1.15rem, 4vw, 2rem);
+    --section-y: clamp(3.25rem, 5.5vw, 4.75rem);
+    --stack-gap: 1.15rem;
+    /* Aligns full-bleed bars (nav, features, footer) with the content rail */
+    --rail-inline: max(var(--gutter), calc((100% - var(--content-max)) / 2));
 }
 
 * {
@@ -132,28 +139,117 @@ p {
     color: var(--accent);
 }
 
-/* Layout classes */
+/* =========================================================
+   LAYOUT SYSTEM — one centered content column sitewide
+   Pattern:
+   • Full-bleed shells use --rail-inline so edges match the rail
+   • Direct section children are max-width: content-max, centered
+   ========================================================= */
 .section {
-    padding: 5rem 4%;
-    max-width: 1400px;
+    width: 100%;
+    max-width: 100%;
     margin: 0 auto;
+    padding: var(--section-y) var(--rail-inline);
+    box-sizing: border-box;
 }
 
+/* Full-bleed background sections — same horizontal rail */
 .dark-bg {
     background-color: var(--bg-light);
     max-width: 100%;
-    padding-left: 4%;
-    padding-right: 4%;
+}
+
+/* Shared content rail — everything lines up to the same edges */
+.section-header,
+.section > .grid-4,
+.section > .artists-wrap,
+.section > .portfolio-filters,
+.section > .portfolio-grid,
+.section > .show-more-wrap,
+.section > .shop-filters,
+.section > .shop-toolbar,
+.section > .shop-grid,
+.section > .blog-grid,
+.section > .social-gallery,
+.section > .social-follow-row,
+.section > .reviews-stack,
+.section > .awards-layout,
+.section > .map-wrap,
+.section > .booking-form,
+.section > .tryon-home-inner,
+.section > .process-timeline,
+.section > .process-cta-row,
+.section > .shop-intro,
+.section > .shop-load-error,
+.section > .process-header,
+.artists-wrap,
+.awards-layout,
+.social-gallery,
+.reviews-stack,
+.portfolio-grid,
+.shop-grid,
+.blog-grid,
+.portfolio-filters,
+.shop-filters,
+.shop-toolbar,
+.map-wrap,
+.tryon-home-inner,
+.booking-form-full,
+.show-more-wrap,
+.bottom-info {
+    width: 100%;
+    max-width: var(--content-max);
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
 }
 
 .section-header {
-    margin-bottom: 3rem;
+    margin-bottom: 1.75rem;
+    text-align: center;
+}
+.section-header.center {
+    text-align: center;
+}
+.section-header.split {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    text-align: left;
+    flex-wrap: wrap;
+}
+.section-header.split > div {
+    text-align: left;
+}
+.section-header h2 {
+    margin-left: auto;
+    margin-right: auto;
+}
+.section-header.split h2 {
+    margin-left: 0;
+    margin-right: 0;
+}
+.section-header .shop-intro,
+.section-header .artists-intro,
+.section-header p {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 36rem;
+}
+.section-header.split .shop-intro,
+.section-header.split .artists-intro,
+.section-header.split p {
+    margin-left: 0;
+    margin-right: 0;
+    max-width: none;
 }
 
 .split {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    gap: 1rem;
 }
 
 /* Navbar — always anchored (never scroll away) */
@@ -166,7 +262,7 @@ p {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.9rem 4%;
+    padding: 0.9rem var(--rail-inline);
     padding-top: max(0.9rem, env(safe-area-inset-top));
     background: rgba(10, 10, 10, 0.88);
     backdrop-filter: blur(14px);
@@ -177,13 +273,14 @@ p {
     transform: none !important;
     opacity: 1 !important;
     visibility: visible !important;
+    box-sizing: border-box;
 }
 
 .navbar.scrolled {
     background: rgba(8, 8, 8, 0.95);
     border-bottom-color: var(--border);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
-    padding: 0.75rem 4%;
+    padding: 0.75rem var(--rail-inline);
     padding-top: max(0.75rem, env(safe-area-inset-top));
 }
 
@@ -380,7 +477,7 @@ body.nav-open {
     color: var(--accent);
 }
 
-/* Hero Slider Section */
+/* Hero Slider Section — full-bleed; padding matches site rail edges */
 .hero-slider-section {
     position: relative;
     height: 100vh;
@@ -389,9 +486,10 @@ body.nav-open {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 4%;
+    padding: 0 var(--rail-inline);
     overflow: hidden;
     z-index: 10;
+    box-sizing: border-box;
 }
 
 /* Background Outline Text */
@@ -826,16 +924,27 @@ body.nav-open {
 }
 
 
-/* Features Bar */
+/* Features Bar — full-bleed shell, content on the shared rail */
 .features-bar {
     display: flex;
-    justify-content: space-around;
-    padding: 1.75rem 4%;
+    justify-content: space-between;
+    align-items: stretch;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 1.35rem var(--rail-inline);
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
     background: rgba(16, 16, 16, 0.9);
     backdrop-filter: blur(8px);
-    gap: 1.5rem;
+    gap: 1rem 1.25rem;
+    box-sizing: border-box;
+}
+.features-bar .feature {
+    flex: 1 1 200px;
+    max-width: none;
+    min-width: 0;
 }
 
 .feature {
@@ -883,12 +992,17 @@ body.nav-open {
     color: var(--text-secondary);
 }
 
-/* Sterilization Bar */
+/* Sterilization Bar — same rail padding as sections */
 .sterilization-bar {
     display: flex;
-    gap: 1.25rem;
+    gap: var(--stack-gap);
     justify-content: space-between;
-    margin: 4rem 4%;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 100%;
+    margin: var(--section-y) auto;
+    padding: 0 var(--rail-inline);
+    box-sizing: border-box;
 }
 
 .sterilization-item {
@@ -936,8 +1050,13 @@ body.nav-open {
 /* Grids */
 .grid-4 {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--stack-gap);
+    width: 100%;
+    max-width: var(--content-max);
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
 }
 
 .card {
@@ -1116,6 +1235,7 @@ body.nav-open {
     flex-wrap: wrap;
     gap: 0.75rem;
     margin-bottom: 2rem;
+    justify-content: center;
 }
 
 .portfolio-filter-btn {
@@ -1301,9 +1421,15 @@ body.nav-open {
 .process-header {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
     gap: 0.35rem;
     margin-bottom: 3rem;
+    width: 100%;
+    max-width: var(--content-max);
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
 }
 
 .process-timeline {
@@ -1311,6 +1437,11 @@ body.nav-open {
     justify-content: space-between;
     position: relative;
     padding: 2rem 0;
+    width: 100%;
+    max-width: var(--content-max);
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
 }
 
 .process-timeline .line {
@@ -1508,14 +1639,20 @@ form select option {
 /* Bottom Info 3-columns */
 .bottom-info {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 2rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--stack-gap);
     padding-top: 0;
+    width: 100%;
+    max-width: var(--content-max);
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
 }
 
 .info-col {
-    padding: 2.5rem;
+    padding: 1.5rem 1.25rem;
     position: relative;
+    min-width: 0;
 }
 
 .info-col h3 {
@@ -1556,18 +1693,29 @@ form select option {
     color: var(--text-secondary);
 }
 
-/* Footer */
+/* Footer — full-bleed shell, blocks on the shared rail */
 footer {
     background: #080808;
     border-top: 1px solid var(--border);
-    padding: 4rem 4% 2rem;
+    padding: clamp(2.75rem, 5vw, 3.75rem) var(--rail-inline) 2rem;
+    box-sizing: border-box;
+}
+
+.footer-top,
+.footer-bottom,
+.footer-powered {
+    width: 100%;
+    max-width: var(--content-max);
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
 }
 
 .footer-top {
     display: grid;
     grid-template-columns: 1.3fr 1fr 1fr 1.4fr;
     gap: 2rem;
-    margin-bottom: 4rem;
+    margin-bottom: 2.5rem;
 }
 
 .footer-brand h2 {
@@ -1835,11 +1983,13 @@ footer {
     .sterilization-bar {
         flex-wrap: wrap;
         gap: 1rem;
-        margin: 2rem 4%;
+        margin-top: var(--section-y);
+        margin-bottom: var(--section-y);
     }
 
     .sterilization-item {
-        flex: calc(50% - 0.5rem);
+        flex: 1 1 calc(50% - 0.5rem);
+        min-width: 0;
         margin-bottom: 0;
     }
 }
@@ -1885,7 +2035,7 @@ footer {
     .features-bar {
         flex-direction: column;
         gap: 0.75rem;
-        padding: 1.25rem 4%;
+        padding: 1.25rem var(--rail-inline);
     }
 
     .grid-4 {
@@ -2391,12 +2541,13 @@ footer {
 /* Shop and Blog section grids */
 .blog-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
-    margin-top: 1.75rem;
-    max-width: 1100px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--stack-gap);
+    margin-top: 1.5rem;
+    max-width: var(--content-max);
     margin-left: auto;
     margin-right: auto;
+    width: 100%;
 }
 /* Shop — max 4 across */
 .shop-grid {
@@ -3091,7 +3242,7 @@ body.page-ready .hero-content .hero-btns {
 
 @media(max-width: 768px) {
     .navbar {
-        padding: 0.85rem 4%;
+        padding: 0.85rem var(--rail-inline);
         padding-top: max(0.85rem, env(safe-area-inset-top));
     }
     .navbar div {
@@ -3124,9 +3275,9 @@ body.page-ready .hero-content .hero-btns {
         grid-template-columns: 1fr !important;
     }
     
-    /* Sections spacing — tighter, consistent rhythm */
+    /* Sections spacing — tighter vertical, same horizontal rail */
     .section {
-        padding: 2.5rem 5% !important;
+        padding: 2.5rem var(--rail-inline) !important;
     }
     .section-header {
         margin-bottom: 1.75rem;
@@ -3152,9 +3303,14 @@ body.page-ready .hero-content .hero-btns {
 
     .process-header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
         gap: 1rem;
         margin-bottom: 1.75rem;
+        text-align: center;
+        width: 100%;
+        max-width: var(--content-max);
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .process-step {
@@ -3174,7 +3330,9 @@ body.page-ready .hero-content .hero-btns {
     }
 
     .sterilization-bar {
-        margin: 1.5rem 5%;
+        margin: 1.5rem auto;
+        padding-left: var(--rail-inline);
+        padding-right: var(--rail-inline);
         gap: 0.75rem;
     }
 
@@ -3359,11 +3517,13 @@ body.page-ready .hero-content .hero-btns {
 
 /* Google Maps */
 .find-us-section .map-wrap {
-    max-width: 1100px;
+    max-width: var(--content-max);
     margin: 0 auto;
     border: 1px solid var(--border);
     overflow: hidden;
     background: var(--bg-box);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .google-map {
@@ -3909,11 +4069,13 @@ body.journey-theme-skulls .journey-motif.motif-skull {
     text-align: center;
 }
 .tryon-home-inner {
-    max-width: 920px;
+    max-width: var(--content-max);
     margin: 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
+    box-sizing: border-box;
 }
 .tryon-home-header {
     max-width: 36rem;
@@ -4061,12 +4223,14 @@ button.slider-link-btn {
     border-top: 1px solid var(--border);
 }
 .social-feed-layout {
-    max-width: 1100px;
+    max-width: var(--content-max);
     margin: 0 auto;
     display: grid;
     grid-template-columns: minmax(280px, 1fr) minmax(260px, 0.9fr);
     gap: 2rem;
     align-items: start;
+    width: 100%;
+    box-sizing: border-box;
 }
 .fb-page-wrap {
     min-height: 420px;
@@ -4141,12 +4305,14 @@ button.slider-link-btn {
     background: var(--bg-light);
 }
 .awards-layout {
-    max-width: 1100px;
+    max-width: var(--content-max);
     margin: 0 auto;
     display: grid;
     grid-template-columns: minmax(240px, 0.9fr) 1.2fr;
-    gap: 2rem 2.5rem;
+    gap: 1.5rem 2rem;
     align-items: center;
+    width: 100%;
+    box-sizing: border-box;
 }
 .awards-copy {
     text-align: left;
@@ -5235,7 +5401,7 @@ body.modal-open { overflow: hidden; }
     }
 
     footer {
-        padding: 2.5rem 5% 1.5rem;
+        padding: 2.5rem var(--rail-inline) 1.5rem;
         padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
     }
 
@@ -5267,7 +5433,7 @@ body.modal-open { overflow: hidden; }
 
 @media (max-width: 480px) {
     .section {
-        padding: 2rem 4.5% !important;
+        padding: 2rem var(--rail-inline) !important;
     }
 
     .box {
@@ -5483,7 +5649,7 @@ body.modal-open { overflow: hidden; }
     color: var(--text-secondary);
     font-size: 0.95rem;
     max-width: 32rem;
-    margin-top: 0.5rem;
+    margin: 0.5rem auto 0;
 }
 
 .process-cta-row {
@@ -5491,13 +5657,19 @@ body.modal-open { overflow: hidden; }
     flex-wrap: wrap;
     gap: 0.75rem;
     margin-top: 2.5rem;
+    justify-content: center;
+    width: 100%;
+    max-width: var(--content-max);
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
 }
 
 /* Mid-funnel conversion strip */
 .conversion-strip {
     position: relative;
     z-index: 2;
-    padding: 3rem 5%;
+    padding: 3rem var(--rail-inline);
     background:
         linear-gradient(135deg, rgba(230,57,70,0.14) 0%, rgba(10,10,10,0.97) 50%, #0a0a0a 100%);
     border-top: 1px solid rgba(230, 57, 70, 0.25);
@@ -5505,15 +5677,18 @@ body.modal-open { overflow: hidden; }
     box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.03),
         0 0 60px rgba(230, 57, 70, 0.05);
+    box-sizing: border-box;
 }
 .conversion-strip-inner {
-    max-width: 1100px;
+    max-width: var(--content-max);
     margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 1.5rem 2.5rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 .conversion-strip h2 {
     font-size: clamp(1.45rem, 3vw, 2rem);
@@ -5716,21 +5891,19 @@ form .form-row .field {
     color: var(--accent);
 }
 
-/* —— Booking full width + reviews band below —— */
-.book-section {
-    max-width: 1100px;
+/* —— Booking full width + reviews below (same content rail) —— */
+.book-section,
+.reviews-section {
+    max-width: 100%;
     margin-left: auto;
     margin-right: auto;
 }
 .booking-form-full {
     width: 100%;
-    max-width: 100%;
-}
-
-.reviews-section {
-    max-width: 1100px;
+    max-width: var(--content-max);
     margin-left: auto;
     margin-right: auto;
+    box-sizing: border-box;
 }
 .reviews-section-head {
     margin-bottom: 1.15rem;
@@ -6043,8 +6216,9 @@ form .form-row .field {
     width: 100%;
 }
 .artists-wrap {
-    max-width: 900px;
+    max-width: var(--content-max);
     margin: 0 auto;
+    width: 100%;
 }
 .artists-intro {
     max-width: 32rem;
@@ -6170,8 +6344,8 @@ form .form-row .field {
 @media (max-width: 720px) {
     .artists-grid {
         grid-template-columns: 1fr;
-        max-width: 420px;
-        margin: 0 auto;
+        max-width: 100%;
+        margin: 0;
         gap: 0.9rem;
     }
     .artist.artist-compact {
@@ -6194,12 +6368,13 @@ form .form-row .field {
 
 /* —— Social gallery — clean image tiles, small badges only —— */
 .social-gallery {
-    max-width: 1100px;
+    max-width: var(--content-max);
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1.2fr 1fr;
     gap: 0.75rem;
     align-items: stretch;
+    width: 100%;
 }
 .social-gallery-clean .social-tile,
 .social-gallery-clean .social-tile-lg {
@@ -6519,12 +6694,13 @@ form .form-row .field {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.65rem 0.75rem;
+    padding: 0.65rem var(--rail-inline);
     padding-bottom: max(0.65rem, env(safe-area-inset-bottom));
     background: rgba(8, 8, 8, 0.94);
     backdrop-filter: blur(12px);
     border-top: 1px solid var(--border);
     box-shadow: 0 -8px 32px rgba(0,0,0,0.45);
+    box-sizing: border-box;
 }
 .sticky-book-bar[hidden] {
     display: none !important;
@@ -6574,7 +6750,7 @@ form .form-row .field {
         margin-top: 0.75rem;
     }
     .conversion-strip {
-        padding: 1.75rem 5%;
+        padding: 1.75rem var(--rail-inline);
     }
     .conversion-strip-actions {
         width: 100%;
@@ -7074,7 +7250,7 @@ body.cart-open {
     .features-bar {
         flex-wrap: wrap;
         gap: 0.85rem;
-        padding: 1.25rem 5%;
+        padding: 1.25rem var(--rail-inline);
         justify-content: flex-start;
     }
     .feature {
@@ -7216,5 +7392,234 @@ body.cart-open {
         transform: none !important;
         transition: none !important;
         animation: none !important;
+    }
+}
+
+/* =========================================================
+   LAYOUT LOCK — one rail, one gutter, consistent alignment
+   Wins over older % paddings / mismatched max-widths
+   ========================================================= */
+
+/* Full-bleed shells: same horizontal inset as content rail */
+.navbar,
+.navbar.scrolled,
+.features-bar,
+.sterilization-bar,
+.conversion-strip,
+footer,
+.section,
+.book-section.section,
+.reviews-section.section,
+#artists.section,
+#shop.section,
+#blog.section,
+#social.section,
+#portfolio.section,
+#awards.section,
+#process.section,
+#find-us.section,
+#specialties.section,
+#see-it-on-you.section,
+#info.section {
+    padding-left: var(--rail-inline) !important;
+    padding-right: var(--rail-inline) !important;
+    box-sizing: border-box;
+}
+
+.section,
+.book-section,
+.reviews-section {
+    max-width: 100% !important;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Features / sterilization stay full-bleed (borders edge-to-edge) */
+.features-bar,
+.sterilization-bar {
+    max-width: 100% !important;
+    width: 100%;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+.sterilization-bar {
+    margin-top: var(--section-y) !important;
+    margin-bottom: var(--section-y) !important;
+}
+
+/* Everything that should share the 1120px column */
+.section-header,
+.artists-wrap,
+.awards-layout,
+.reviews-stack,
+.social-gallery,
+.social-follow-row,
+.social-feed-layout,
+.blog-grid,
+.shop-grid,
+.portfolio-grid,
+.booking-form-full,
+.booking-form,
+.map-wrap,
+.tryon-home-inner,
+.grid-4,
+.process-header,
+.process-timeline,
+.process-cta-row,
+.portfolio-filters,
+.shop-filters,
+.shop-toolbar,
+.show-more-wrap,
+.bottom-info,
+.conversion-strip-inner,
+.footer-top,
+.footer-bottom,
+.footer-powered {
+    max-width: var(--content-max) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+/* Section titles: centered (split headers stay left/right) */
+.section-header:not(.split),
+.reviews-section-head,
+#artists .section-header,
+#shop .section-header,
+#blog .section-header,
+#social .section-header,
+#find-us .section-header,
+#specialties .section-header,
+#process .process-header {
+    text-align: center !important;
+}
+#process .process-header {
+    align-items: center !important;
+}
+#process .process-lead {
+    margin-left: auto;
+    margin-right: auto;
+}
+.section-header:not(.split) .shop-intro,
+.section-header:not(.split) .artists-intro,
+.section-header:not(.split) p {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 36rem;
+}
+
+/* Filters centered in the rail */
+.shop-filters,
+.portfolio-filters {
+    justify-content: center;
+}
+
+/* Shop toolbar: one row inside rail */
+.shop-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.25rem;
+}
+
+/* Process CTA row centered */
+.process-cta-row {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+/* Conversion strip inner already on rail */
+.conversion-strip {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+@media (max-width: 820px) {
+    .conversion-strip {
+        padding-top: 1.75rem;
+        padding-bottom: 1.75rem;
+    }
+}
+
+/* Bottom info cards */
+.bottom-info {
+    gap: var(--stack-gap);
+}
+
+/* Prevent overflow / horizontal scroll from grids */
+.shop-grid,
+.portfolio-grid,
+.blog-grid,
+.artists-grid,
+.reviews-stack,
+.social-gallery,
+.sterilization-bar,
+.features-bar {
+    min-width: 0;
+}
+.shop-card,
+.portfolio-item,
+.blog-card,
+.artist,
+.fb-reviews-hero,
+.google-reviews-side,
+.sterilization-item,
+.feature {
+    min-width: 0;
+    max-width: 100%;
+}
+
+/* Footer brand row: left-aligned on desktop */
+.footer-powered {
+    justify-content: flex-start;
+}
+
+/* Legacy narrower max-widths → shared rail */
+.artists-grid-2,
+.artists-roster,
+.try-on-section .try-on-layout {
+    max-width: var(--content-max) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .features-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .features-bar .feature {
+        flex: 1 1 auto;
+    }
+    .sterilization-bar {
+        flex-direction: column;
+    }
+    .footer-powered {
+        justify-content: center;
+    }
+    /* Process header: center on mobile for consistency with other sections */
+    #process .process-header {
+        text-align: center !important;
+        align-items: center !important;
+    }
+    .process-cta-row {
+        justify-content: center;
+    }
+    .process-cta-row .btn {
+        flex: 1 1 auto;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .sterilization-item {
+        flex: 1 1 100%;
     }
 }
