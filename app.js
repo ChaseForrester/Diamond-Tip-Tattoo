@@ -6226,18 +6226,25 @@ window.initMarketingUX = function initMarketingUX() {
   };
 
   wireModal("openAftercareBtn", "aftercareModal", ["closeAftercareBtn", "aftercareDoneBtn"]);
-  wireModal("privacyLink", "privacyModal", "closePrivacyBtn");
-  wireModal("termsLink", "termsModal", "closeTermsBtn");
+  // Full legal pages live at /legal/* — footer links navigate there (no preventDefault).
+  // Keep modals for any legacy in-page triggers that still call openModal.
+  wireModal([], "privacyModal", "closePrivacyBtn");
+  wireModal([], "termsModal", "closeTermsBtn");
 
   const aftercareToShop = document.getElementById("aftercareToShop");
   if (aftercareToShop) {
     aftercareToShop.addEventListener("click", () => closeModal("aftercareModal"));
   }
 
-  // Footer try-on already handled elsewhere; ensure messenger link works on mobile
-  // Hash open for privacy/terms
-  if (location.hash === "#privacy") openModal("privacyModal");
-  if (location.hash === "#terms") openModal("termsModal");
+  // Legacy hashes → full policy pages
+  if (location.hash === "#privacy") {
+    window.location.replace("legal/privacy-policy.html");
+    return;
+  }
+  if (location.hash === "#terms") {
+    window.location.replace("legal/terms-and-conditions.html");
+    return;
+  }
 };
 
 // Boot marketing UX after main DOM ready (module loads after parse)

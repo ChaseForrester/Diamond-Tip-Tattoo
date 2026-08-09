@@ -1021,8 +1021,8 @@
                     <button type="submit" id="bookingSubmitBtn" class="btn btn-solid"
                         data-track="cta_form_submit">REQUEST FREE CONSULTATION</button>
                     <span class="privacy-note">Your details (including email) go to our CRM and are prepared for
-                        <strong>Facebook Messenger</strong> to the studio page. <a href="#privacy"
-                            class="inline-legal">Privacy</a></span>
+                        <strong>Facebook Messenger</strong> to the studio page. See our
+                        <a href="legal/privacy-policy.html" class="inline-legal">Privacy Policy</a>.</span>
                 </div>
                 <p class="booking-reassure">Prefer to talk first? Call <a href="tel:+61242614311">(02) 4261 4311</a> ·
                     or message us on <a href="https://m.me/diamondtiptattoo" target="_blank"
@@ -1464,8 +1464,10 @@
             <div class="footer-bottom-left">
                 <p>&copy; 2026 Diamond Tip Tattoo · Dapto NSW. All rights reserved.</p>
                 <div class="legal-links">
-                    <a href="#privacy" id="privacyLink">Privacy Policy</a>
-                    <a href="#terms" id="termsLink">Terms of Service</a>
+                    <a href="legal/privacy-policy.html" id="privacyLink">Privacy Policy</a>
+                    <a href="legal/terms-and-conditions.html" id="termsLink">Terms &amp; Conditions</a>
+                    <a href="legal/refund-policy.html" id="refundLink">Refund Policy</a>
+                    <a href="legal/media-release.html" id="mediaReleaseLink">Media Release</a>
                 </div>
             </div>
             <div class="footer-credits">
@@ -1525,31 +1527,37 @@
         </div>
     </div>
 
-    <!-- Privacy / Terms light modals -->
+    <!-- Privacy / Terms light modals (full policies live on /legal/* pages) -->
     <div id="privacyModal" class="modal" style="display:none;" aria-hidden="true">
         <div class="modal-content box legal-modal-content">
             <button type="button" class="close-modal" id="closePrivacyBtn" aria-label="Close">&times;</button>
             <h2 id="privacy">Privacy Policy</h2>
             <div class="legal-body">
-                <p>We collect name, email, phone and booking details only to respond to consultation requests and manage
-                    appointments. Reference images are stored securely for your booking.</p>
-                <p>We do not sell your data. You can request access or deletion by emailing <a
-                        href="mailto:hello@diamondtiptattoo.com">hello@diamondtiptattoo.com</a>.</p>
-                <p>This site may use essential cookies and optional analytics/ads pixels if enabled by the studio.</p>
+                <p>We collect name, email, phone and booking details to respond to consultations, run the studio, and
+                    (with permission) market your work. We do not sell your personal information.</p>
+                <p>Full policy — including Meta/Facebook Messenger, cookies, Australian Privacy Principles and ACCC
+                    consumer-law notes:</p>
+                <p><a class="btn btn-solid" href="legal/privacy-policy.html"
+                        style="display:inline-block;margin-top:0.5rem;">Open full Privacy Policy</a></p>
+                <p style="margin-top:1rem;">Also: <a href="legal/media-release.html">Media release</a> ·
+                    <a href="mailto:hello@diamondtiptattoo.com">hello@diamondtiptattoo.com</a>
+                </p>
             </div>
         </div>
     </div>
     <div id="termsModal" class="modal" style="display:none;" aria-hidden="true">
         <div class="modal-content box legal-modal-content">
             <button type="button" class="close-modal" id="closeTermsBtn" aria-label="Close">&times;</button>
-            <h2 id="terms">Terms of Service</h2>
+            <h2 id="terms">Terms &amp; Conditions</h2>
             <div class="legal-body">
-                <p>Consultations are free and non-binding. Session deposits (when requested) hold your booking and are
-                    subject to the studio’s cancellation policy, confirmed in writing before payment.</p>
-                <p>You must be 18+ with valid ID for tattoos. Studio hygiene and aftercare guidelines must be followed.
-                    Design ownership and usage are agreed at booking.</p>
-                <p>Questions: <a href="mailto:hello@diamondtiptattoo.com">hello@diamondtiptattoo.com</a> · <a
-                        href="tel:+61242614311">(02) 4261 4311</a>.</p>
+                <p>Consultations are free and non-binding. Deposits (when requested) hold your booking under the studio
+                    cancellation rules confirmed in writing before payment. You must be 18+ with valid ID for tattoos.
+                </p>
+                <p><a class="btn btn-solid" href="legal/terms-and-conditions.html"
+                        style="display:inline-block;margin-top:0.5rem;">Open full Terms</a></p>
+                <p style="margin-top:1rem;"><a href="legal/refund-policy.html">Refund Policy</a> ·
+                    <a href="tel:+61242614311">(02) 4261 4311</a>
+                </p>
             </div>
         </div>
     </div>
@@ -2219,10 +2227,12 @@
                     style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
                     <div><strong
                             style="font-size: 0.85rem; color: var(--text-secondary); display: block;">Email:</strong>
-                        <span id="mBookingEmail">--</span></div>
+                        <span id="mBookingEmail">--</span>
+                    </div>
                     <div><strong
                             style="font-size: 0.85rem; color: var(--text-secondary); display: block;">Phone:</strong>
-                        <span id="mBookingPhone">--</span></div>
+                        <span id="mBookingPhone">--</span>
+                    </div>
                 </div>
                 <div
                     style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
@@ -2230,7 +2240,8 @@
                             Date:</strong> <span id="mBookingDate">--</span></div>
                     <div><strong
                             style="font-size: 0.85rem; color: var(--text-secondary); display: block;">Style:</strong>
-                        <span id="mBookingStyle">--</span></div>
+                        <span id="mBookingStyle">--</span>
+                    </div>
                 </div>
                 <div style="border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
                     <strong style="font-size: 0.85rem; color: var(--text-secondary); display: block;">Idea /
