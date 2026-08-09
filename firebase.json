@@ -16,24 +16,53 @@
       "**/node_modules/**",
       ".git/**",
       ".firebase/**",
-      "NOTION-TODO-LIST.md"
+      "NOTION-TODO-LIST.md",
+      "api/**",
+      "vercel.json",
+      ".env.example",
+      "package.json",
+      "package-lock.json",
+      "META-MESSENGER-SETUP.md",
+      "analytics-bootstrap.js",
+      "NOTION-TODO-LIST.md",
+      "Notion/**"
     ],
     "headers": [
       {
         "source": "/sitemap.xml",
-        "headers": [{ "key": "Content-Type", "value": "application/xml; charset=utf-8" }]
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/xml; charset=utf-8"
+          }
+        ]
       },
       {
         "source": "/robots.txt",
-        "headers": [{ "key": "Content-Type", "value": "text/plain; charset=utf-8" }]
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "text/plain; charset=utf-8"
+          }
+        ]
       },
       {
         "source": "**/*.@(jpg|jpeg|gif|png|webp|svg|ico)",
-        "headers": [{ "key": "Cache-Control", "value": "public,max-age=31536000,immutable" }]
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public,max-age=31536000,immutable"
+          }
+        ]
       },
       {
         "source": "**/*.@(js|css)",
-        "headers": [{ "key": "Cache-Control", "value": "public,max-age=3600" }]
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public,max-age=3600"
+          }
+        ]
       }
     ]
   },

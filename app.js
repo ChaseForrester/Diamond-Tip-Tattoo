@@ -1,10 +1,10 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { 
-  getFirestore, doc, setDoc, addDoc, getDoc, getDocs, collection, query, where, orderBy, updateDoc, deleteDoc, onSnapshot 
+import {
+  getFirestore, doc, setDoc, addDoc, getDoc, getDocs, collection, query, where, orderBy, updateDoc, deleteDoc, onSnapshot
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
-import { 
-  getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject 
+import {
+  getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
 import { getVertexAI, getGenerativeModel } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-vertexai.js";
 
@@ -858,7 +858,8 @@ window.initShopCart = function initShopCart() {
         try {
           await sendFormDataToMessenger(orderText, {
             win: window.__pendingMessengerWindow,
-            open: true
+            open: true,
+            ref: `order_${orderId}`
           });
         } catch (mErr) {
           console.warn("Order messenger handoff failed:", mErr);
@@ -901,6 +902,16 @@ window.initShopCart = function initShopCart() {
             })
           });
         } catch (_) { /* optional backup */ }
+
+        // Vercel form webhook (shop / aftercare order)
+        try {
+          await postFormWebhook("order", {
+            ...orderPayload,
+            messenger: STUDIO_MESSENGER_URL
+          });
+        } catch (whErr) {
+          console.warn("Vercel order webhook failed:", whErr);
+        }
 
         if (typeof window.trackConversion === "function") {
           window.trackConversion("purchase", {
@@ -958,455 +969,455 @@ window.initShopCart = function initShopCart() {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-    // No intro animation — page is ready immediately
-    document.body.classList.add('page-ready');
+  // No intro animation — page is ready immediately
+  document.body.classList.add('page-ready');
 
-    // Mobile Hamburger Menu Toggle — open/close reliably
-    const menuToggle = document.getElementById('menuToggleBtn');
-    const navLinks = document.getElementById('navbarLinks');
-    const navBackdrop = document.getElementById('navDrawerBackdrop');
+  // Mobile Hamburger Menu Toggle — open/close reliably
+  const menuToggle = document.getElementById('menuToggleBtn');
+  const navLinks = document.getElementById('navbarLinks');
+  const navBackdrop = document.getElementById('navDrawerBackdrop');
 
-    const setNavOpen = (open) => {
-        if (!menuToggle || !navLinks) return;
-        menuToggle.classList.toggle('open', open);
-        navLinks.classList.toggle('open', open);
-        document.body.classList.toggle('nav-open', open);
-        menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-        menuToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-        if (navBackdrop) {
-            navBackdrop.classList.toggle('is-open', open);
-            navBackdrop.setAttribute('aria-hidden', open ? 'false' : 'true');
-        }
-    };
+  const setNavOpen = (open) => {
+    if (!menuToggle || !navLinks) return;
+    menuToggle.classList.toggle('open', open);
+    navLinks.classList.toggle('open', open);
+    document.body.classList.toggle('nav-open', open);
+    menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    menuToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    if (navBackdrop) {
+      navBackdrop.classList.toggle('is-open', open);
+      navBackdrop.setAttribute('aria-hidden', open ? 'false' : 'true');
+    }
+  };
 
-    if (menuToggle && navLinks) {
-        menuToggle.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setNavOpen(!navLinks.classList.contains('open'));
-        });
+  if (menuToggle && navLinks) {
+    menuToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setNavOpen(!navLinks.classList.contains('open'));
+    });
 
-        if (navBackdrop) {
-            navBackdrop.addEventListener('click', () => setNavOpen(false));
-        }
+    if (navBackdrop) {
+      navBackdrop.addEventListener('click', () => setNavOpen(false));
+    }
 
-        navLinks.querySelectorAll('a, button').forEach((el) => {
-            el.addEventListener('click', () => setNavOpen(false));
-        });
+    navLinks.querySelectorAll('a, button').forEach((el) => {
+      el.addEventListener('click', () => setNavOpen(false));
+    });
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && navLinks.classList.contains('open')) {
-                setNavOpen(false);
-            }
-        });
-
-        // Ensure drawer starts closed
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && navLinks.classList.contains('open')) {
         setNavOpen(false);
-    }
-
-    // Hero Slider Functionality
-    const sliderTitle = document.getElementById('sliderTitle');
-    const sliderBgText = document.getElementById('sliderBgText');
-    const sliderLocationTag = document.getElementById('sliderLocationTag');
-    const sliderMainImg = document.getElementById('sliderMainImg');
-    const sliderTeaserImg = document.getElementById('sliderTeaserImg');
-    const sliderAction1 = document.getElementById('sliderAction1');
-    const sliderAction2 = document.getElementById('sliderAction2');
-    const sliderPrevBtn = document.getElementById('sliderPrevBtn');
-    const sliderNextBtn = document.getElementById('sliderNextBtn');
-    const sliderCurrentNum = document.getElementById('sliderCurrentNum');
-    const sliderDotsContainer = document.getElementById('sliderDots');
-    const sliderTeaserFrame = document.getElementById('sliderTeaserFrame');
-    const homeHeader = document.getElementById('home');
-
-    const heroSlides = [
-      {
-        title: "CUSTOM TATTOOS<br>BUILT TO LAST",
-        bgText: "TATTOOS",
-        mainImg: "assets/tattoo_model_main.png",
-        teaserImg: "assets/tattoo_model_secondary.png",
-        location: "Private studio · Dapto, Illawarra NSW",
-        actionText1: "BOOK FREE CONSULTATION",
-        actionText2: "SEE IT ON YOU",
-        actionLink1: "#book",
-        action2: "try-on"
-      },
-      {
-        title: "FINE LINE<br>& REALISM",
-        bgText: "FINE LINE",
-        mainImg: "assets/portfolio/realism/realism_bear-wolf-landscape.jpg",
-        teaserImg: "assets/portfolio/fineline/fineline_butterfly-florals.jpg",
-        location: "Steven Benn & Scotty · Dapto",
-        actionText1: "BOOK THIS STYLE",
-        actionText2: "SEE IT ON YOU",
-        actionLink1: "#book",
-        action2: "try-on"
-      },
-      {
-        title: "YOUR IDEA.<br>OUR CRAFT.",
-        bgText: "CUSTOM",
-        mainImg: "assets/portfolio/custom/custom_neotrad-oni.jpg",
-        teaserImg: "assets/portfolio/custom/custom_japanese-pagoda.jpg",
-        location: "Free consult · clear pricing",
-        actionText1: "START CONSULTATION",
-        actionText2: "TRY YOUR DESIGN",
-        actionLink1: "#book",
-        action2: "try-on"
-      },
-      {
-        title: "PRIVATE.<br>HYGIENIC. PRECISE.",
-        bgText: "STUDIO",
-        mainImg: "assets/portfolio/realism/realism_joker-clown-faces.jpg",
-        teaserImg: "assets/portfolio/blackgrey/blackgrey_skull-backpiece.jpg",
-        location: "Appointment only · mornings",
-        actionText1: "BOOK YOUR SESSION",
-        actionText2: "SEE IT ON YOU",
-        actionLink1: "#book",
-        action2: "try-on"
       }
-    ];
-
-    let currentSlideIndex = 0;
-    let isTransitioning = false;
-    let sliderTimer = null;
-
-    function initSlider() {
-        if (!homeHeader) return;
-        
-        // Trigger initial slide reveal immediately (no intro loader)
-        requestAnimationFrame(() => {
-            homeHeader.classList.add('slide-in');
-        });
-
-        // Dot Navigation
-        if (sliderDotsContainer) {
-            sliderDotsContainer.querySelectorAll('.dot').forEach((dot, idx) => {
-                dot.onclick = () => {
-                    if (idx !== currentSlideIndex) goToSlide(idx);
-                };
-            });
-        }
-
-        // Arrow Navigation
-        if (sliderPrevBtn) {
-            sliderPrevBtn.onclick = () => {
-                let prevIdx = (currentSlideIndex - 1 + heroSlides.length) % heroSlides.length;
-                goToSlide(prevIdx);
-            };
-        }
-        if (sliderNextBtn) {
-            sliderNextBtn.onclick = () => {
-                let nextIdx = (currentSlideIndex + 1) % heroSlides.length;
-                goToSlide(nextIdx);
-            };
-        }
-
-        // Teaser Image Click to advance
-        if (sliderTeaserFrame) {
-            sliderTeaserFrame.onclick = () => {
-                let nextIdx = (currentSlideIndex + 1) % heroSlides.length;
-                goToSlide(nextIdx);
-            };
-        }
-
-        // Start Auto rotation
-        startAutoSlider();
-    }
-
-    function startAutoSlider() {
-        stopAutoSlider();
-        sliderTimer = setInterval(() => {
-            if (!isTransitioning) {
-                let nextIdx = (currentSlideIndex + 1) % heroSlides.length;
-                goToSlide(nextIdx);
-            }
-        }, 7000);
-    }
-
-    function stopAutoSlider() {
-        if (sliderTimer) clearInterval(sliderTimer);
-    }
-
-    function goToSlide(index) {
-        if (isTransitioning || !homeHeader) return;
-        isTransitioning = true;
-
-        // Reset timer on manual interaction
-        startAutoSlider();
-
-        // Start slide-out animations
-        homeHeader.classList.remove('slide-in');
-
-        // Wait for slide-out transition (800ms matches CSS transition)
-        setTimeout(() => {
-            currentSlideIndex = index;
-            const slide = heroSlides[currentSlideIndex];
-
-            // Update content
-            if (sliderTitle) sliderTitle.innerHTML = slide.title;
-            if (sliderBgText) sliderBgText.textContent = slide.bgText;
-            if (sliderLocationTag) sliderLocationTag.textContent = slide.location;
-            if (sliderMainImg) sliderMainImg.src = slide.mainImg;
-            if (sliderTeaserImg) sliderTeaserImg.src = slide.teaserImg;
-            
-            if (sliderAction1) {
-                sliderAction1.textContent = slide.actionText1;
-                if (sliderAction1.tagName === "A") sliderAction1.href = slide.actionLink1 || "#book";
-            }
-            if (sliderAction2) {
-                sliderAction2.textContent = slide.actionText2 || "SEE IT ON YOU";
-                // Secondary hero CTA opens try-on (button or link)
-                sliderAction2.classList.add("open-try-on-btn");
-                if (sliderAction2.tagName === "A") {
-                    sliderAction2.href = "#see-it-on-you";
-                }
-            }
-
-            // Update counter
-            if (sliderCurrentNum) {
-                sliderCurrentNum.textContent = `0${currentSlideIndex + 1}`;
-            }
-
-            // Update dots active class
-            if (sliderDotsContainer) {
-                sliderDotsContainer.querySelectorAll('.dot').forEach((dot, idx) => {
-                    dot.classList.toggle('active', idx === currentSlideIndex);
-                });
-            }
-
-            // Trigger slide-in animations
-            homeHeader.classList.add('slide-in');
-            
-            setTimeout(() => {
-                isTransitioning = false;
-            }, 500);
-        }, 800);
-    }
-
-    // Scroll effects for Navbar
-    const navbar = document.querySelector('.navbar');
-    if (navbar) {
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
-        });
-    }
-
-    initSlider();
-
-
-    // Scroll animations BOTH directions: re-trigger when scrolling up or down
-    // (do not unobserve — keep watching enter/leave)
-    const isNarrow = window.matchMedia("(max-width: 820px)").matches;
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    const setInView = (el, on) => {
-        if (on) {
-            el.classList.add("visible", "is-inview");
-            // also reveal any delayed children in this section
-            el.querySelectorAll(".reveal-on-scroll").forEach((child) => {
-                child.classList.add("is-visible");
-            });
-        } else if (!reduceMotion) {
-            el.classList.remove("visible", "is-inview");
-            el.querySelectorAll(".reveal-on-scroll").forEach((child) => {
-                child.classList.remove("is-visible");
-            });
-        }
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            setInView(entry.target, entry.isIntersecting);
-        });
-    }, {
-        threshold: isNarrow ? [0, 0.08, 0.2] : [0, 0.12, 0.25],
-        rootMargin: isNarrow ? "0px 0px -4% 0px" : "0px 0px -6% 0px"
     });
 
-    const scrollAnimTargets = document.querySelectorAll(
-      ".fade-in, .slide-up, .features-bar, .sterilization-bar, .journey-section, .section, .conversion-strip, .reviews-section, .social-feed-section, .book-section"
-    );
-    scrollAnimTargets.forEach((el) => observer.observe(el));
+    // Ensure drawer starts closed
+    setNavOpen(false);
+  }
 
-    // Initial paint: reveal what's already on screen
-    const syncInView = () => {
-        const vh = window.innerHeight || 1;
-        scrollAnimTargets.forEach((el) => {
-            const r = el.getBoundingClientRect();
-            const on = r.top < vh * 0.92 && r.bottom > vh * 0.08;
-            setInView(el, on);
+  // Hero Slider Functionality
+  const sliderTitle = document.getElementById('sliderTitle');
+  const sliderBgText = document.getElementById('sliderBgText');
+  const sliderLocationTag = document.getElementById('sliderLocationTag');
+  const sliderMainImg = document.getElementById('sliderMainImg');
+  const sliderTeaserImg = document.getElementById('sliderTeaserImg');
+  const sliderAction1 = document.getElementById('sliderAction1');
+  const sliderAction2 = document.getElementById('sliderAction2');
+  const sliderPrevBtn = document.getElementById('sliderPrevBtn');
+  const sliderNextBtn = document.getElementById('sliderNextBtn');
+  const sliderCurrentNum = document.getElementById('sliderCurrentNum');
+  const sliderDotsContainer = document.getElementById('sliderDots');
+  const sliderTeaserFrame = document.getElementById('sliderTeaserFrame');
+  const homeHeader = document.getElementById('home');
+
+  const heroSlides = [
+    {
+      title: "CUSTOM TATTOOS<br>BUILT TO LAST",
+      bgText: "TATTOOS",
+      mainImg: "assets/tattoo_model_main.png",
+      teaserImg: "assets/tattoo_model_secondary.png",
+      location: "Private studio · Dapto, Illawarra NSW",
+      actionText1: "BOOK FREE CONSULTATION",
+      actionText2: "SEE IT ON YOU",
+      actionLink1: "#book",
+      action2: "try-on"
+    },
+    {
+      title: "FINE LINE<br>& REALISM",
+      bgText: "FINE LINE",
+      mainImg: "assets/portfolio/realism/realism_bear-wolf-landscape.jpg",
+      teaserImg: "assets/portfolio/fineline/fineline_butterfly-florals.jpg",
+      location: "Steven Benn & Scotty · Dapto",
+      actionText1: "BOOK THIS STYLE",
+      actionText2: "SEE IT ON YOU",
+      actionLink1: "#book",
+      action2: "try-on"
+    },
+    {
+      title: "YOUR IDEA.<br>OUR CRAFT.",
+      bgText: "CUSTOM",
+      mainImg: "assets/portfolio/custom/custom_neotrad-oni.jpg",
+      teaserImg: "assets/portfolio/custom/custom_japanese-pagoda.jpg",
+      location: "Free consult · clear pricing",
+      actionText1: "START CONSULTATION",
+      actionText2: "TRY YOUR DESIGN",
+      actionLink1: "#book",
+      action2: "try-on"
+    },
+    {
+      title: "PRIVATE.<br>HYGIENIC. PRECISE.",
+      bgText: "STUDIO",
+      mainImg: "assets/portfolio/realism/realism_joker-clown-faces.jpg",
+      teaserImg: "assets/portfolio/blackgrey/blackgrey_skull-backpiece.jpg",
+      location: "Appointment only · mornings",
+      actionText1: "BOOK YOUR SESSION",
+      actionText2: "SEE IT ON YOU",
+      actionLink1: "#book",
+      action2: "try-on"
+    }
+  ];
+
+  let currentSlideIndex = 0;
+  let isTransitioning = false;
+  let sliderTimer = null;
+
+  function initSlider() {
+    if (!homeHeader) return;
+
+    // Trigger initial slide reveal immediately (no intro loader)
+    requestAnimationFrame(() => {
+      homeHeader.classList.add('slide-in');
+    });
+
+    // Dot Navigation
+    if (sliderDotsContainer) {
+      sliderDotsContainer.querySelectorAll('.dot').forEach((dot, idx) => {
+        dot.onclick = () => {
+          if (idx !== currentSlideIndex) goToSlide(idx);
+        };
+      });
+    }
+
+    // Arrow Navigation
+    if (sliderPrevBtn) {
+      sliderPrevBtn.onclick = () => {
+        let prevIdx = (currentSlideIndex - 1 + heroSlides.length) % heroSlides.length;
+        goToSlide(prevIdx);
+      };
+    }
+    if (sliderNextBtn) {
+      sliderNextBtn.onclick = () => {
+        let nextIdx = (currentSlideIndex + 1) % heroSlides.length;
+        goToSlide(nextIdx);
+      };
+    }
+
+    // Teaser Image Click to advance
+    if (sliderTeaserFrame) {
+      sliderTeaserFrame.onclick = () => {
+        let nextIdx = (currentSlideIndex + 1) % heroSlides.length;
+        goToSlide(nextIdx);
+      };
+    }
+
+    // Start Auto rotation
+    startAutoSlider();
+  }
+
+  function startAutoSlider() {
+    stopAutoSlider();
+    sliderTimer = setInterval(() => {
+      if (!isTransitioning) {
+        let nextIdx = (currentSlideIndex + 1) % heroSlides.length;
+        goToSlide(nextIdx);
+      }
+    }, 7000);
+  }
+
+  function stopAutoSlider() {
+    if (sliderTimer) clearInterval(sliderTimer);
+  }
+
+  function goToSlide(index) {
+    if (isTransitioning || !homeHeader) return;
+    isTransitioning = true;
+
+    // Reset timer on manual interaction
+    startAutoSlider();
+
+    // Start slide-out animations
+    homeHeader.classList.remove('slide-in');
+
+    // Wait for slide-out transition (800ms matches CSS transition)
+    setTimeout(() => {
+      currentSlideIndex = index;
+      const slide = heroSlides[currentSlideIndex];
+
+      // Update content
+      if (sliderTitle) sliderTitle.innerHTML = slide.title;
+      if (sliderBgText) sliderBgText.textContent = slide.bgText;
+      if (sliderLocationTag) sliderLocationTag.textContent = slide.location;
+      if (sliderMainImg) sliderMainImg.src = slide.mainImg;
+      if (sliderTeaserImg) sliderTeaserImg.src = slide.teaserImg;
+
+      if (sliderAction1) {
+        sliderAction1.textContent = slide.actionText1;
+        if (sliderAction1.tagName === "A") sliderAction1.href = slide.actionLink1 || "#book";
+      }
+      if (sliderAction2) {
+        sliderAction2.textContent = slide.actionText2 || "SEE IT ON YOU";
+        // Secondary hero CTA opens try-on (button or link)
+        sliderAction2.classList.add("open-try-on-btn");
+        if (sliderAction2.tagName === "A") {
+          sliderAction2.href = "#see-it-on-you";
+        }
+      }
+
+      // Update counter
+      if (sliderCurrentNum) {
+        sliderCurrentNum.textContent = `0${currentSlideIndex + 1}`;
+      }
+
+      // Update dots active class
+      if (sliderDotsContainer) {
+        sliderDotsContainer.querySelectorAll('.dot').forEach((dot, idx) => {
+          dot.classList.toggle('active', idx === currentSlideIndex);
         });
-    };
+      }
+
+      // Trigger slide-in animations
+      homeHeader.classList.add('slide-in');
+
+      setTimeout(() => {
+        isTransitioning = false;
+      }, 500);
+    }, 800);
+  }
+
+  // Scroll effects for Navbar
+  const navbar = document.querySelector('.navbar');
+  if (navbar) {
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+  }
+
+  initSlider();
+
+
+  // Scroll animations BOTH directions: re-trigger when scrolling up or down
+  // (do not unobserve — keep watching enter/leave)
+  const isNarrow = window.matchMedia("(max-width: 820px)").matches;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const setInView = (el, on) => {
+    if (on) {
+      el.classList.add("visible", "is-inview");
+      // also reveal any delayed children in this section
+      el.querySelectorAll(".reveal-on-scroll").forEach((child) => {
+        child.classList.add("is-visible");
+      });
+    } else if (!reduceMotion) {
+      el.classList.remove("visible", "is-inview");
+      el.querySelectorAll(".reveal-on-scroll").forEach((child) => {
+        child.classList.remove("is-visible");
+      });
+    }
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      setInView(entry.target, entry.isIntersecting);
+    });
+  }, {
+    threshold: isNarrow ? [0, 0.08, 0.2] : [0, 0.12, 0.25],
+    rootMargin: isNarrow ? "0px 0px -4% 0px" : "0px 0px -6% 0px"
+  });
+
+  const scrollAnimTargets = document.querySelectorAll(
+    ".fade-in, .slide-up, .features-bar, .sterilization-bar, .journey-section, .section, .conversion-strip, .reviews-section, .social-feed-section, .book-section"
+  );
+  scrollAnimTargets.forEach((el) => observer.observe(el));
+
+  // Initial paint: reveal what's already on screen
+  const syncInView = () => {
+    const vh = window.innerHeight || 1;
+    scrollAnimTargets.forEach((el) => {
+      const r = el.getBoundingClientRect();
+      const on = r.top < vh * 0.92 && r.bottom > vh * 0.08;
+      setInView(el, on);
+    });
+  };
+  requestAnimationFrame(syncInView);
+  window.addEventListener("resize", () => {
     requestAnimationFrame(syncInView);
-    window.addEventListener("resize", () => {
-        requestAnimationFrame(syncInView);
-    }, { passive: true });
+  }, { passive: true });
 
-    // Scroll progress + ambient journey motifs (smoke / guns / skulls / roses)
-    // Journey motif animations disabled — keep scroll progress/motifs off the public site
+  // Scroll progress + ambient journey motifs (smoke / guns / skulls / roses)
+  // Journey motif animations disabled — keep scroll progress/motifs off the public site
 
-    // Show curated specialties + portfolio + artists immediately (before Firebase responds)
-    renderSpecialtiesGrid(defaultSpecialties);
-    renderArtistsGrid(defaultArtists);
-    dbPortfolio = defaultPortfolio;
-    renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
-    initPortfolioFilters();
-    initTattooTryOn();
-    if (typeof window.initTryonHomeDemo === "function") window.initTryonHomeDemo();
-    // Studio shop cart + catalogue (must work without login)
-    if (typeof window.initShopCart === "function") window.initShopCart();
-    if (typeof window.loadShopWebsite === "function") window.loadShopWebsite();
+  // Show curated specialties + portfolio + artists immediately (before Firebase responds)
+  renderSpecialtiesGrid(defaultSpecialties);
+  renderArtistsGrid(defaultArtists);
+  dbPortfolio = defaultPortfolio;
+  renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
+  initPortfolioFilters();
+  initTattooTryOn();
+  if (typeof window.initTryonHomeDemo === "function") window.initTryonHomeDemo();
+  // Studio shop cart + catalogue (must work without login)
+  if (typeof window.initShopCart === "function") window.initShopCart();
+  if (typeof window.loadShopWebsite === "function") window.loadShopWebsite();
 
-    // Dynamic Content Initial Loading
-    loadDynamicContent().then(() => {
-        if (typeof fetchCMSDataCache === 'function') {
-            fetchCMSDataCache().then(() => {
-                if (typeof handleRouting === 'function') handleRouting();
-            });
-        }
-    });
-
-    // Review Slider
-    const slides = document.querySelectorAll('.review-slide');
-    const prevBtn = document.getElementById('prevReview');
-    const nextBtn = document.getElementById('nextReview');
-    let currentSlide = 0;
-
-    if (slides.length > 0) {
-        const showSlide = (index) => {
-            slides.forEach((slide, i) => {
-                slide.style.display = i === index ? 'block' : 'none';
-            });
-        };
-
-        prevBtn.onclick = () => {
-            currentSlide = (currentSlide > 0) ? currentSlide - 1 : slides.length - 1;
-            showSlide(currentSlide);
-        };
-
-        nextBtn.onclick = () => {
-            currentSlide = (currentSlide < slides.length - 1) ? currentSlide + 1 : 0;
-            showSlide(currentSlide);
-        };
+  // Dynamic Content Initial Loading
+  loadDynamicContent().then(() => {
+    if (typeof fetchCMSDataCache === 'function') {
+      fetchCMSDataCache().then(() => {
+        if (typeof handleRouting === 'function') handleRouting();
+      });
     }
+  });
 
-    // Auth Modal Logic
-    const loginBtn = document.getElementById('loginBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const portalBtn = document.getElementById('portalBtn');
-    const modal = document.getElementById('loginModal');
-    const closeBtn = document.querySelector('.close-modal');
-    const authForm = document.getElementById('loginForm');
-    const toggleModeBtn = document.getElementById('toggleAuthMode');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalSubtitle = document.getElementById('modalSubtitle');
-    const submitBtn = document.getElementById('authSubmitBtn');
-    const errorText = document.getElementById('authError');
+  // Review Slider
+  const slides = document.querySelectorAll('.review-slide');
+  const prevBtn = document.getElementById('prevReview');
+  const nextBtn = document.getElementById('nextReview');
+  let currentSlide = 0;
 
-    let isLoginMode = true;
-
-    loginBtn.onclick = () => {
-        modal.style.display = "flex";
-        errorText.textContent = "";
-    }
-    
-    closeBtn.onclick = () => {
-        modal.style.display = "none";
-    }
-    
-    window.onclick = (event) => {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
-    
-    toggleModeBtn.onclick = (e) => {
-        e.preventDefault();
-        isLoginMode = !isLoginMode;
-        errorText.textContent = "";
-        
-        if (isLoginMode) {
-            modalTitle.textContent = "Welcome Back";
-            modalSubtitle.textContent = "Access your client portal";
-            submitBtn.textContent = "SIGN IN";
-            document.getElementById('toggleAuthModeText').innerHTML = `Don't have an account? <a href="#" id="toggleAuthMode" style="color: var(--accent);">Register here</a>.`;
-        } else {
-            modalTitle.textContent = "Create Account";
-            modalSubtitle.textContent = "Join the Diamond Tip family";
-            submitBtn.textContent = "REGISTER";
-            document.getElementById('toggleAuthModeText').innerHTML = `Already have an account? <a href="#" id="toggleAuthMode" style="color: var(--accent);">Sign in here</a>.`;
-        }
-        
-        document.getElementById('toggleAuthMode').onclick = toggleModeBtn.onclick;
-    }
-
-    authForm.onsubmit = (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        
-        submitBtn.disabled = true;
-        submitBtn.textContent = "PLEASE WAIT...";
-        errorText.textContent = "";
-
-        if (isLoginMode) {
-            signInWithEmailAndPassword(auth, email, password)
-                .then(() => {
-                    modal.style.display = "none";
-                    authForm.reset();
-                })
-                .catch((error) => {
-                    errorText.textContent = error.message;
-                })
-                .finally(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = "SIGN IN";
-                });
-        } else {
-            createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    modal.style.display = "none";
-                    authForm.reset();
-                    // Save client info to Firestore
-                    const user = userCredential.user;
-                    setDoc(doc(db, "clients", user.uid), {
-                        email: user.email,
-                        createdAt: new Date().toISOString()
-                    });
-                })
-                .catch((error) => {
-                    errorText.textContent = error.message;
-                })
-                .finally(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = "REGISTER";
-                });
-        }
+  if (slides.length > 0) {
+    const showSlide = (index) => {
+      slides.forEach((slide, i) => {
+        slide.style.display = i === index ? 'block' : 'none';
+      });
     };
 
-    // Google Sign-In Logic
-    const googleAuthBtn = document.getElementById('googleAuthBtn');
-    if (googleAuthBtn) {
-        googleAuthBtn.onclick = () => {
-            const provider = new GoogleAuthProvider();
-            errorText.textContent = "";
-            googleAuthBtn.disabled = true;
-            googleAuthBtn.innerHTML = "Signing in...";
-            signInWithPopup(auth, provider)
-                .then(() => {
-                    modal.style.display = "none";
-                    authForm.reset();
-                })
-                .catch((error) => {
-                    errorText.textContent = error.message;
-                })
-                .finally(() => {
-                    googleAuthBtn.disabled = false;
-                    googleAuthBtn.innerHTML = `
+    prevBtn.onclick = () => {
+      currentSlide = (currentSlide > 0) ? currentSlide - 1 : slides.length - 1;
+      showSlide(currentSlide);
+    };
+
+    nextBtn.onclick = () => {
+      currentSlide = (currentSlide < slides.length - 1) ? currentSlide + 1 : 0;
+      showSlide(currentSlide);
+    };
+  }
+
+  // Auth Modal Logic
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const portalBtn = document.getElementById('portalBtn');
+  const modal = document.getElementById('loginModal');
+  const closeBtn = document.querySelector('.close-modal');
+  const authForm = document.getElementById('loginForm');
+  const toggleModeBtn = document.getElementById('toggleAuthMode');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalSubtitle = document.getElementById('modalSubtitle');
+  const submitBtn = document.getElementById('authSubmitBtn');
+  const errorText = document.getElementById('authError');
+
+  let isLoginMode = true;
+
+  loginBtn.onclick = () => {
+    modal.style.display = "flex";
+    errorText.textContent = "";
+  }
+
+  closeBtn.onclick = () => {
+    modal.style.display = "none";
+  }
+
+  window.onclick = (event) => {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
+
+  toggleModeBtn.onclick = (e) => {
+    e.preventDefault();
+    isLoginMode = !isLoginMode;
+    errorText.textContent = "";
+
+    if (isLoginMode) {
+      modalTitle.textContent = "Welcome Back";
+      modalSubtitle.textContent = "Access your client portal";
+      submitBtn.textContent = "SIGN IN";
+      document.getElementById('toggleAuthModeText').innerHTML = `Don't have an account? <a href="#" id="toggleAuthMode" style="color: var(--accent);">Register here</a>.`;
+    } else {
+      modalTitle.textContent = "Create Account";
+      modalSubtitle.textContent = "Join the Diamond Tip family";
+      submitBtn.textContent = "REGISTER";
+      document.getElementById('toggleAuthModeText').innerHTML = `Already have an account? <a href="#" id="toggleAuthMode" style="color: var(--accent);">Sign in here</a>.`;
+    }
+
+    document.getElementById('toggleAuthMode').onclick = toggleModeBtn.onclick;
+  }
+
+  authForm.onsubmit = (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "PLEASE WAIT...";
+    errorText.textContent = "";
+
+    if (isLoginMode) {
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          modal.style.display = "none";
+          authForm.reset();
+        })
+        .catch((error) => {
+          errorText.textContent = error.message;
+        })
+        .finally(() => {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "SIGN IN";
+        });
+    } else {
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          modal.style.display = "none";
+          authForm.reset();
+          // Save client info to Firestore
+          const user = userCredential.user;
+          setDoc(doc(db, "clients", user.uid), {
+            email: user.email,
+            createdAt: new Date().toISOString()
+          });
+        })
+        .catch((error) => {
+          errorText.textContent = error.message;
+        })
+        .finally(() => {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "REGISTER";
+        });
+    }
+  };
+
+  // Google Sign-In Logic
+  const googleAuthBtn = document.getElementById('googleAuthBtn');
+  if (googleAuthBtn) {
+    googleAuthBtn.onclick = () => {
+      const provider = new GoogleAuthProvider();
+      errorText.textContent = "";
+      googleAuthBtn.disabled = true;
+      googleAuthBtn.innerHTML = "Signing in...";
+      signInWithPopup(auth, provider)
+        .then(() => {
+          modal.style.display = "none";
+          authForm.reset();
+        })
+        .catch((error) => {
+          errorText.textContent = error.message;
+        })
+        .finally(() => {
+          googleAuthBtn.disabled = false;
+          googleAuthBtn.innerHTML = `
                         <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -1415,899 +1426,899 @@ document.addEventListener("DOMContentLoaded", () => {
                         </svg>
                         SIGN IN WITH GOOGLE
                     `;
-                });
-        };
-    }
-
-    logoutBtn.onclick = () => {
-        signOut(auth).then(() => {
-            exitPortal();
         });
     };
+  }
 
-    // Client Skin Notes Save
-    const saveSkinNotesBtn = document.getElementById('saveSkinNotesBtn');
-    if (saveSkinNotesBtn) {
-        saveSkinNotesBtn.onclick = saveSkinNotes;
+  logoutBtn.onclick = () => {
+    signOut(auth).then(() => {
+      exitPortal();
+    });
+  };
+
+  // Client Skin Notes Save
+  const saveSkinNotesBtn = document.getElementById('saveSkinNotesBtn');
+  if (saveSkinNotesBtn) {
+    saveSkinNotesBtn.onclick = saveSkinNotes;
+  }
+
+  // CMS Modal Close Buttons
+  const closeBlogModalBtn = document.getElementById('closeBlogModalBtn');
+  if (closeBlogModalBtn) closeBlogModalBtn.onclick = closeBlogModal;
+  const closeBlogArticleBtn = document.getElementById('closeBlogArticleBtn');
+  if (closeBlogArticleBtn) closeBlogArticleBtn.onclick = () => window.closeBlogArticle();
+  const blogArticleModal = document.getElementById('blogArticleModal');
+  if (blogArticleModal) {
+    blogArticleModal.addEventListener('click', (e) => {
+      if (e.target === blogArticleModal) window.closeBlogArticle();
+    });
+  }
+  const blogArticleBookBtn = document.getElementById('blogArticleBookBtn');
+  if (blogArticleBookBtn) {
+    blogArticleBookBtn.addEventListener('click', () => window.closeBlogArticle());
+  }
+  const closeProductModalBtn = document.getElementById('closeProductModalBtn');
+  if (closeProductModalBtn) closeProductModalBtn.onclick = closeProductModal;
+
+  // CMS Save/Delete Actions
+  const saveBlogItemBtn = document.getElementById('saveBlogItemBtn');
+  if (saveBlogItemBtn) saveBlogItemBtn.onclick = saveBlogItem;
+  const saveProductItemBtn = document.getElementById('saveProductItemBtn');
+  if (saveProductItemBtn) saveProductItemBtn.onclick = saveProductItem;
+
+  const deleteBlogBtn = document.getElementById('deleteBlogBtn');
+  if (deleteBlogBtn) deleteBlogBtn.onclick = deleteBlogItem;
+  const deleteProductBtn = document.getElementById('deleteProductBtn');
+  if (deleteProductBtn) deleteProductBtn.onclick = deleteProductItem;
+
+  // SEO Settings Actions
+  const seoForm = document.getElementById('seoForm');
+  if (seoForm) seoForm.onsubmit = saveSeoItem;
+  const seoPageSelect = document.getElementById('seoPageSelect');
+  if (seoPageSelect) seoPageSelect.onchange = loadSeoSettings;
+
+  // Chat CRM reply bindings
+  const chatCrmSendBtn = document.getElementById('chatCrmSendBtn');
+  const chatCrmInput = document.getElementById('chatCrmMessageInput');
+  if (chatCrmSendBtn && chatCrmInput) {
+    chatCrmSendBtn.onclick = sendAdminReply;
+    chatCrmInput.onkeypress = (e) => {
+      if (e.key === 'Enter') sendAdminReply();
+    };
+  }
+
+  // Public File Upload Handling
+  const fileInput = document.getElementById('bookingFiles');
+  const dropZone = document.getElementById('dropZone');
+  const previewGrid = document.getElementById('filePreviewGrid');
+
+  if (dropZone && fileInput) {
+    dropZone.addEventListener('click', (e) => {
+      if (e.target !== fileInput) {
+        fileInput.click();
+      }
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--accent)';
+      dropZone.style.background = 'rgba(181, 150, 93, 0.02)';
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, () => {
+        dropZone.style.borderColor = 'var(--border)';
+        dropZone.style.background = 'rgba(255,255,255,0.01)';
+      });
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      if (e.dataTransfer.files) {
+        handleSelectedFiles(e.dataTransfer.files);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files) {
+        handleSelectedFiles(e.target.files);
+      }
+    });
+  }
+
+  function handleSelectedFiles(files) {
+    const fileList = Array.from(files);
+    const validFiles = fileList.filter(file => {
+      const isImage = file.type.startsWith('image/');
+      const isPdf = file.type === 'application/pdf';
+      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
+      return (isImage || isPdf) && isValidSize;
+    });
+
+    if (selectedBookingFiles.length + validFiles.length > 5) {
+      alert("You can upload a maximum of 5 files.");
+      return;
     }
 
-    // CMS Modal Close Buttons
-    const closeBlogModalBtn = document.getElementById('closeBlogModalBtn');
-    if (closeBlogModalBtn) closeBlogModalBtn.onclick = closeBlogModal;
-    const closeBlogArticleBtn = document.getElementById('closeBlogArticleBtn');
-    if (closeBlogArticleBtn) closeBlogArticleBtn.onclick = () => window.closeBlogArticle();
-    const blogArticleModal = document.getElementById('blogArticleModal');
-    if (blogArticleModal) {
-        blogArticleModal.addEventListener('click', (e) => {
-            if (e.target === blogArticleModal) window.closeBlogArticle();
-        });
-    }
-    const blogArticleBookBtn = document.getElementById('blogArticleBookBtn');
-    if (blogArticleBookBtn) {
-        blogArticleBookBtn.addEventListener('click', () => window.closeBlogArticle());
-    }
-    const closeProductModalBtn = document.getElementById('closeProductModalBtn');
-    if (closeProductModalBtn) closeProductModalBtn.onclick = closeProductModal;
+    validFiles.forEach(file => {
+      selectedBookingFiles.push(file);
+      renderFilePreview(file);
+    });
+  }
 
-    // CMS Save/Delete Actions
-    const saveBlogItemBtn = document.getElementById('saveBlogItemBtn');
-    if (saveBlogItemBtn) saveBlogItemBtn.onclick = saveBlogItem;
-    const saveProductItemBtn = document.getElementById('saveProductItemBtn');
-    if (saveProductItemBtn) saveProductItemBtn.onclick = saveProductItem;
+  function renderFilePreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const div = document.createElement('div');
+      div.className = 'file-preview-item';
 
-    const deleteBlogBtn = document.getElementById('deleteBlogBtn');
-    if (deleteBlogBtn) deleteBlogBtn.onclick = deleteBlogItem;
-    const deleteProductBtn = document.getElementById('deleteProductBtn');
-    if (deleteProductBtn) deleteProductBtn.onclick = deleteProductItem;
+      let content = '';
+      if (file.type.startsWith('image/')) {
+        content = `<img src="${e.target.result}" alt="Preview">`;
+      } else {
+        content = `<span style="display:inline-flex;width:22px;height:22px;color:var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:100%;height:100%;"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg></span><span style="font-size: 0.6rem; color: var(--text-secondary); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; display: block;">${file.name}</span>`;
+      }
 
-    // SEO Settings Actions
-    const seoForm = document.getElementById('seoForm');
-    if (seoForm) seoForm.onsubmit = saveSeoItem;
-    const seoPageSelect = document.getElementById('seoPageSelect');
-    if (seoPageSelect) seoPageSelect.onchange = loadSeoSettings;
-
-    // Chat CRM reply bindings
-    const chatCrmSendBtn = document.getElementById('chatCrmSendBtn');
-    const chatCrmInput = document.getElementById('chatCrmMessageInput');
-    if (chatCrmSendBtn && chatCrmInput) {
-        chatCrmSendBtn.onclick = sendAdminReply;
-        chatCrmInput.onkeypress = (e) => {
-            if (e.key === 'Enter') sendAdminReply();
-        };
-    }
-
-    // Public File Upload Handling
-    const fileInput = document.getElementById('bookingFiles');
-    const dropZone = document.getElementById('dropZone');
-    const previewGrid = document.getElementById('filePreviewGrid');
-
-    if (dropZone && fileInput) {
-        dropZone.addEventListener('click', (e) => {
-            if (e.target !== fileInput) {
-                fileInput.click();
-            }
-        });
-
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--accent)';
-            dropZone.style.background = 'rgba(181, 150, 93, 0.02)';
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => {
-                dropZone.style.borderColor = 'var(--border)';
-                dropZone.style.background = 'rgba(255,255,255,0.01)';
-            });
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            if (e.dataTransfer.files) {
-                handleSelectedFiles(e.dataTransfer.files);
-            }
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files) {
-                handleSelectedFiles(e.target.files);
-            }
-        });
-    }
-
-    function handleSelectedFiles(files) {
-        const fileList = Array.from(files);
-        const validFiles = fileList.filter(file => {
-            const isImage = file.type.startsWith('image/');
-            const isPdf = file.type === 'application/pdf';
-            const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
-            return (isImage || isPdf) && isValidSize;
-        });
-
-        if (selectedBookingFiles.length + validFiles.length > 5) {
-            alert("You can upload a maximum of 5 files.");
-            return;
-        }
-
-        validFiles.forEach(file => {
-            selectedBookingFiles.push(file);
-            renderFilePreview(file);
-        });
-    }
-
-    function renderFilePreview(file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const div = document.createElement('div');
-            div.className = 'file-preview-item';
-            
-            let content = '';
-            if (file.type.startsWith('image/')) {
-                content = `<img src="${e.target.result}" alt="Preview">`;
-            } else {
-                content = `<span style="display:inline-flex;width:22px;height:22px;color:var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:100%;height:100%;"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg></span><span style="font-size: 0.6rem; color: var(--text-secondary); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; display: block;">${file.name}</span>`;
-            }
-
-            div.innerHTML = `
+      div.innerHTML = `
                 ${content}
                 <button type="button" class="remove-file-btn">&times;</button>
             `;
 
-            div.querySelector('.remove-file-btn').onclick = (event) => {
-                event.stopPropagation();
-                const index = selectedBookingFiles.indexOf(file);
-                if (index > -1) {
-                    selectedBookingFiles.splice(index, 1);
-                }
-                div.remove();
-            };
+      div.querySelector('.remove-file-btn').onclick = (event) => {
+        event.stopPropagation();
+        const index = selectedBookingFiles.indexOf(file);
+        if (index > -1) {
+          selectedBookingFiles.splice(index, 1);
+        }
+        div.remove();
+      };
 
-            previewGrid.appendChild(div);
-        };
-        reader.readAsDataURL(file);
-    }
-
-    // Booking Submission Logic
-    const bookingForm = document.getElementById('bookingForm');
-    const bookingSubmitBtn = document.getElementById('bookingSubmitBtn');
-    const uploadProgressContainer = document.getElementById('uploadProgressContainer');
-    const uploadProgressLabel = document.getElementById('uploadProgressLabel');
-    const uploadProgressFill = document.getElementById('uploadProgressFill');
-
-    if (bookingForm) {
-        bookingForm.onsubmit = async (e) => {
-            e.preventDefault();
-            bookingSubmitBtn.disabled = true;
-            bookingSubmitBtn.textContent = "SUBMITTING...";
-
-            const name = document.getElementById('bookingName').value;
-            const email = document.getElementById('bookingEmail').value;
-            const phone = document.getElementById('bookingPhone').value;
-            const date = document.getElementById('bookingDate').value;
-            const time = document.getElementById('bookingTime').value;
-            const style = document.getElementById('bookingStyle').value;
-            const idea = document.getElementById('bookingIdea').value;
-            const preferredArtist = document.getElementById('bookingArtist')?.value || "Either / No preference";
-
-            if (!date || !time) {
-                alert("Please select a preferred date and available time slot on the calendar.");
-                bookingSubmitBtn.disabled = false;
-                bookingSubmitBtn.textContent = "REQUEST FREE CONSULTATION";
-                return;
-            }
-
-            // Open Messenger tab immediately (must be in user gesture) so form data can be pasted/sent
-            try {
-                window.__pendingMessengerWindow = window.open("about:blank", "dtt_messenger");
-            } catch (_) {
-                window.__pendingMessengerWindow = null;
-            }
-
-            try {
-                // 1. Create a Booking ID first
-                const bookingRef = doc(collection(db, "bookings"));
-                const bookingId = bookingRef.id;
-
-                const uploadedUrls = [];
-                let tryOnImageUrl = null;
-                let hasTryOn = false;
-
-                uploadProgressContainer.style.display = 'block';
-                uploadProgressLabel.textContent = 'Preparing booking files...';
-                uploadProgressFill.style.width = '5%';
-
-                // Attach try-on / AI preview — upload data URLs to Storage (not raw base64 in Firestore)
-                if (aiGeneratedTattooUrl) {
-                    hasTryOn = true;
-                    try {
-                        uploadProgressLabel.textContent = 'Uploading try-on preview...';
-                        tryOnImageUrl = await uploadDataUrlOrBlobToStorage(
-                            aiGeneratedTattooUrl,
-                            `bookings/${bookingId}/try-on-preview-${Date.now()}.png`
-                        );
-                        uploadedUrls.push(tryOnImageUrl);
-                        uploadProgressFill.style.width = '25%';
-                    } catch (upErr) {
-                        console.warn("Try-on upload failed, keeping inline if small:", upErr);
-                        // Only store data URL if short enough; otherwise skip image but keep meta
-                        if (String(aiGeneratedTattooUrl).length < 900000) {
-                            uploadedUrls.push(aiGeneratedTattooUrl);
-                        }
-                    }
-                }
-
-                // 2. Upload Reference Images to Storage
-                if (selectedBookingFiles.length > 0) {
-                    let totalBytes = selectedBookingFiles.reduce((acc, f) => acc + f.size, 0) || 1;
-                    let uploadedBytes = 0;
-
-                    for (let i = 0; i < selectedBookingFiles.length; i++) {
-                        const file = selectedBookingFiles[i];
-                        const fileRef = ref(storage, `bookings/${bookingId}/${Date.now()}_${file.name}`);
-                        
-                        const uploadTask = uploadBytesResumable(fileRef, file);
-                        
-                        await new Promise((resolve, reject) => {
-                            let lastTransferred = 0;
-                            uploadTask.on('state_changed', 
-                                (snapshot) => {
-                                    const delta = snapshot.bytesTransferred - lastTransferred;
-                                    lastTransferred = snapshot.bytesTransferred;
-                                    uploadedBytes += delta;
-                                    const percent = 25 + Math.min(Math.round((uploadedBytes / totalBytes) * 65), 65);
-                                    uploadProgressLabel.textContent = `Uploading references... ${percent}%`;
-                                    uploadProgressFill.style.width = `${percent}%`;
-                                }, 
-                                (error) => reject(error), 
-                                () => {
-                                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                                        uploadedUrls.push(downloadURL);
-                                        resolve();
-                                    });
-                                }
-                            );
-                        });
-                    }
-
-                    uploadProgressLabel.textContent = `Upload complete!`;
-                    uploadProgressFill.style.width = `100%`;
-                } else {
-                    uploadProgressFill.style.width = '90%';
-                }
-
-                // Build CRM try-on payload
-                const tryOnPayload = (hasTryOn || tryOnMeta) ? {
-                    ...(tryOnMeta || {}),
-                    previewUrl: tryOnImageUrl || (uploadedUrls[0] || null),
-                    prompt: aiGeneratedTattooPrompt || tryOnMeta?.notes || null,
-                    attachedAt: new Date().toISOString()
-                } : null;
-
-                const source = hasTryOn || tryOnMeta
-                    ? "website_try_on_booking"
-                    : "website_booking_form";
-
-                // 3. Save booking details to Firestore (CRM)
-                const bookingData = {
-                    id: bookingId,
-                    name,
-                    email,
-                    phone,
-                    date,
-                    time,
-                    style,
-                    idea,
-                    preferredArtist,
-                    referenceImages: uploadedUrls,
-                    tryOn: tryOnPayload,
-                    tryOnPreviewUrl: tryOnImageUrl || null,
-                    createdAt: new Date().toISOString(),
-                    status: "Pending",
-                    assignedArtist: preferredArtist && preferredArtist !== "Either / No preference" ? preferredArtist : "Unassigned",
-                    internalNotes: [
-                        preferredArtist ? `Client preferred: ${preferredArtist}` : "",
-                        tryOnPayload ? `Try-on attached (${tryOnPayload.placementLabel || tryOnPayload.placement || "custom"})` : ""
-                    ].filter(Boolean).join(" · "),
-                    userId: currentUser ? currentUser.uid : null,
-                    source,
-                    channel: "website",
-                    type: "consultation_request"
-                };
-
-                await setDoc(bookingRef, bookingData);
-                uploadProgressLabel.textContent = 'Saving to CRM & notifying studio...';
-                uploadProgressFill.style.width = '95%';
-
-                // Messenger (primary) + email + CRM notify
-                try {
-                    uploadProgressLabel.textContent = "Sending to Facebook Messenger…";
-                    await notifyStudioOfBooking(bookingData, {
-                        messengerWin: window.__pendingMessengerWindow,
-                        openMessenger: true
-                    });
-                } catch (notifyErr) {
-                    console.warn("Studio notify failed:", notifyErr);
-                    // Still try to open Messenger with a basic message
-                    try {
-                        const fallbackText = formatBookingMessageForMessenger(bookingData);
-                        await sendFormDataToMessenger(fallbackText, {
-                            win: window.__pendingMessengerWindow,
-                            open: true
-                        });
-                        updateMessengerSuccessUI({ copied: true, text: fallbackText });
-                    } catch (_) { /* ignore */ }
-                }
-                uploadProgressFill.style.width = '100%';
-
-                // Conversion tracking (GA4 / Meta if loaded)
-                if (typeof window.trackConversion === "function") {
-                    window.trackConversion("booking_request", {
-                        style,
-                        preferredArtist,
-                        has_refs: uploadedUrls.length > 0,
-                        has_try_on: !!tryOnPayload,
-                        source,
-                        notify: "facebook_messenger"
-                    });
-                }
-
-                // Success State — in-page confirmation + Messenger handoff
-                bookingForm.reset();
-                bookingForm.hidden = true;
-                const successEl = document.getElementById("bookingSuccess");
-                if (successEl) {
-                    successEl.hidden = false;
-                    const emailEl = document.getElementById("messengerClientEmail");
-                    if (emailEl) emailEl.textContent = email || "—";
-                    successEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                } else {
-                    alert("Thank you! Your consultation request was saved. Open Facebook Messenger to send your details to the studio.");
-                }
-                selectedBookingFiles = [];
-                const previewGrid = document.getElementById('filePreviewGrid');
-                if (previewGrid) previewGrid.innerHTML = '';
-                uploadProgressContainer.style.display = 'none';
-
-                // Reset AI attachment reference UI
-                aiGeneratedTattooUrl = null;
-                aiGeneratedTattooPrompt = null;
-                const aiContainer = document.getElementById('aiBookingAttachmentContainer');
-                if (aiContainer) aiContainer.style.display = 'none';
-
-                // Reset calendar states
-                selectedPubDate = null;
-                selectedPubTime = null;
-                renderPublicBookingCalendar();
-                const pubTimeSlotsContainer = document.getElementById('pubTimeSlotsContainer');
-                if (pubTimeSlotsContainer) pubTimeSlotsContainer.style.display = 'none';
-
-                if (currentUser) {
-                    loadClientBookings();
-                }
-
-            } catch (err) {
-                console.error("Booking submission failed: ", err);
-                // Close unused messenger placeholder tab
-                try {
-                    if (window.__pendingMessengerWindow && !window.__pendingMessengerWindow.closed) {
-                        window.__pendingMessengerWindow.close();
-                    }
-                } catch (_) { /* ignore */ }
-                window.__pendingMessengerWindow = null;
-                alert("Failed to submit booking: " + err.message);
-            } finally {
-                bookingSubmitBtn.disabled = false;
-                bookingSubmitBtn.textContent = "REQUEST FREE CONSULTATION";
-            }
-        };
-    }
-
-    // Portal Navigation Switches
-    portalBtn.onclick = () => {
-        enterPortal();
+      previewGrid.appendChild(div);
     };
+    reader.readAsDataURL(file);
+  }
 
-    const closePortalBtn = document.getElementById('closePortalBtn');
-    if (closePortalBtn) {
-        closePortalBtn.onclick = () => {
-            exitPortal();
-        };
-    }
+  // Booking Submission Logic
+  const bookingForm = document.getElementById('bookingForm');
+  const bookingSubmitBtn = document.getElementById('bookingSubmitBtn');
+  const uploadProgressContainer = document.getElementById('uploadProgressContainer');
+  const uploadProgressLabel = document.getElementById('uploadProgressLabel');
+  const uploadProgressFill = document.getElementById('uploadProgressFill');
 
-    // Tab Links
-    const linkMyBookings = document.getElementById('linkMyBookings');
-    const linkCalendarCRM = document.getElementById('linkCalendarCRM');
-    const linkCMS = document.getElementById('linkCMS');
+  if (bookingForm) {
+    bookingForm.onsubmit = async (e) => {
+      e.preventDefault();
+      bookingSubmitBtn.disabled = true;
+      bookingSubmitBtn.textContent = "SUBMITTING...";
 
-    if (linkMyBookings) linkMyBookings.onclick = (e) => { e.preventDefault(); switchPortalTab('my-bookings'); };
-    if (linkCalendarCRM) linkCalendarCRM.onclick = (e) => { e.preventDefault(); switchPortalTab('calendar-crm'); };
-    if (linkCMS) linkCMS.onclick = (e) => { e.preventDefault(); switchPortalTab('cms'); };
+      const name = document.getElementById('bookingName').value;
+      const email = document.getElementById('bookingEmail').value;
+      const phone = document.getElementById('bookingPhone').value;
+      const date = document.getElementById('bookingDate').value;
+      const time = document.getElementById('bookingTime').value;
+      const style = document.getElementById('bookingStyle').value;
+      const idea = document.getElementById('bookingIdea').value;
+      const preferredArtist = document.getElementById('bookingArtist')?.value || "Either / No preference";
 
-    // Booking Details Modal Closers
-    const closeBookingModalBtn = document.getElementById('closeBookingModalBtn');
-    if (closeBookingModalBtn) {
-        closeBookingModalBtn.onclick = () => {
-            closeBookingModal();
-        };
-    }
+      if (!date || !time) {
+        alert("Please select a preferred date and available time slot on the calendar.");
+        bookingSubmitBtn.disabled = false;
+        bookingSubmitBtn.textContent = "REQUEST FREE CONSULTATION";
+        return;
+      }
 
-    // FAQ Modal Closers
-    const closeFaqModalBtn = document.getElementById('closeFaqModalBtn');
-    if (closeFaqModalBtn) {
-        closeFaqModalBtn.onclick = () => {
-            closeFaqModal();
-        };
-    }
+      // Open Messenger tab immediately (must be in user gesture) so form data can be pasted/sent
+      try {
+        window.__pendingMessengerWindow = window.open("about:blank", "dtt_messenger");
+      } catch (_) {
+        window.__pendingMessengerWindow = null;
+      }
 
-    const cmsAddFaqBtn = document.getElementById('cmsAddFaqBtn');
-    if (cmsAddFaqBtn) {
-        cmsAddFaqBtn.onclick = () => {
-            openFaqModal();
-        };
-    }
+      try {
+        // 1. Create a Booking ID first
+        const bookingRef = doc(collection(db, "bookings"));
+        const bookingId = bookingRef.id;
 
-    // CRM Actions
-    const saveBookingDetailsBtn = document.getElementById('saveBookingDetailsBtn');
-    if (saveBookingDetailsBtn) {
-        saveBookingDetailsBtn.onclick = () => {
-            saveBookingDetails();
-        };
-    }
+        const uploadedUrls = [];
+        let tryOnImageUrl = null;
+        let hasTryOn = false;
 
-    const saveFaqItemBtn = document.getElementById('saveFaqItemBtn');
-    if (saveFaqItemBtn) {
-        saveFaqItemBtn.onclick = () => {
-            saveFaqItem();
-        };
-    }
+        uploadProgressContainer.style.display = 'block';
+        uploadProgressLabel.textContent = 'Preparing booking files...';
+        uploadProgressFill.style.width = '5%';
 
-    // Calendar navigation
-    const prevMonthBtn = document.getElementById('prevMonthBtn');
-    const nextMonthBtn = document.getElementById('nextMonthBtn');
-    if (prevMonthBtn && nextMonthBtn) {
-        prevMonthBtn.onclick = () => {
-            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
-            renderCRMCalendar();
-        };
-        nextMonthBtn.onclick = () => {
-            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
-            renderCRMCalendar();
-        };
-    }
-
-    // Booking Search & Filtering
-    const searchInput = document.getElementById('bookingSearchInput');
-    const statusFilter = document.getElementById('bookingFilterStatus');
-
-    if (searchInput) {
-        searchInput.oninput = () => filterCRMTable();
-    }
-    if (statusFilter) {
-        statusFilter.onchange = () => filterCRMTable();
-    }
-
-    // CMS Portfolio upload
-    const cmsPortfolioFileInput = document.getElementById('cmsPortfolioFile');
-    if (cmsPortfolioFileInput) {
-        cmsPortfolioFileInput.onchange = (e) => {
-            if (e.target.files && e.target.files[0]) {
-                uploadCMSPortfolioImage(e.target.files[0]);
+        // Attach try-on / AI preview — upload data URLs to Storage (not raw base64 in Firestore)
+        if (aiGeneratedTattooUrl) {
+          hasTryOn = true;
+          try {
+            uploadProgressLabel.textContent = 'Uploading try-on preview...';
+            tryOnImageUrl = await uploadDataUrlOrBlobToStorage(
+              aiGeneratedTattooUrl,
+              `bookings/${bookingId}/try-on-preview-${Date.now()}.png`
+            );
+            uploadedUrls.push(tryOnImageUrl);
+            uploadProgressFill.style.width = '25%';
+          } catch (upErr) {
+            console.warn("Try-on upload failed, keeping inline if small:", upErr);
+            // Only store data URL if short enough; otherwise skip image but keep meta
+            if (String(aiGeneratedTattooUrl).length < 900000) {
+              uploadedUrls.push(aiGeneratedTattooUrl);
             }
-        };
-    }
+          }
+        }
 
-    // Initialize public booking calendar
-    initPublicBookingCalendar();
+        // 2. Upload Reference Images to Storage
+        if (selectedBookingFiles.length > 0) {
+          let totalBytes = selectedBookingFiles.reduce((acc, f) => acc + f.size, 0) || 1;
+          let uploadedBytes = 0;
+
+          for (let i = 0; i < selectedBookingFiles.length; i++) {
+            const file = selectedBookingFiles[i];
+            const fileRef = ref(storage, `bookings/${bookingId}/${Date.now()}_${file.name}`);
+
+            const uploadTask = uploadBytesResumable(fileRef, file);
+
+            await new Promise((resolve, reject) => {
+              let lastTransferred = 0;
+              uploadTask.on('state_changed',
+                (snapshot) => {
+                  const delta = snapshot.bytesTransferred - lastTransferred;
+                  lastTransferred = snapshot.bytesTransferred;
+                  uploadedBytes += delta;
+                  const percent = 25 + Math.min(Math.round((uploadedBytes / totalBytes) * 65), 65);
+                  uploadProgressLabel.textContent = `Uploading references... ${percent}%`;
+                  uploadProgressFill.style.width = `${percent}%`;
+                },
+                (error) => reject(error),
+                () => {
+                  getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                    uploadedUrls.push(downloadURL);
+                    resolve();
+                  });
+                }
+              );
+            });
+          }
+
+          uploadProgressLabel.textContent = `Upload complete!`;
+          uploadProgressFill.style.width = `100%`;
+        } else {
+          uploadProgressFill.style.width = '90%';
+        }
+
+        // Build CRM try-on payload
+        const tryOnPayload = (hasTryOn || tryOnMeta) ? {
+          ...(tryOnMeta || {}),
+          previewUrl: tryOnImageUrl || (uploadedUrls[0] || null),
+          prompt: aiGeneratedTattooPrompt || tryOnMeta?.notes || null,
+          attachedAt: new Date().toISOString()
+        } : null;
+
+        const source = hasTryOn || tryOnMeta
+          ? "website_try_on_booking"
+          : "website_booking_form";
+
+        // 3. Save booking details to Firestore (CRM)
+        const bookingData = {
+          id: bookingId,
+          name,
+          email,
+          phone,
+          date,
+          time,
+          style,
+          idea,
+          preferredArtist,
+          referenceImages: uploadedUrls,
+          tryOn: tryOnPayload,
+          tryOnPreviewUrl: tryOnImageUrl || null,
+          createdAt: new Date().toISOString(),
+          status: "Pending",
+          assignedArtist: preferredArtist && preferredArtist !== "Either / No preference" ? preferredArtist : "Unassigned",
+          internalNotes: [
+            preferredArtist ? `Client preferred: ${preferredArtist}` : "",
+            tryOnPayload ? `Try-on attached (${tryOnPayload.placementLabel || tryOnPayload.placement || "custom"})` : ""
+          ].filter(Boolean).join(" · "),
+          userId: currentUser ? currentUser.uid : null,
+          source,
+          channel: "website",
+          type: "consultation_request"
+        };
+
+        await setDoc(bookingRef, bookingData);
+        uploadProgressLabel.textContent = 'Saving to CRM & notifying studio...';
+        uploadProgressFill.style.width = '95%';
+
+        // Messenger (primary) + email + CRM notify
+        try {
+          uploadProgressLabel.textContent = "Sending to Facebook Messenger…";
+          await notifyStudioOfBooking(bookingData, {
+            messengerWin: window.__pendingMessengerWindow,
+            openMessenger: true
+          });
+        } catch (notifyErr) {
+          console.warn("Studio notify failed:", notifyErr);
+          // Still try to open Messenger with a basic message
+          try {
+            const fallbackText = formatBookingMessageForMessenger(bookingData);
+            await sendFormDataToMessenger(fallbackText, {
+              win: window.__pendingMessengerWindow,
+              open: true
+            });
+            updateMessengerSuccessUI({ copied: true, text: fallbackText });
+          } catch (_) { /* ignore */ }
+        }
+        uploadProgressFill.style.width = '100%';
+
+        // Conversion tracking (GA4 / Meta if loaded)
+        if (typeof window.trackConversion === "function") {
+          window.trackConversion("booking_request", {
+            style,
+            preferredArtist,
+            has_refs: uploadedUrls.length > 0,
+            has_try_on: !!tryOnPayload,
+            source,
+            notify: "facebook_messenger"
+          });
+        }
+
+        // Success State — in-page confirmation + Messenger handoff
+        bookingForm.reset();
+        bookingForm.hidden = true;
+        const successEl = document.getElementById("bookingSuccess");
+        if (successEl) {
+          successEl.hidden = false;
+          const emailEl = document.getElementById("messengerClientEmail");
+          if (emailEl) emailEl.textContent = email || "—";
+          successEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        } else {
+          alert("Thank you! Your consultation request was saved. Open Facebook Messenger to send your details to the studio.");
+        }
+        selectedBookingFiles = [];
+        const previewGrid = document.getElementById('filePreviewGrid');
+        if (previewGrid) previewGrid.innerHTML = '';
+        uploadProgressContainer.style.display = 'none';
+
+        // Reset AI attachment reference UI
+        aiGeneratedTattooUrl = null;
+        aiGeneratedTattooPrompt = null;
+        const aiContainer = document.getElementById('aiBookingAttachmentContainer');
+        if (aiContainer) aiContainer.style.display = 'none';
+
+        // Reset calendar states
+        selectedPubDate = null;
+        selectedPubTime = null;
+        renderPublicBookingCalendar();
+        const pubTimeSlotsContainer = document.getElementById('pubTimeSlotsContainer');
+        if (pubTimeSlotsContainer) pubTimeSlotsContainer.style.display = 'none';
+
+        if (currentUser) {
+          loadClientBookings();
+        }
+
+      } catch (err) {
+        console.error("Booking submission failed: ", err);
+        // Close unused messenger placeholder tab
+        try {
+          if (window.__pendingMessengerWindow && !window.__pendingMessengerWindow.closed) {
+            window.__pendingMessengerWindow.close();
+          }
+        } catch (_) { /* ignore */ }
+        window.__pendingMessengerWindow = null;
+        alert("Failed to submit booking: " + err.message);
+      } finally {
+        bookingSubmitBtn.disabled = false;
+        bookingSubmitBtn.textContent = "REQUEST FREE CONSULTATION";
+      }
+    };
+  }
+
+  // Portal Navigation Switches
+  portalBtn.onclick = () => {
+    enterPortal();
+  };
+
+  const closePortalBtn = document.getElementById('closePortalBtn');
+  if (closePortalBtn) {
+    closePortalBtn.onclick = () => {
+      exitPortal();
+    };
+  }
+
+  // Tab Links
+  const linkMyBookings = document.getElementById('linkMyBookings');
+  const linkCalendarCRM = document.getElementById('linkCalendarCRM');
+  const linkCMS = document.getElementById('linkCMS');
+
+  if (linkMyBookings) linkMyBookings.onclick = (e) => { e.preventDefault(); switchPortalTab('my-bookings'); };
+  if (linkCalendarCRM) linkCalendarCRM.onclick = (e) => { e.preventDefault(); switchPortalTab('calendar-crm'); };
+  if (linkCMS) linkCMS.onclick = (e) => { e.preventDefault(); switchPortalTab('cms'); };
+
+  // Booking Details Modal Closers
+  const closeBookingModalBtn = document.getElementById('closeBookingModalBtn');
+  if (closeBookingModalBtn) {
+    closeBookingModalBtn.onclick = () => {
+      closeBookingModal();
+    };
+  }
+
+  // FAQ Modal Closers
+  const closeFaqModalBtn = document.getElementById('closeFaqModalBtn');
+  if (closeFaqModalBtn) {
+    closeFaqModalBtn.onclick = () => {
+      closeFaqModal();
+    };
+  }
+
+  const cmsAddFaqBtn = document.getElementById('cmsAddFaqBtn');
+  if (cmsAddFaqBtn) {
+    cmsAddFaqBtn.onclick = () => {
+      openFaqModal();
+    };
+  }
+
+  // CRM Actions
+  const saveBookingDetailsBtn = document.getElementById('saveBookingDetailsBtn');
+  if (saveBookingDetailsBtn) {
+    saveBookingDetailsBtn.onclick = () => {
+      saveBookingDetails();
+    };
+  }
+
+  const saveFaqItemBtn = document.getElementById('saveFaqItemBtn');
+  if (saveFaqItemBtn) {
+    saveFaqItemBtn.onclick = () => {
+      saveFaqItem();
+    };
+  }
+
+  // Calendar navigation
+  const prevMonthBtn = document.getElementById('prevMonthBtn');
+  const nextMonthBtn = document.getElementById('nextMonthBtn');
+  if (prevMonthBtn && nextMonthBtn) {
+    prevMonthBtn.onclick = () => {
+      currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+      renderCRMCalendar();
+    };
+    nextMonthBtn.onclick = () => {
+      currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+      renderCRMCalendar();
+    };
+  }
+
+  // Booking Search & Filtering
+  const searchInput = document.getElementById('bookingSearchInput');
+  const statusFilter = document.getElementById('bookingFilterStatus');
+
+  if (searchInput) {
+    searchInput.oninput = () => filterCRMTable();
+  }
+  if (statusFilter) {
+    statusFilter.onchange = () => filterCRMTable();
+  }
+
+  // CMS Portfolio upload
+  const cmsPortfolioFileInput = document.getElementById('cmsPortfolioFile');
+  if (cmsPortfolioFileInput) {
+    cmsPortfolioFileInput.onchange = (e) => {
+      if (e.target.files && e.target.files[0]) {
+        uploadCMSPortfolioImage(e.target.files[0]);
+      }
+    };
+  }
+
+  // Initialize public booking calendar
+  initPublicBookingCalendar();
 });
 
 // Authentication Handling
 onAuthStateChanged(auth, async (user) => {
-    const loginBtn = document.getElementById('loginBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const portalBtn = document.getElementById('portalBtn');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const portalBtn = document.getElementById('portalBtn');
 
-    if (user) {
-        currentUser = user;
-        loginBtn.style.display = 'none';
-        logoutBtn.style.display = 'block';
-        portalBtn.style.display = 'block';
+  if (user) {
+    currentUser = user;
+    loginBtn.style.display = 'none';
+    logoutBtn.style.display = 'block';
+    portalBtn.style.display = 'block';
 
-        // 1. Authorize role: check hardcoded admins or admins collection
-        try {
-            const adminDoc = await getDoc(doc(db, "admins", user.email.toLowerCase()));
-            // Super admins (hardcoded) + any email listed under /admins
-            if (adminDoc.exists() || SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-                isAdmin = true;
-                document.getElementById('adminBadge').style.display = 'inline-block';
-                document.getElementById('adminPortalNav').style.display = 'block';
-                document.getElementById('portalTitle').textContent = 'Studio CRM & Manager';
-                
-                // Seed database if this is an admin and database is empty
-                seedDatabaseIfNeeded();
+    // 1. Authorize role: check hardcoded admins or admins collection
+    try {
+      const adminDoc = await getDoc(doc(db, "admins", user.email.toLowerCase()));
+      // Super admins (hardcoded) + any email listed under /admins
+      if (adminDoc.exists() || SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+        isAdmin = true;
+        document.getElementById('adminBadge').style.display = 'inline-block';
+        document.getElementById('adminPortalNav').style.display = 'block';
+        document.getElementById('portalTitle').textContent = 'Studio CRM & Manager';
 
-                // Load CRM & CMS Data
-                listenToAllBookings();
-                fetchCMSDataCache();
-            } else {
-                isAdmin = false;
-                document.getElementById('adminBadge').style.display = 'none';
-                document.getElementById('adminPortalNav').style.display = 'none';
-                document.getElementById('portalTitle').textContent = 'Client Portal';
-                
-                loadClientBookings();
-            }
-        } catch (err) {
-            console.error("Authorization check failed: ", err);
-            // Fallback to normal client
-            isAdmin = false;
-            document.getElementById('adminBadge').style.display = 'none';
-            document.getElementById('adminPortalNav').style.display = 'none';
-            document.getElementById('portalTitle').textContent = 'Client Portal';
-            loadClientBookings();
-        }
+        // Seed database if this is an admin and database is empty
+        seedDatabaseIfNeeded();
 
-        setupGiftCardForm();
-        loadClientGiftCards();
-        loadClientSkinNotes();
-        setupLiveChat();
-    } else {
-        currentUser = null;
+        // Load CRM & CMS Data
+        listenToAllBookings();
+        fetchCMSDataCache();
+      } else {
         isAdmin = false;
-        loginBtn.style.display = 'block';
-        logoutBtn.style.display = 'none';
-        portalBtn.style.display = 'none';
         document.getElementById('adminBadge').style.display = 'none';
         document.getElementById('adminPortalNav').style.display = 'none';
-        setupLiveChat();
+        document.getElementById('portalTitle').textContent = 'Client Portal';
+
+        loadClientBookings();
+      }
+    } catch (err) {
+      console.error("Authorization check failed: ", err);
+      // Fallback to normal client
+      isAdmin = false;
+      document.getElementById('adminBadge').style.display = 'none';
+      document.getElementById('adminPortalNav').style.display = 'none';
+      document.getElementById('portalTitle').textContent = 'Client Portal';
+      loadClientBookings();
     }
 
-    loadBlogWebsite();
-    loadShopWebsite();
-    if (typeof window.initFacebookFeed === "function") window.initFacebookFeed();
-    handleRouting();
+    setupGiftCardForm();
+    loadClientGiftCards();
+    loadClientSkinNotes();
+    setupLiveChat();
+  } else {
+    currentUser = null;
+    isAdmin = false;
+    loginBtn.style.display = 'block';
+    logoutBtn.style.display = 'none';
+    portalBtn.style.display = 'none';
+    document.getElementById('adminBadge').style.display = 'none';
+    document.getElementById('adminPortalNav').style.display = 'none';
+    setupLiveChat();
+  }
+
+  loadBlogWebsite();
+  loadShopWebsite();
+  if (typeof window.initFacebookFeed === "function") window.initFacebookFeed();
+  handleRouting();
 });
 
 // Portal View Manager
 function enterPortal() {
-    // Hide standard site sections
-    document.getElementById('home').style.display = 'none';
-    document.getElementById('specialties').style.display = 'none';
-    document.getElementById('artists').style.display = 'none';
-    document.getElementById('portfolio').style.display = 'none';
-    document.getElementById('process').style.display = 'none';
-    const blogEl = document.getElementById('blog');
-    if (blogEl) blogEl.style.display = 'none';
-    const shopEl = document.getElementById('shop');
-    if (shopEl) shopEl.style.display = 'none';
-    const findUsEl = document.getElementById('find-us');
-    if (findUsEl) findUsEl.style.display = 'none';
-    const tryonHome = document.getElementById('see-it-on-you');
-    if (tryonHome) tryonHome.style.display = 'none';
-    const awardsEl = document.getElementById('awards');
-    if (awardsEl) awardsEl.style.display = 'none';
-    const socialEl = document.getElementById('social');
-    if (socialEl) socialEl.style.display = 'none';
-    const bookEl = document.getElementById('book');
-    if (bookEl) bookEl.style.display = 'none';
-    document.getElementById('info').style.display = 'none';
-    document.querySelector('footer').style.display = 'none';
-    document.querySelector('.features-bar').style.display = 'none';
-    document.querySelector('.sterilization-bar').style.display = 'none';
+  // Hide standard site sections
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('specialties').style.display = 'none';
+  document.getElementById('artists').style.display = 'none';
+  document.getElementById('portfolio').style.display = 'none';
+  document.getElementById('process').style.display = 'none';
+  const blogEl = document.getElementById('blog');
+  if (blogEl) blogEl.style.display = 'none';
+  const shopEl = document.getElementById('shop');
+  if (shopEl) shopEl.style.display = 'none';
+  const findUsEl = document.getElementById('find-us');
+  if (findUsEl) findUsEl.style.display = 'none';
+  const tryonHome = document.getElementById('see-it-on-you');
+  if (tryonHome) tryonHome.style.display = 'none';
+  const awardsEl = document.getElementById('awards');
+  if (awardsEl) awardsEl.style.display = 'none';
+  const socialEl = document.getElementById('social');
+  if (socialEl) socialEl.style.display = 'none';
+  const bookEl = document.getElementById('book');
+  if (bookEl) bookEl.style.display = 'none';
+  document.getElementById('info').style.display = 'none';
+  document.querySelector('footer').style.display = 'none';
+  document.querySelector('.features-bar').style.display = 'none';
+  document.querySelector('.sterilization-bar').style.display = 'none';
 
-    // Keep site navbar visible (portal has its own back control)
-    // Do not hide navLinks with display:none — it breaks the mobile drawer permanently
+  // Keep site navbar visible (portal has its own back control)
+  // Do not hide navLinks with display:none — it breaks the mobile drawer permanently
 
-    // Show Portal
-    document.getElementById('portalSection').style.display = 'block';
-    
-    // Default tab
-    switchPortalTab('my-bookings');
+  // Show Portal
+  document.getElementById('portalSection').style.display = 'block';
+
+  // Default tab
+  switchPortalTab('my-bookings');
 }
 
 function exitPortal() {
-    // Show standard site sections
-    document.getElementById('home').style.display = '';
-    document.getElementById('specialties').style.display = '';
-    document.getElementById('artists').style.display = '';
-    document.getElementById('portfolio').style.display = '';
-    document.getElementById('process').style.display = '';
-    const blogEl = document.getElementById('blog');
-    if (blogEl) blogEl.style.display = '';
-    const shopEl = document.getElementById('shop');
-    if (shopEl) shopEl.style.display = '';
-    const findUsEl = document.getElementById('find-us');
-    if (findUsEl) findUsEl.style.display = '';
-    const tryonHome = document.getElementById('see-it-on-you');
-    if (tryonHome) tryonHome.style.display = '';
-    const awardsEl = document.getElementById('awards');
-    if (awardsEl) awardsEl.style.display = '';
-    const socialEl = document.getElementById('social');
-    if (socialEl) socialEl.style.display = '';
-    const bookEl = document.getElementById('book');
-    if (bookEl) bookEl.style.display = '';
-    document.getElementById('info').style.display = '';
-    document.querySelector('footer').style.display = '';
-    document.querySelector('.features-bar').style.display = '';
-    document.querySelector('.sterilization-bar').style.display = '';
+  // Show standard site sections
+  document.getElementById('home').style.display = '';
+  document.getElementById('specialties').style.display = '';
+  document.getElementById('artists').style.display = '';
+  document.getElementById('portfolio').style.display = '';
+  document.getElementById('process').style.display = '';
+  const blogEl = document.getElementById('blog');
+  if (blogEl) blogEl.style.display = '';
+  const shopEl = document.getElementById('shop');
+  if (shopEl) shopEl.style.display = '';
+  const findUsEl = document.getElementById('find-us');
+  if (findUsEl) findUsEl.style.display = '';
+  const tryonHome = document.getElementById('see-it-on-you');
+  if (tryonHome) tryonHome.style.display = '';
+  const awardsEl = document.getElementById('awards');
+  if (awardsEl) awardsEl.style.display = '';
+  const socialEl = document.getElementById('social');
+  if (socialEl) socialEl.style.display = '';
+  const bookEl = document.getElementById('book');
+  if (bookEl) bookEl.style.display = '';
+  document.getElementById('info').style.display = '';
+  document.querySelector('footer').style.display = '';
+  document.querySelector('.features-bar').style.display = '';
+  document.querySelector('.sterilization-bar').style.display = '';
 
-    // Restore drawer styles if anything left inline
-    const navLinks = document.getElementById('navbarLinks');
-    if (navLinks) {
-        navLinks.style.display = '';
-        navLinks.classList.remove('open');
-    }
-    const bookNavBtn = document.getElementById('bookNavBtn');
-    if (bookNavBtn) bookNavBtn.style.display = '';
-    document.body.classList.remove('nav-open');
-    const menuToggle = document.getElementById('menuToggleBtn');
-    if (menuToggle) menuToggle.classList.remove('open');
-    const navBackdrop = document.getElementById('navDrawerBackdrop');
-    if (navBackdrop) navBackdrop.classList.remove('is-open');
+  // Restore drawer styles if anything left inline
+  const navLinks = document.getElementById('navbarLinks');
+  if (navLinks) {
+    navLinks.style.display = '';
+    navLinks.classList.remove('open');
+  }
+  const bookNavBtn = document.getElementById('bookNavBtn');
+  if (bookNavBtn) bookNavBtn.style.display = '';
+  document.body.classList.remove('nav-open');
+  const menuToggle = document.getElementById('menuToggleBtn');
+  if (menuToggle) menuToggle.classList.remove('open');
+  const navBackdrop = document.getElementById('navDrawerBackdrop');
+  if (navBackdrop) navBackdrop.classList.remove('is-open');
 
-    // Hide Portal
-    document.getElementById('portalSection').style.display = 'none';
+  // Hide Portal
+  document.getElementById('portalSection').style.display = 'none';
 }
 
-window.switchPortalTab = function(tabId) {
-    const navItems = document.querySelectorAll('.portal-nav li');
-    navItems.forEach(item => {
-        item.className = '';
-        item.style.borderLeft = '2px solid transparent';
-        const a = item.querySelector('a');
-        if (a) a.style.color = 'var(--text-secondary)';
-    });
+window.switchPortalTab = function (tabId) {
+  const navItems = document.querySelectorAll('.portal-nav li');
+  navItems.forEach(item => {
+    item.className = '';
+    item.style.borderLeft = '2px solid transparent';
+    const a = item.querySelector('a');
+    if (a) a.style.color = 'var(--text-secondary)';
+  });
 
-    const tabs = document.querySelectorAll('.portal-tab-content');
-    tabs.forEach(tab => tab.style.display = 'none');
+  const tabs = document.querySelectorAll('.portal-tab-content');
+  tabs.forEach(tab => tab.style.display = 'none');
 
-    let activeNavLi = null;
-    let activeTabDiv = null;
+  let activeNavLi = null;
+  let activeTabDiv = null;
 
-    if (tabId === 'my-bookings') {
-        activeNavLi = document.getElementById('navMyBookings');
-        activeTabDiv = document.getElementById('tabMyBookings');
-        if (currentUser) {
-            if (isAdmin) {
-                loadAllBookingsListForAdminSelf();
-            } else {
-                loadClientBookings();
-            }
-        }
-    } else if (tabId === 'my-notes') {
-        activeNavLi = document.getElementById('navMyNotes');
-        activeTabDiv = document.getElementById('tabMyNotes');
-        loadClientSkinNotes();
-    } else if (tabId === 'tattoo-generator') {
-        activeNavLi = document.getElementById('navTattooGenerator');
-        activeTabDiv = document.getElementById('tabTattooGenerator');
-        initAiTattooStudio();
-    } else if (tabId === 'calendar-crm') {
-        activeNavLi = document.getElementById('navCalendarCRM');
-        activeTabDiv = document.getElementById('tabCalendarCRM');
-        renderCRMCalendar();
-        renderCRMTable();
-    } else if (tabId === 'client-database') {
-        activeNavLi = document.getElementById('navClientDatabase');
-        activeTabDiv = document.getElementById('tabClientDatabase');
-        loadClientDatabase();
-    } else if (tabId === 'chat-crm') {
-        activeNavLi = document.getElementById('navChatCRM');
-        activeTabDiv = document.getElementById('tabChatCRM');
-        loadChatCrm();
+  if (tabId === 'my-bookings') {
+    activeNavLi = document.getElementById('navMyBookings');
+    activeTabDiv = document.getElementById('tabMyBookings');
+    if (currentUser) {
+      if (isAdmin) {
+        loadAllBookingsListForAdminSelf();
+      } else {
+        loadClientBookings();
+      }
     }
+  } else if (tabId === 'my-notes') {
+    activeNavLi = document.getElementById('navMyNotes');
+    activeTabDiv = document.getElementById('tabMyNotes');
+    loadClientSkinNotes();
+  } else if (tabId === 'tattoo-generator') {
+    activeNavLi = document.getElementById('navTattooGenerator');
+    activeTabDiv = document.getElementById('tabTattooGenerator');
+    initAiTattooStudio();
+  } else if (tabId === 'calendar-crm') {
+    activeNavLi = document.getElementById('navCalendarCRM');
+    activeTabDiv = document.getElementById('tabCalendarCRM');
+    renderCRMCalendar();
+    renderCRMTable();
+  } else if (tabId === 'client-database') {
+    activeNavLi = document.getElementById('navClientDatabase');
+    activeTabDiv = document.getElementById('tabClientDatabase');
+    loadClientDatabase();
+  } else if (tabId === 'chat-crm') {
+    activeNavLi = document.getElementById('navChatCRM');
+    activeTabDiv = document.getElementById('tabChatCRM');
+    loadChatCrm();
+  }
 
-    if (activeNavLi) {
-        activeNavLi.className = 'active';
-        activeNavLi.style.borderLeft = '2px solid var(--accent)';
-        const a = activeNavLi.querySelector('a');
-        if (a) a.style.color = 'var(--text-primary)';
-    }
-    if (activeTabDiv) {
-        activeTabDiv.style.display = 'block';
-    }
+  if (activeNavLi) {
+    activeNavLi.className = 'active';
+    activeNavLi.style.borderLeft = '2px solid var(--accent)';
+    const a = activeNavLi.querySelector('a');
+    if (a) a.style.color = 'var(--text-primary)';
+  }
+  if (activeTabDiv) {
+    activeTabDiv.style.display = 'block';
+  }
 }
 
 // Database Seeding Logic
 async function seedDatabaseIfNeeded() {
-    try {
-        const specRef = doc(db, "content", "specialties");
-        const specSnap = await getDoc(specRef);
+  try {
+    const specRef = doc(db, "content", "specialties");
+    const specSnap = await getDoc(specRef);
 
-        // Keep specialties + portfolio on curated tattoo assets even if CMS was seeded earlier
-        if (specSnap.exists()) {
-            const existing = specSnap.data().items || [];
-            const needsSpecialtyRefresh = !existing.some(s =>
-                typeof (s.image || s.src) === "string" &&
-                ((s.image || s.src).includes("assets/specialties/") || (s.image || s.src).includes("assets/portfolio/"))
-            );
-            if (needsSpecialtyRefresh) {
-                console.log("Refreshing specialties with curated tattoo covers...");
-                await setDoc(doc(db, "content", "specialties"), { items: defaultSpecialties });
-            }
-        }
-
-        const portfolioRef = doc(db, "content", "portfolio");
-        const portfolioSnap = await getDoc(portfolioRef);
-        if (portfolioSnap.exists()) {
-            const items = portfolioSnap.data().items || [];
-            if (!portfolioHasCuratedWork(items)) {
-                console.log("Refreshing portfolio with curated tattoo work...");
-                await setDoc(doc(db, "content", "portfolio"), { items: defaultPortfolio });
-            }
-        }
-
-        if (!specSnap.exists()) {
-            console.log("Seeding database with default template content...");
-            
-            // Seed Specialties
-            await setDoc(doc(db, "content", "specialties"), { items: defaultSpecialties });
-
-            // Seed Artists
-            await setDoc(doc(db, "content", "artists"), { items: defaultArtists });
-
-            // Seed Portfolio
-            await setDoc(doc(db, "content", "portfolio"), { items: defaultPortfolio });
-
-            // Seed FAQs
-            await setDoc(doc(db, "content", "faqs"), { items: defaultFaqs });
-
-            // Seed super admin emails
-            await setDoc(doc(db, "admins", "stormychaseforrester@gmail.com"), {
-                role: "super_admin",
-                email: "stormychaseforrester@gmail.com"
-            });
-            await setDoc(doc(db, "admins", "hello@techaidaustralia.com.au"), {
-                role: "super_admin",
-                email: "hello@techaidaustralia.com.au"
-            });
-
-            // Seed Default Blogs (real studio photography)
-            const defaultBlogs = [
-                {
-                    title: "Aftercare: How to Heal Your Tattoo Perfectly",
-                    author: "Steven Benn",
-                    image: "assets/brand/blog-aftercare.jpg",
-                    content: "Taking care of your new tattoo is just as important as the tattooing process itself. Keep it clean, use premium vegan aftercare cream, avoid long soaking in water, and protect it from direct sunlight. Your skin notes are valuable here!",
-                    createdAt: new Date().toISOString()
-                },
-                {
-                    title: "Tattoo Placements: Finding the Perfect Spot",
-                    author: "Scotty",
-                    image: "assets/brand/blog-placement.jpg",
-                    content: "Tattoo placement can make or break a design. Fine line work looks gorgeous on wrists and collarbones, whereas large realism designs require larger canvases like sleeves or chests. Let's consult and design something custom.",
-                    createdAt: new Date().toISOString()
-                }
-            ];
-            for (const b of defaultBlogs) {
-                await setDoc(doc(db, "blogs", `blog_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`), b);
-            }
-
-            // Seed Default Products (aftercare / chemist-style studio shop)
-            for (const p of defaultShopProducts) {
-                await setDoc(doc(db, "products", p.id || `product_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`), {
-                    name: p.name,
-                    price: p.price,
-                    image: p.image,
-                    description: p.description
-                });
-            }
-
-            // Seed Default SEO
-            const defaultSeo = {
-                home: {
-                    title: "Diamond Tip Tattoo | Private Tattoo Studio Dapto",
-                    description: "Private tattoo studio for custom work of uncompromising quality. Fine art on skin, crafted to last a lifetime in Dapto.",
-                    keywords: "tattoo, Dapto, fine line, realism, custom design"
-                },
-                portal: {
-                    title: "Client Portal | Diamond Tip Tattoo",
-                    description: "Manage bookings, skin notes, live chat and buy gift cards.",
-                    keywords: "crm, bookings, client notes, gift cards"
-                }
-            };
-            await setDoc(doc(db, "content", "seo"), defaultSeo);
-
-            console.log("Seeding completed successfully.");
-            loadDynamicContent();
-        }
-    } catch (err) {
-        console.error("Error during database seeding: ", err);
+    // Keep specialties + portfolio on curated tattoo assets even if CMS was seeded earlier
+    if (specSnap.exists()) {
+      const existing = specSnap.data().items || [];
+      const needsSpecialtyRefresh = !existing.some(s =>
+        typeof (s.image || s.src) === "string" &&
+        ((s.image || s.src).includes("assets/specialties/") || (s.image || s.src).includes("assets/portfolio/"))
+      );
+      if (needsSpecialtyRefresh) {
+        console.log("Refreshing specialties with curated tattoo covers...");
+        await setDoc(doc(db, "content", "specialties"), { items: defaultSpecialties });
+      }
     }
+
+    const portfolioRef = doc(db, "content", "portfolio");
+    const portfolioSnap = await getDoc(portfolioRef);
+    if (portfolioSnap.exists()) {
+      const items = portfolioSnap.data().items || [];
+      if (!portfolioHasCuratedWork(items)) {
+        console.log("Refreshing portfolio with curated tattoo work...");
+        await setDoc(doc(db, "content", "portfolio"), { items: defaultPortfolio });
+      }
+    }
+
+    if (!specSnap.exists()) {
+      console.log("Seeding database with default template content...");
+
+      // Seed Specialties
+      await setDoc(doc(db, "content", "specialties"), { items: defaultSpecialties });
+
+      // Seed Artists
+      await setDoc(doc(db, "content", "artists"), { items: defaultArtists });
+
+      // Seed Portfolio
+      await setDoc(doc(db, "content", "portfolio"), { items: defaultPortfolio });
+
+      // Seed FAQs
+      await setDoc(doc(db, "content", "faqs"), { items: defaultFaqs });
+
+      // Seed super admin emails
+      await setDoc(doc(db, "admins", "stormychaseforrester@gmail.com"), {
+        role: "super_admin",
+        email: "stormychaseforrester@gmail.com"
+      });
+      await setDoc(doc(db, "admins", "hello@techaidaustralia.com.au"), {
+        role: "super_admin",
+        email: "hello@techaidaustralia.com.au"
+      });
+
+      // Seed Default Blogs (real studio photography)
+      const defaultBlogs = [
+        {
+          title: "Aftercare: How to Heal Your Tattoo Perfectly",
+          author: "Steven Benn",
+          image: "assets/brand/blog-aftercare.jpg",
+          content: "Taking care of your new tattoo is just as important as the tattooing process itself. Keep it clean, use premium vegan aftercare cream, avoid long soaking in water, and protect it from direct sunlight. Your skin notes are valuable here!",
+          createdAt: new Date().toISOString()
+        },
+        {
+          title: "Tattoo Placements: Finding the Perfect Spot",
+          author: "Scotty",
+          image: "assets/brand/blog-placement.jpg",
+          content: "Tattoo placement can make or break a design. Fine line work looks gorgeous on wrists and collarbones, whereas large realism designs require larger canvases like sleeves or chests. Let's consult and design something custom.",
+          createdAt: new Date().toISOString()
+        }
+      ];
+      for (const b of defaultBlogs) {
+        await setDoc(doc(db, "blogs", `blog_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`), b);
+      }
+
+      // Seed Default Products (aftercare / chemist-style studio shop)
+      for (const p of defaultShopProducts) {
+        await setDoc(doc(db, "products", p.id || `product_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`), {
+          name: p.name,
+          price: p.price,
+          image: p.image,
+          description: p.description
+        });
+      }
+
+      // Seed Default SEO
+      const defaultSeo = {
+        home: {
+          title: "Diamond Tip Tattoo | Private Tattoo Studio Dapto",
+          description: "Private tattoo studio for custom work of uncompromising quality. Fine art on skin, crafted to last a lifetime in Dapto.",
+          keywords: "tattoo, Dapto, fine line, realism, custom design"
+        },
+        portal: {
+          title: "Client Portal | Diamond Tip Tattoo",
+          description: "Manage bookings, skin notes, live chat and buy gift cards.",
+          keywords: "crm, bookings, client notes, gift cards"
+        }
+      };
+      await setDoc(doc(db, "content", "seo"), defaultSeo);
+
+      console.log("Seeding completed successfully.");
+      loadDynamicContent();
+    }
+  } catch (err) {
+    console.error("Error during database seeding: ", err);
+  }
 }
 
 // Load Content dynamically on Landing Page
 async function loadDynamicContent() {
-    try {
-        // 1. Specialties — always show curated tattoo covers for the 4 style cards
-        const specialtiesSnap = await getDoc(doc(db, "content", "specialties"));
-        const cmsSpecialties = specialtiesSnap.exists() ? specialtiesSnap.data().items : null;
-        const specialties = resolveSpecialties(cmsSpecialties);
-        renderSpecialtiesGrid(specialties);
+  try {
+    // 1. Specialties — always show curated tattoo covers for the 4 style cards
+    const specialtiesSnap = await getDoc(doc(db, "content", "specialties"));
+    const cmsSpecialties = specialtiesSnap.exists() ? specialtiesSnap.data().items : null;
+    const specialties = resolveSpecialties(cmsSpecialties);
+    renderSpecialtiesGrid(specialties);
 
-        // 2. Artists — always prefer real studio roster (Steven + Scotty)
-        const artistsSnap = await getDoc(doc(db, "content", "artists"));
-        const cmsArtists = artistsSnap.exists() ? artistsSnap.data().items : null;
-        const artists = artistsAreCurated(cmsArtists) ? cmsArtists : defaultArtists;
-        renderArtistsGrid(artists);
-        // Refresh CMS artists if still on placeholder roster
-        if (!artistsAreCurated(cmsArtists)) {
-            try {
-                await setDoc(doc(db, "content", "artists"), { items: defaultArtists });
-            } catch (e) {
-                console.warn("Could not refresh artists doc:", e);
-            }
-        }
+    // 2. Artists — always prefer real studio roster (Steven + Scotty)
+    const artistsSnap = await getDoc(doc(db, "content", "artists"));
+    const cmsArtists = artistsSnap.exists() ? artistsSnap.data().items : null;
+    const artists = artistsAreCurated(cmsArtists) ? cmsArtists : defaultArtists;
+    renderArtistsGrid(artists);
+    // Refresh CMS artists if still on placeholder roster
+    if (!artistsAreCurated(cmsArtists)) {
+      try {
+        await setDoc(doc(db, "content", "artists"), { items: defaultArtists });
+      } catch (e) {
+        console.warn("Could not refresh artists doc:", e);
+      }
+    }
 
-        // 3. Portfolio — prefer curated local tattoo work when CMS still has placeholders
-        const portfolioSnap = await getDoc(doc(db, "content", "portfolio"));
-        const cmsPortfolio = portfolioSnap.exists() ? portfolioSnap.data().items : null;
-        dbPortfolio = portfolioHasCuratedWork(cmsPortfolio) ? cmsPortfolio : defaultPortfolio;
-        renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
-        initPortfolioFilters();
+    // 3. Portfolio — prefer curated local tattoo work when CMS still has placeholders
+    const portfolioSnap = await getDoc(doc(db, "content", "portfolio"));
+    const cmsPortfolio = portfolioSnap.exists() ? portfolioSnap.data().items : null;
+    dbPortfolio = portfolioHasCuratedWork(cmsPortfolio) ? cmsPortfolio : defaultPortfolio;
+    renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
+    initPortfolioFilters();
 
-        // 4. FAQs
-        const faqsSnap = await getDoc(doc(db, "content", "faqs"));
-        const faqs = faqsSnap.exists() ? faqsSnap.data().items : defaultFaqs;
-        dbFaqs = faqs;
-        const faqAccordion = document.getElementById('faqAccordion');
-        if (faqAccordion) {
-            faqAccordion.innerHTML = faqs.map(faq => `
+    // 4. FAQs
+    const faqsSnap = await getDoc(doc(db, "content", "faqs"));
+    const faqs = faqsSnap.exists() ? faqsSnap.data().items : defaultFaqs;
+    dbFaqs = faqs;
+    const faqAccordion = document.getElementById('faqAccordion');
+    if (faqAccordion) {
+      faqAccordion.innerHTML = faqs.map(faq => `
                 <div class="acc-item">
                     <button class="acc-btn">${faq.question} <span>+</span></button>
                     <div class="acc-content"><p>${faq.answer}</p></div>
                 </div>
             `).join('');
 
-            // Re-apply Accordion click listeners
-            const accBtns = faqAccordion.querySelectorAll('.acc-btn');
-            accBtns.forEach(btn => {
-                btn.onclick = function() {
-                    this.classList.toggle('active');
-                    const content = this.nextElementSibling;
-                    if (content.style.maxHeight) {
-                        content.style.maxHeight = null;
-                        this.querySelector('span').textContent = '+';
-                    } else {
-                        content.style.maxHeight = content.scrollHeight + "px";
-                        this.querySelector('span').textContent = '-';
-                    }
-                };
-            });
-        }
-
-        // Trigger blog and shop website loading
-        loadBlogWebsite();
-        loadShopWebsite();
-    } catch (err) {
-        console.error("Error loading dynamic content: ", err);
+      // Re-apply Accordion click listeners
+      const accBtns = faqAccordion.querySelectorAll('.acc-btn');
+      accBtns.forEach(btn => {
+        btn.onclick = function () {
+          this.classList.toggle('active');
+          const content = this.nextElementSibling;
+          if (content.style.maxHeight) {
+            content.style.maxHeight = null;
+            this.querySelector('span').textContent = '+';
+          } else {
+            content.style.maxHeight = content.scrollHeight + "px";
+            this.querySelector('span').textContent = '-';
+          }
+        };
+      });
     }
+
+    // Trigger blog and shop website loading
+    loadBlogWebsite();
+    loadShopWebsite();
+  } catch (err) {
+    console.error("Error loading dynamic content: ", err);
+  }
 }
 
 // Client Side Bookings Fetch
 async function loadClientBookings() {
-    const listContainer = document.getElementById('clientBookingsList');
-    if (!listContainer) return;
+  const listContainer = document.getElementById('clientBookingsList');
+  if (!listContainer) return;
 
-    try {
-        const qBookings = query(
-            collection(db, "bookings"), 
-            where("email", "==", currentUser.email)
-        );
-        const querySnapshot = await getDocs(qBookings);
-        
-        const bookings = [];
-        querySnapshot.forEach(docSnap => {
-            bookings.push(docSnap.data());
-        });
+  try {
+    const qBookings = query(
+      collection(db, "bookings"),
+      where("email", "==", currentUser.email)
+    );
+    const querySnapshot = await getDocs(qBookings);
 
-        bookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const bookings = [];
+    querySnapshot.forEach(docSnap => {
+      bookings.push(docSnap.data());
+    });
 
-        if (bookings.length === 0) {
-            listContainer.innerHTML = `<p style="color: var(--text-secondary);">You have not submitted any consultation requests yet.</p>`;
-            return;
-        }
+    bookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-        listContainer.innerHTML = bookings.map(b => `
+    if (bookings.length === 0) {
+      listContainer.innerHTML = `<p style="color: var(--text-secondary);">You have not submitted any consultation requests yet.</p>`;
+      return;
+    }
+
+    listContainer.innerHTML = bookings.map(b => `
             <div class="box-inner" style="border: 1px solid var(--border); padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; background: rgba(255,255,255,0.01);">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                     <h4 style="color: var(--accent); font-family: var(--font-display); font-size: 1.05rem;">${b.style.toUpperCase()}</h4>
@@ -2331,22 +2342,22 @@ async function loadClientBookings() {
             </div>
         `).join('');
 
-    } catch (err) {
-        console.error("Failed to load client bookings: ", err);
-    }
+  } catch (err) {
+    console.error("Failed to load client bookings: ", err);
+  }
 }
 
 // Admin Self List (My Bookings tab for admins lists all active bookings)
 function loadAllBookingsListForAdminSelf() {
-    const listContainer = document.getElementById('clientBookingsList');
-    if (!listContainer) return;
-    
-    if (dbBookings.length === 0) {
-        listContainer.innerHTML = `<p style="color: var(--text-secondary);">No booking requests are currently in the system.</p>`;
-        return;
-    }
+  const listContainer = document.getElementById('clientBookingsList');
+  if (!listContainer) return;
 
-    listContainer.innerHTML = dbBookings.map(b => `
+  if (dbBookings.length === 0) {
+    listContainer.innerHTML = `<p style="color: var(--text-secondary);">No booking requests are currently in the system.</p>`;
+    return;
+  }
+
+  listContainer.innerHTML = dbBookings.map(b => `
         <div class="box-inner crm-booking-item" onclick="openBookingModal('${b.id}')" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                 <h4 style="font-family: var(--font-display); color: #fff;">${b.name.toUpperCase()}</h4>
@@ -2364,24 +2375,24 @@ function loadAllBookingsListForAdminSelf() {
 
 // Admin CRM Realtime Listener
 function listenToAllBookings() {
-    const q = query(collection(db, "bookings"), orderBy("createdAt", "desc"));
-    onSnapshot(q, (snapshot) => {
-        dbBookings = [];
-        snapshot.forEach((docSnap) => {
-            dbBookings.push(docSnap.data());
-        });
-        
-        // Trigger UI updates
-        if (document.getElementById('portalSection').style.display === 'block') {
-            const activeTab = document.querySelector('.portal-tab-content.active');
-            if (activeTab.id === 'tabMyBookings') {
-                loadAllBookingsListForAdminSelf();
-            } else if (activeTab.id === 'tabCalendarCRM') {
-                renderCRMCalendar();
-                renderCRMTable();
-            }
-        }
+  const q = query(collection(db, "bookings"), orderBy("createdAt", "desc"));
+  onSnapshot(q, (snapshot) => {
+    dbBookings = [];
+    snapshot.forEach((docSnap) => {
+      dbBookings.push(docSnap.data());
     });
+
+    // Trigger UI updates
+    if (document.getElementById('portalSection').style.display === 'block') {
+      const activeTab = document.querySelector('.portal-tab-content.active');
+      if (activeTab.id === 'tabMyBookings') {
+        loadAllBookingsListForAdminSelf();
+      } else if (activeTab.id === 'tabCalendarCRM') {
+        renderCRMCalendar();
+        renderCRMTable();
+      }
+    }
+  });
 }
 
 // CRM Calendar Generator
@@ -2389,82 +2400,82 @@ let currentCalendarDate = new Date();
 let selectedCalendarDay = null;
 
 function renderCRMCalendar() {
-    const calendarMonthYear = document.getElementById('calendarMonthYear');
-    const calendarDaysGrid = document.getElementById('calendarDaysGrid');
-    if (!calendarMonthYear || !calendarDaysGrid) return;
+  const calendarMonthYear = document.getElementById('calendarMonthYear');
+  const calendarDaysGrid = document.getElementById('calendarDaysGrid');
+  if (!calendarMonthYear || !calendarDaysGrid) return;
 
-    const year = currentCalendarDate.getFullYear();
-    const month = currentCalendarDate.getMonth();
-    
-    // Month label
-    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    calendarMonthYear.textContent = `${months[month]} ${year}`;
+  const year = currentCalendarDate.getFullYear();
+  const month = currentCalendarDate.getMonth();
 
-    // Get dates
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+  // Month label
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  calendarMonthYear.textContent = `${months[month]} ${year}`;
 
-    let gridHtml = '';
+  // Get dates
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    // Empty cells before start of month
-    for (let i = 0; i < firstDay; i++) {
-        gridHtml += `<div class="day-cell empty"></div>`;
+  let gridHtml = '';
+
+  // Empty cells before start of month
+  for (let i = 0; i < firstDay; i++) {
+    gridHtml += `<div class="day-cell empty"></div>`;
+  }
+
+  // Days grid
+  const today = new Date();
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    // Find if bookings exist on this day
+    const dayBookings = dbBookings.filter(b => b.date === dateString);
+
+    let cellClasses = 'day-cell';
+    if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day) {
+      cellClasses += ' today';
+    }
+    if (selectedCalendarDay === dateString) {
+      cellClasses += ' selected';
     }
 
-    // Days grid
-    const today = new Date();
-    for (let day = 1; day <= daysInMonth; day++) {
-        const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        
-        // Find if bookings exist on this day
-        const dayBookings = dbBookings.filter(b => b.date === dateString);
-        
-        let cellClasses = 'day-cell';
-        if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day) {
-            cellClasses += ' today';
-        }
-        if (selectedCalendarDay === dateString) {
-            cellClasses += ' selected';
-        }
-
-        gridHtml += `
+    gridHtml += `
             <div class="${cellClasses}" onclick="selectCalendarDate('${dateString}')">
                 <span class="day-num">${day}</span>
                 ${dayBookings.length > 0 ? `<div class="day-indicator"></div>` : ''}
             </div>
         `;
-    }
+  }
 
-    calendarDaysGrid.innerHTML = gridHtml;
-    
-    // Update the drawer bookings list for selected day
-    if (selectedCalendarDay) {
-        renderDayDrawerBookings(selectedCalendarDay);
-    }
+  calendarDaysGrid.innerHTML = gridHtml;
+
+  // Update the drawer bookings list for selected day
+  if (selectedCalendarDay) {
+    renderDayDrawerBookings(selectedCalendarDay);
+  }
 }
 
-window.selectCalendarDate = function(dateString) {
-    selectedCalendarDay = dateString;
-    renderCRMCalendar();
+window.selectCalendarDate = function (dateString) {
+  selectedCalendarDay = dateString;
+  renderCRMCalendar();
 }
 
 function renderDayDrawerBookings(dateString) {
-    const dayBookingsList = document.getElementById('dayBookingsList');
-    const selectedDayLabel = document.getElementById('selectedDayLabel');
-    if (!dayBookingsList) return;
+  const dayBookingsList = document.getElementById('dayBookingsList');
+  const selectedDayLabel = document.getElementById('selectedDayLabel');
+  if (!dayBookingsList) return;
 
-    // Parse nice date label
-    const dateObj = new Date(dateString);
-    selectedDayLabel.textContent = `Bookings: ${dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}`;
+  // Parse nice date label
+  const dateObj = new Date(dateString);
+  selectedDayLabel.textContent = `Bookings: ${dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}`;
 
-    const dayBookings = dbBookings.filter(b => b.date === dateString);
+  const dayBookings = dbBookings.filter(b => b.date === dateString);
 
-    if (dayBookings.length === 0) {
-        dayBookingsList.innerHTML = `<p style="color: var(--text-secondary); margin-top: 1rem;">No bookings scheduled for this date.</p>`;
-        return;
-    }
+  if (dayBookings.length === 0) {
+    dayBookingsList.innerHTML = `<p style="color: var(--text-secondary); margin-top: 1rem;">No bookings scheduled for this date.</p>`;
+    return;
+  }
 
-    dayBookingsList.innerHTML = dayBookings.map(b => `
+  dayBookingsList.innerHTML = dayBookings.map(b => `
         <div class="box-inner crm-booking-item" onclick="openBookingModal('${b.id}')" style="display: flex; flex-direction: column; gap: 0.25rem;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <strong style="color: #fff; font-size: 0.9rem;">${b.name}</strong>
@@ -2477,15 +2488,15 @@ function renderDayDrawerBookings(dateString) {
 
 // CRM Bookings Table Render
 function renderCRMTable(bookingsToRender = dbBookings) {
-    const tableBody = document.getElementById('crmBookingsTableBody');
-    if (!tableBody) return;
+  const tableBody = document.getElementById('crmBookingsTableBody');
+  if (!tableBody) return;
 
-    if (bookingsToRender.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 2rem;">No bookings match the filters.</td></tr>`;
-        return;
-    }
+  if (bookingsToRender.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 2rem;">No bookings match the filters.</td></tr>`;
+    return;
+  }
 
-    tableBody.innerHTML = bookingsToRender.map(b => `
+  tableBody.innerHTML = bookingsToRender.map(b => `
         <tr style="cursor: pointer;" onclick="openBookingModal('${b.id}')">
             <td style="padding: 1rem 0.5rem;">
                 <strong style="color: #fff; display: block;">${b.name}</strong>
@@ -2506,204 +2517,204 @@ function renderCRMTable(bookingsToRender = dbBookings) {
 
 // Search and Filter Table
 function filterCRMTable() {
-    const queryStr = document.getElementById('bookingSearchInput').value.toLowerCase();
-    const statusVal = document.getElementById('bookingFilterStatus').value;
+  const queryStr = document.getElementById('bookingSearchInput').value.toLowerCase();
+  const statusVal = document.getElementById('bookingFilterStatus').value;
 
-    const filtered = dbBookings.filter(b => {
-        const matchesQuery = b.name.toLowerCase().includes(queryStr) || b.email.toLowerCase().includes(queryStr) || b.style.toLowerCase().includes(queryStr);
-        const matchesStatus = statusVal === 'all' || b.status === statusVal;
-        return matchesQuery && matchesStatus;
-    });
+  const filtered = dbBookings.filter(b => {
+    const matchesQuery = b.name.toLowerCase().includes(queryStr) || b.email.toLowerCase().includes(queryStr) || b.style.toLowerCase().includes(queryStr);
+    const matchesStatus = statusVal === 'all' || b.status === statusVal;
+    return matchesQuery && matchesStatus;
+  });
 
-    renderCRMTable(filtered);
+  renderCRMTable(filtered);
 }
 
 // Booking Detail Modal Controller
 let activeBookingId = null;
 
-window.openBookingModal = function(bookingId) {
-    const booking = dbBookings.find(b => b.id === bookingId);
-    if (!booking) return;
+window.openBookingModal = function (bookingId) {
+  const booking = dbBookings.find(b => b.id === bookingId);
+  if (!booking) return;
 
-    activeBookingId = bookingId;
+  activeBookingId = bookingId;
 
-    document.getElementById('modalBookingClient').textContent = booking.name;
-    document.getElementById('modalBookingId').textContent = `ID: ${booking.id}${booking.source ? " · " + booking.source : ""}`;
-    document.getElementById('mBookingEmail').textContent = booking.email;
-    document.getElementById('mBookingPhone').textContent = booking.phone || 'Not provided';
-    document.getElementById('mBookingDate').textContent = `${booking.date || 'Flexible'}${booking.time ? " · " + booking.time : ""}`;
-    document.getElementById('mBookingStyle').textContent = booking.style + (booking.preferredArtist ? ` · Artist: ${booking.preferredArtist}` : "");
-    
-    let ideaText = booking.idea || "";
-    if (booking.tryOn) {
-        const t = booking.tryOn;
-        ideaText += `\n\n— Try-on —\nPlacement: ${t.placementLabel || t.placement || "—"}\nSize: ${t.scale ?? "—"}% · Rotation: ${t.rotation ?? 0}° · Wrap: ${t.wrap ?? 0}%\nBody zoom: ${t.bodyZoom ?? 100}%`;
-        if (t.notes) ideaText += `\nNotes: ${t.notes}`;
-    }
-    document.getElementById('mBookingIdea').textContent = ideaText;
+  document.getElementById('modalBookingClient').textContent = booking.name;
+  document.getElementById('modalBookingId').textContent = `ID: ${booking.id}${booking.source ? " · " + booking.source : ""}`;
+  document.getElementById('mBookingEmail').textContent = booking.email;
+  document.getElementById('mBookingPhone').textContent = booking.phone || 'Not provided';
+  document.getElementById('mBookingDate').textContent = `${booking.date || 'Flexible'}${booking.time ? " · " + booking.time : ""}`;
+  document.getElementById('mBookingStyle').textContent = booking.style + (booking.preferredArtist ? ` · Artist: ${booking.preferredArtist}` : "");
 
-    const imagesGrid = document.getElementById('mBookingImagesGrid');
-    const container = document.getElementById('mBookingImagesContainer');
-    const imgs = [];
-    if (booking.tryOnPreviewUrl) imgs.push(booking.tryOnPreviewUrl);
-    if (booking.referenceImages && booking.referenceImages.length) {
-        booking.referenceImages.forEach((u) => {
-            if (u && !imgs.includes(u)) imgs.push(u);
-        });
-    }
-    
-    if (imgs.length > 0) {
-        container.style.display = 'block';
-        imagesGrid.innerHTML = imgs.map((img, idx) => `
+  let ideaText = booking.idea || "";
+  if (booking.tryOn) {
+    const t = booking.tryOn;
+    ideaText += `\n\n— Try-on —\nPlacement: ${t.placementLabel || t.placement || "—"}\nSize: ${t.scale ?? "—"}% · Rotation: ${t.rotation ?? 0}° · Wrap: ${t.wrap ?? 0}%\nBody zoom: ${t.bodyZoom ?? 100}%`;
+    if (t.notes) ideaText += `\nNotes: ${t.notes}`;
+  }
+  document.getElementById('mBookingIdea').textContent = ideaText;
+
+  const imagesGrid = document.getElementById('mBookingImagesGrid');
+  const container = document.getElementById('mBookingImagesContainer');
+  const imgs = [];
+  if (booking.tryOnPreviewUrl) imgs.push(booking.tryOnPreviewUrl);
+  if (booking.referenceImages && booking.referenceImages.length) {
+    booking.referenceImages.forEach((u) => {
+      if (u && !imgs.includes(u)) imgs.push(u);
+    });
+  }
+
+  if (imgs.length > 0) {
+    container.style.display = 'block';
+    imagesGrid.innerHTML = imgs.map((img, idx) => `
             <div class="file-preview-item" style="cursor: pointer;" onclick="window.open('${img}', '_blank')" title="${idx === 0 && booking.tryOnPreviewUrl ? 'Try-on preview' : 'Reference'}">
                 <img src="${img}" alt="Reference">
             </div>
         `).join('');
-    } else {
-        container.style.display = 'none';
-        imagesGrid.innerHTML = '';
-    }
+  } else {
+    container.style.display = 'none';
+    imagesGrid.innerHTML = '';
+  }
 
-    // Set dropdown selections
-    document.getElementById('mBookingStatusSelect').value = booking.status || 'Pending';
-    document.getElementById('mBookingArtistSelect').value = booking.assignedArtist || 'Unassigned';
-    document.getElementById('mBookingNotes').value = booking.internalNotes || '';
+  // Set dropdown selections
+  document.getElementById('mBookingStatusSelect').value = booking.status || 'Pending';
+  document.getElementById('mBookingArtistSelect').value = booking.assignedArtist || 'Unassigned';
+  document.getElementById('mBookingNotes').value = booking.internalNotes || '';
 
-    // Show modal
-    document.getElementById('bookingModal').style.display = 'flex';
+  // Show modal
+  document.getElementById('bookingModal').style.display = 'flex';
 }
 
-window.closeBookingModal = function() {
-    document.getElementById('bookingModal').style.display = 'none';
-    activeBookingId = null;
+window.closeBookingModal = function () {
+  document.getElementById('bookingModal').style.display = 'none';
+  activeBookingId = null;
 }
 
 // Update Booking details in Firestore
-window.saveBookingDetails = async function() {
-    if (!activeBookingId) return;
+window.saveBookingDetails = async function () {
+  if (!activeBookingId) return;
 
-    const status = document.getElementById('mBookingStatusSelect').value;
-    const assignedArtist = document.getElementById('mBookingArtistSelect').value;
-    const internalNotes = document.getElementById('mBookingNotes').value;
+  const status = document.getElementById('mBookingStatusSelect').value;
+  const assignedArtist = document.getElementById('mBookingArtistSelect').value;
+  const internalNotes = document.getElementById('mBookingNotes').value;
 
-    const saveBtn = document.getElementById('saveBookingDetailsBtn');
-    saveBtn.disabled = true;
-    saveBtn.textContent = 'SAVING...';
+  const saveBtn = document.getElementById('saveBookingDetailsBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'SAVING...';
 
-    try {
-        await updateDoc(doc(db, "bookings", activeBookingId), {
-            status,
-            assignedArtist,
-            internalNotes
-        });
+  try {
+    await updateDoc(doc(db, "bookings", activeBookingId), {
+      status,
+      assignedArtist,
+      internalNotes
+    });
 
-        alert("Booking details updated successfully!");
-        closeBookingModal();
+    alert("Booking details updated successfully!");
+    closeBookingModal();
 
-    } catch (err) {
-        console.error("Failed to update booking: ", err);
-        alert("Failed to save changes: " + err.message);
-    } finally {
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'SAVE CHANGES';
-    }
+  } catch (err) {
+    console.error("Failed to update booking: ", err);
+    alert("Failed to save changes: " + err.message);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'SAVE CHANGES';
+  }
 }
 
 // CMS Render Portfolio
 function renderCMSPortfolio() {
-    const cmsGrid = document.getElementById('cmsPortfolioGrid');
-    if (!cmsGrid) return;
+  const cmsGrid = document.getElementById('cmsPortfolioGrid');
+  if (!cmsGrid) return;
 
-    if (dbPortfolio.length === 0) {
-        cmsGrid.innerHTML = `<p style="color: var(--text-secondary);">No portfolio images uploaded.</p>`;
-        return;
-    }
+  if (dbPortfolio.length === 0) {
+    cmsGrid.innerHTML = `<p style="color: var(--text-secondary);">No portfolio images uploaded.</p>`;
+    return;
+  }
 
-    cmsGrid.innerHTML = dbPortfolio.map((item, index) => {
-        const normalized = normalizePortfolioItem(item);
-        return `
+  cmsGrid.innerHTML = dbPortfolio.map((item, index) => {
+    const normalized = normalizePortfolioItem(item);
+    return `
         <div class="cms-portfolio-item">
             <img src="${normalized.src}" alt="${normalized.alt}">
             <button class="cms-delete-btn" onclick="deleteCMSPortfolioImage(${index})">DELETE</button>
         </div>
     `;
-    }).join('');
+  }).join('');
 }
 
 // Upload CMS Portfolio image
 async function uploadCMSPortfolioImage(file) {
-    try {
-        const fileRef = ref(storage, `portfolio/${Date.now()}_${file.name}`);
-        const uploadTask = uploadBytesResumable(fileRef, file);
+  try {
+    const fileRef = ref(storage, `portfolio/${Date.now()}_${file.name}`);
+    const uploadTask = uploadBytesResumable(fileRef, file);
 
-        await new Promise((resolve, reject) => {
-            uploadTask.on('state_changed', 
-                null, 
-                (error) => reject(error), 
-                () => resolve()
-            );
-        });
+    await new Promise((resolve, reject) => {
+      uploadTask.on('state_changed',
+        null,
+        (error) => reject(error),
+        () => resolve()
+      );
+    });
 
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        
-        // Add to array and save to Firestore
-        dbPortfolio.push({ src: downloadURL, category: "custom", alt: file.name.replace(/\.[^.]+$/, "") });
-        await updateDoc(doc(db, "content", "portfolio"), {
-            items: dbPortfolio
-        });
-        renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
+    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
-        alert("Portfolio image uploaded successfully!");
-        renderCMSPortfolio();
-        loadDynamicContent(); // Refresh main gallery
+    // Add to array and save to Firestore
+    dbPortfolio.push({ src: downloadURL, category: "custom", alt: file.name.replace(/\.[^.]+$/, "") });
+    await updateDoc(doc(db, "content", "portfolio"), {
+      items: dbPortfolio
+    });
+    renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
 
-    } catch (err) {
-        console.error("Failed to upload portfolio: ", err);
-        alert("Failed to upload image: " + err.message);
-    }
+    alert("Portfolio image uploaded successfully!");
+    renderCMSPortfolio();
+    loadDynamicContent(); // Refresh main gallery
+
+  } catch (err) {
+    console.error("Failed to upload portfolio: ", err);
+    alert("Failed to upload image: " + err.message);
+  }
 }
 
 // Delete CMS Portfolio image
-window.deleteCMSPortfolioImage = async function(index) {
-    if (!confirm("Are you sure you want to delete this portfolio image?")) return;
+window.deleteCMSPortfolioImage = async function (index) {
+  if (!confirm("Are you sure you want to delete this portfolio image?")) return;
 
-    const item = dbPortfolio[index];
-    const imgUrl = typeof item === "string" ? item : (item?.src || item?.image || "");
+  const item = dbPortfolio[index];
+  const imgUrl = typeof item === "string" ? item : (item?.src || item?.image || "");
 
-    try {
-        // 1. Delete from storage if it is a firebase storage URL
-        if (imgUrl.includes('firebasestorage.googleapis.com')) {
-            const storageRef = ref(storage, imgUrl);
-            await deleteObject(storageRef);
-        }
-
-        // 2. Remove from array and update Firestore
-        dbPortfolio.splice(index, 1);
-        await updateDoc(doc(db, "content", "portfolio"), {
-            items: dbPortfolio
-        });
-
-        alert("Portfolio image deleted!");
-        renderCMSPortfolio();
-        renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
-
-    } catch (err) {
-        console.error("Failed to delete portfolio item: ", err);
-        alert("Failed to delete item: " + err.message);
+  try {
+    // 1. Delete from storage if it is a firebase storage URL
+    if (imgUrl.includes('firebasestorage.googleapis.com')) {
+      const storageRef = ref(storage, imgUrl);
+      await deleteObject(storageRef);
     }
+
+    // 2. Remove from array and update Firestore
+    dbPortfolio.splice(index, 1);
+    await updateDoc(doc(db, "content", "portfolio"), {
+      items: dbPortfolio
+    });
+
+    alert("Portfolio image deleted!");
+    renderCMSPortfolio();
+    renderPortfolioGrid(dbPortfolio, activePortfolioFilter);
+
+  } catch (err) {
+    console.error("Failed to delete portfolio item: ", err);
+    alert("Failed to delete item: " + err.message);
+  }
 }
 
 // CMS Render FAQs
 function renderCMSFaqs() {
-    const cmsFaqList = document.getElementById('cmsFaqList');
-    if (!cmsFaqList) return;
+  const cmsFaqList = document.getElementById('cmsFaqList');
+  if (!cmsFaqList) return;
 
-    if (dbFaqs.length === 0) {
-        cmsFaqList.innerHTML = `<p style="color: var(--text-secondary);">No FAQs created.</p>`;
-        return;
-    }
+  if (dbFaqs.length === 0) {
+    cmsFaqList.innerHTML = `<p style="color: var(--text-secondary);">No FAQs created.</p>`;
+    return;
+  }
 
-    cmsFaqList.innerHTML = dbFaqs.map(faq => `
+  cmsFaqList.innerHTML = dbFaqs.map(faq => `
         <div class="cms-faq-item box-inner">
             <div class="faq-details">
                 <h4>${faq.question}</h4>
@@ -2717,109 +2728,109 @@ function renderCMSFaqs() {
 // Open FAQ Edit/Create Modal
 let activeFaqId = null;
 
-window.openFaqModal = function(faqId = null) {
-    const questionInput = document.getElementById('faqQuestionInput');
-    const answerInput = document.getElementById('faqAnswerInput');
-    const deleteBtn = document.getElementById('deleteFaqBtn');
-    const faqIdInput = document.getElementById('faqIdInput');
-    const title = document.getElementById('faqModalTitle');
+window.openFaqModal = function (faqId = null) {
+  const questionInput = document.getElementById('faqQuestionInput');
+  const answerInput = document.getElementById('faqAnswerInput');
+  const deleteBtn = document.getElementById('deleteFaqBtn');
+  const faqIdInput = document.getElementById('faqIdInput');
+  const title = document.getElementById('faqModalTitle');
 
-    if (faqId) {
-        const faq = dbFaqs.find(f => f.id === faqId);
-        if (!faq) return;
+  if (faqId) {
+    const faq = dbFaqs.find(f => f.id === faqId);
+    if (!faq) return;
 
-        activeFaqId = faqId;
-        faqIdInput.value = faqId;
-        questionInput.value = faq.question;
-        answerInput.value = faq.answer;
-        deleteBtn.style.display = 'block';
-        title.textContent = 'Edit FAQ';
-    } else {
-        activeFaqId = null;
-        faqIdInput.value = '';
-        questionInput.value = '';
-        answerInput.value = '';
-        deleteBtn.style.display = 'none';
-        title.textContent = 'Add FAQ';
-    }
+    activeFaqId = faqId;
+    faqIdInput.value = faqId;
+    questionInput.value = faq.question;
+    answerInput.value = faq.answer;
+    deleteBtn.style.display = 'block';
+    title.textContent = 'Edit FAQ';
+  } else {
+    activeFaqId = null;
+    faqIdInput.value = '';
+    questionInput.value = '';
+    answerInput.value = '';
+    deleteBtn.style.display = 'none';
+    title.textContent = 'Add FAQ';
+  }
 
-    document.getElementById('faqModal').style.display = 'flex';
+  document.getElementById('faqModal').style.display = 'flex';
 }
 
-window.closeFaqModal = function() {
-    document.getElementById('faqModal').style.display = 'none';
-    activeFaqId = null;
+window.closeFaqModal = function () {
+  document.getElementById('faqModal').style.display = 'none';
+  activeFaqId = null;
 }
 
 // Save FAQ (Create or Update)
-window.saveFaqItem = async function() {
-    const question = document.getElementById('faqQuestionInput').value;
-    const answer = document.getElementById('faqAnswerInput').value;
+window.saveFaqItem = async function () {
+  const question = document.getElementById('faqQuestionInput').value;
+  const answer = document.getElementById('faqAnswerInput').value;
 
-    if (!question || !answer) {
-        alert("Please fill in both the question and answer.");
-        return;
+  if (!question || !answer) {
+    alert("Please fill in both the question and answer.");
+    return;
+  }
+
+  const saveBtn = document.getElementById('saveFaqItemBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'SAVING...';
+
+  try {
+    if (activeFaqId) {
+      // Update
+      const faqIndex = dbFaqs.findIndex(f => f.id === activeFaqId);
+      if (faqIndex > -1) {
+        dbFaqs[faqIndex] = { id: activeFaqId, question, answer };
+      }
+    } else {
+      // Create
+      const newId = `faq_${Date.now()}`;
+      dbFaqs.push({ id: newId, question, answer });
     }
 
-    const saveBtn = document.getElementById('saveFaqItemBtn');
-    saveBtn.disabled = true;
-    saveBtn.textContent = 'SAVING...';
+    await updateDoc(doc(db, "content", "faqs"), {
+      items: dbFaqs
+    });
 
-    try {
-        if (activeFaqId) {
-            // Update
-            const faqIndex = dbFaqs.findIndex(f => f.id === activeFaqId);
-            if (faqIndex > -1) {
-                dbFaqs[faqIndex] = { id: activeFaqId, question, answer };
-            }
-        } else {
-            // Create
-            const newId = `faq_${Date.now()}`;
-            dbFaqs.push({ id: newId, question, answer });
-        }
+    alert("FAQ saved successfully!");
+    closeFaqModal();
+    renderCMSFaqs();
+    loadDynamicContent(); // Refresh FAQs list on website
 
-        await updateDoc(doc(db, "content", "faqs"), {
-            items: dbFaqs
-        });
-
-        alert("FAQ saved successfully!");
-        closeFaqModal();
-        renderCMSFaqs();
-        loadDynamicContent(); // Refresh FAQs list on website
-
-    } catch (err) {
-        console.error("Failed to save FAQ: ", err);
-        alert("Failed to save FAQ: " + err.message);
-    } finally {
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'SAVE';
-    }
+  } catch (err) {
+    console.error("Failed to save FAQ: ", err);
+    alert("Failed to save FAQ: " + err.message);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'SAVE';
+  }
 }
 
 // Delete FAQ
-window.deleteFaqItem = async function() {
-    if (!activeFaqId) return;
-    if (!confirm("Are you sure you want to delete this FAQ question?")) return;
+window.deleteFaqItem = async function () {
+  if (!activeFaqId) return;
+  if (!confirm("Are you sure you want to delete this FAQ question?")) return;
 
-    try {
-        const faqIndex = dbFaqs.findIndex(f => f.id === activeFaqId);
-        if (faqIndex > -1) {
-            dbFaqs.splice(faqIndex, 1);
-        }
-
-        await updateDoc(doc(db, "content", "faqs"), {
-            items: dbFaqs
-        });
-
-        alert("FAQ deleted!");
-        closeFaqModal();
-        renderCMSFaqs();
-        loadDynamicContent(); // Refresh FAQs list on website
-
-    } catch (err) {
-        console.error("Failed to delete FAQ: ", err);
-        alert("Failed to delete FAQ: " + err.message);
+  try {
+    const faqIndex = dbFaqs.findIndex(f => f.id === activeFaqId);
+    if (faqIndex > -1) {
+      dbFaqs.splice(faqIndex, 1);
     }
+
+    await updateDoc(doc(db, "content", "faqs"), {
+      items: dbFaqs
+    });
+
+    alert("FAQ deleted!");
+    closeFaqModal();
+    renderCMSFaqs();
+    loadDynamicContent(); // Refresh FAQs list on website
+
+  } catch (err) {
+    console.error("Failed to delete FAQ: ", err);
+    alert("Failed to delete FAQ: " + err.message);
+  }
 }
 
 // ==========================================
@@ -2829,263 +2840,263 @@ window.deleteFaqItem = async function() {
 // Hash Routing & SEO Meta Dynamic Updates
 window.dbSeo = {};
 
-window.handleRouting = function() {
-    const hash = window.location.hash || '#home';
-    updateSEOMeta(hash);
+window.handleRouting = function () {
+  const hash = window.location.hash || '#home';
+  updateSEOMeta(hash);
 
-    if (hash === '#portal') {
-        if (!currentUser) {
-            window.location.hash = '#home';
-            document.getElementById('loginModal').style.display = 'flex';
-        } else {
-            enterPortal();
-        }
-    } else if (hash.startsWith('#portal/')) {
-        if (!currentUser) {
-            window.location.hash = '#home';
-            document.getElementById('loginModal').style.display = 'flex';
-        } else {
-            enterPortal();
-            const tab = hash.split('/')[1];
-            switchPortalTab(tab);
-        }
+  if (hash === '#portal') {
+    if (!currentUser) {
+      window.location.hash = '#home';
+      document.getElementById('loginModal').style.display = 'flex';
     } else {
-        exitPortal();
-        const element = document.querySelector(hash);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-        }
+      enterPortal();
     }
+  } else if (hash.startsWith('#portal/')) {
+    if (!currentUser) {
+      window.location.hash = '#home';
+      document.getElementById('loginModal').style.display = 'flex';
+    } else {
+      enterPortal();
+      const tab = hash.split('/')[1];
+      switchPortalTab(tab);
+    }
+  } else {
+    exitPortal();
+    const element = document.querySelector(hash);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
 }
 window.addEventListener('hashchange', window.handleRouting);
 
 async function updateSEOMeta(hash) {
-    const pageKey = hash.replace('#', '').split('/')[0] || 'home';
-    const defaults = {
-        home: {
-            title: "Tattoo Dapto NSW | Diamond Tip Tattoo — Realism, Fine Line & Custom Ink",
-            description: "Private tattoo studio in Dapto NSW · 4.6★ from 64 Google reviews. Custom realism, fine line & black & grey by Steven Benn & Scotty. Free consultation · Wollongong & Illawarra.",
-            keywords: "tattoo Dapto, tattoo Wollongong, Illawarra tattoo, realism, fine line, Steven Benn",
-            image: `${SITE_ORIGIN}/assets/brand/meta-image.png`,
-            url: `${SITE_ORIGIN}/`,
-        },
-        blog: {
-            title: "Diamond Tip Tattoo Blog | Aftercare, Placement & Custom Ink Guides",
-            description: "Tattoo aftercare, placement, realism, fine line, cover-ups and first-tattoo guides from Diamond Tip Tattoo Dapto — Illawarra NSW.",
-            keywords: "tattoo aftercare, tattoo placement, first tattoo Dapto, realism tattoo guide",
-            image: `${SITE_ORIGIN}/assets/brand/meta-image.png`,
-            url: `${SITE_ORIGIN}/#blog`,
-        },
-        book: {
-            title: "Book Free Tattoo Consultation | Diamond Tip Tattoo Dapto",
-            description: "Book a free private consultation at Diamond Tip Tattoo Dapto. Custom designs, realism, fine line — Illawarra & Wollongong clients welcome.",
-            keywords: "book tattoo Dapto, tattoo consultation Wollongong",
-            image: `${SITE_ORIGIN}/assets/brand/meta-image.png`,
-            url: `${SITE_ORIGIN}/#book`,
-        },
-        reviews: {
-            title: "Google Reviews | Diamond Tip Tattooing Dapto 4.6★",
-            description: "Read Google reviews for Diamond Tip Tattooing Dapto NSW — 4.6 stars from 64 clients. Also on Facebook, Yellow Pages, Instagram & TikTok.",
-            keywords: "Diamond Tip Tattoo reviews, tattoo Dapto reviews",
-            image: `${SITE_ORIGIN}/assets/brand/meta-image.png`,
-            url: `${SITE_ORIGIN}/#reviews`,
-        },
-    };
+  const pageKey = hash.replace('#', '').split('/')[0] || 'home';
+  const defaults = {
+    home: {
+      title: "Tattoo Dapto NSW | Diamond Tip Tattoo — Realism, Fine Line & Custom Ink",
+      description: "Private tattoo studio in Dapto NSW · 4.6★ from 64 Google reviews. Custom realism, fine line & black & grey by Steven Benn & Scotty. Free consultation · Wollongong & Illawarra.",
+      keywords: "tattoo Dapto, tattoo Wollongong, Illawarra tattoo, realism, fine line, Steven Benn",
+      image: `${SITE_ORIGIN}/assets/brand/meta-image.png`,
+      url: `${SITE_ORIGIN}/`,
+    },
+    blog: {
+      title: "Diamond Tip Tattoo Blog | Aftercare, Placement & Custom Ink Guides",
+      description: "Tattoo aftercare, placement, realism, fine line, cover-ups and first-tattoo guides from Diamond Tip Tattoo Dapto — Illawarra NSW.",
+      keywords: "tattoo aftercare, tattoo placement, first tattoo Dapto, realism tattoo guide",
+      image: `${SITE_ORIGIN}/assets/brand/meta-image.png`,
+      url: `${SITE_ORIGIN}/#blog`,
+    },
+    book: {
+      title: "Book Free Tattoo Consultation | Diamond Tip Tattoo Dapto",
+      description: "Book a free private consultation at Diamond Tip Tattoo Dapto. Custom designs, realism, fine line — Illawarra & Wollongong clients welcome.",
+      keywords: "book tattoo Dapto, tattoo consultation Wollongong",
+      image: `${SITE_ORIGIN}/assets/brand/meta-image.png`,
+      url: `${SITE_ORIGIN}/#book`,
+    },
+    reviews: {
+      title: "Google Reviews | Diamond Tip Tattooing Dapto 4.6★",
+      description: "Read Google reviews for Diamond Tip Tattooing Dapto NSW — 4.6 stars from 64 clients. Also on Facebook, Yellow Pages, Instagram & TikTok.",
+      keywords: "Diamond Tip Tattoo reviews, tattoo Dapto reviews",
+      image: `${SITE_ORIGIN}/assets/brand/meta-image.png`,
+      url: `${SITE_ORIGIN}/#reviews`,
+    },
+  };
 
-    let titleText = defaults.home.title;
-    let descText = defaults.home.description;
-    let keywordsText = defaults.home.keywords;
-    let imageUrl = defaults.home.image;
-    let pageUrl = defaults.home.url;
+  let titleText = defaults.home.title;
+  let descText = defaults.home.description;
+  let keywordsText = defaults.home.keywords;
+  let imageUrl = defaults.home.image;
+  let pageUrl = defaults.home.url;
 
-    if (defaults[pageKey]) {
-        titleText = defaults[pageKey].title;
-        descText = defaults[pageKey].description;
-        keywordsText = defaults[pageKey].keywords || keywordsText;
-        imageUrl = defaults[pageKey].image || imageUrl;
-        pageUrl = defaults[pageKey].url || pageUrl;
-    }
+  if (defaults[pageKey]) {
+    titleText = defaults[pageKey].title;
+    descText = defaults[pageKey].description;
+    keywordsText = defaults[pageKey].keywords || keywordsText;
+    imageUrl = defaults[pageKey].image || imageUrl;
+    pageUrl = defaults[pageKey].url || pageUrl;
+  }
 
-    if (window.dbSeo[pageKey]) {
-        titleText = window.dbSeo[pageKey].title || titleText;
-        descText = window.dbSeo[pageKey].description || descText;
-        keywordsText = window.dbSeo[pageKey].keywords || keywordsText;
-    } else {
-        try {
-            const seoDoc = await getDoc(doc(db, "content", "seo"));
-            if (seoDoc.exists()) {
-                window.dbSeo = seoDoc.data();
-                if (window.dbSeo[pageKey]) {
-                    titleText = window.dbSeo[pageKey].title || titleText;
-                    descText = window.dbSeo[pageKey].description || descText;
-                    keywordsText = window.dbSeo[pageKey].keywords || keywordsText;
-                }
-            }
-        } catch (e) {
-            console.error("Error loading SEO meta: ", e);
+  if (window.dbSeo[pageKey]) {
+    titleText = window.dbSeo[pageKey].title || titleText;
+    descText = window.dbSeo[pageKey].description || descText;
+    keywordsText = window.dbSeo[pageKey].keywords || keywordsText;
+  } else {
+    try {
+      const seoDoc = await getDoc(doc(db, "content", "seo"));
+      if (seoDoc.exists()) {
+        window.dbSeo = seoDoc.data();
+        if (window.dbSeo[pageKey]) {
+          titleText = window.dbSeo[pageKey].title || titleText;
+          descText = window.dbSeo[pageKey].description || descText;
+          keywordsText = window.dbSeo[pageKey].keywords || keywordsText;
         }
+      }
+    } catch (e) {
+      console.error("Error loading SEO meta: ", e);
     }
+  }
 
-    setSocialMeta({
-        title: titleText,
-        description: descText,
-        image: imageUrl,
-        url: pageUrl,
-    });
-    const keywordsMeta = document.getElementById('seoKeywords');
-    if (keywordsMeta) keywordsMeta.setAttribute('content', keywordsText);
+  setSocialMeta({
+    title: titleText,
+    description: descText,
+    image: imageUrl,
+    url: pageUrl,
+  });
+  const keywordsMeta = document.getElementById('seoKeywords');
+  if (keywordsMeta) keywordsMeta.setAttribute('content', keywordsText);
 }
 
 // Client Skin Notes
-window.loadClientSkinNotes = async function() {
-    if (!currentUser) return;
-    const notesInput = document.getElementById('clientSkinNotesInput');
-    if (!notesInput) return;
+window.loadClientSkinNotes = async function () {
+  if (!currentUser) return;
+  const notesInput = document.getElementById('clientSkinNotesInput');
+  if (!notesInput) return;
 
-    notesInput.value = "Loading notes...";
-    try {
-        const clientDoc = await getDoc(doc(db, "clients", currentUser.uid));
-        if (clientDoc.exists() && clientDoc.data().skinNotes) {
-            notesInput.value = clientDoc.data().skinNotes;
-        } else {
-            notesInput.value = "";
-        }
-    } catch (e) {
-        console.error(e);
-        notesInput.value = "";
+  notesInput.value = "Loading notes...";
+  try {
+    const clientDoc = await getDoc(doc(db, "clients", currentUser.uid));
+    if (clientDoc.exists() && clientDoc.data().skinNotes) {
+      notesInput.value = clientDoc.data().skinNotes;
+    } else {
+      notesInput.value = "";
     }
+  } catch (e) {
+    console.error(e);
+    notesInput.value = "";
+  }
 }
 
-window.saveSkinNotes = async function() {
-    if (!currentUser) return;
-    const notesInput = document.getElementById('clientSkinNotesInput');
-    const feedback = document.getElementById('skinNotesFeedback');
-    if (!notesInput || !feedback) return;
+window.saveSkinNotes = async function () {
+  if (!currentUser) return;
+  const notesInput = document.getElementById('clientSkinNotesInput');
+  const feedback = document.getElementById('skinNotesFeedback');
+  if (!notesInput || !feedback) return;
 
-    try {
-        await setDoc(doc(db, "clients", currentUser.uid), {
-            email: currentUser.email,
-            skinNotes: notesInput.value,
-            updatedAt: new Date().toISOString()
-        }, { merge: true });
+  try {
+    await setDoc(doc(db, "clients", currentUser.uid), {
+      email: currentUser.email,
+      skinNotes: notesInput.value,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
 
-        feedback.textContent = "Skin notes saved!";
-        setTimeout(() => { feedback.textContent = ""; }, 3000);
-    } catch (e) {
-        console.error(e);
-        alert("Failed to save skin notes: " + e.message);
-    }
+    feedback.textContent = "Skin notes saved!";
+    setTimeout(() => { feedback.textContent = ""; }, 3000);
+  } catch (e) {
+    console.error(e);
+    alert("Failed to save skin notes: " + e.message);
+  }
 }
 
 // Gift Cards Simulated Purchases
 window.selectedGcAmount = 50;
 
-window.setupGiftCardForm = function() {
-    const gcForm = document.getElementById('giftcardForm');
-    if (!gcForm) return;
+window.setupGiftCardForm = function () {
+  const gcForm = document.getElementById('giftcardForm');
+  if (!gcForm) return;
 
-    const amountBtns = document.querySelectorAll('.gc-amount-btn');
-    const customAmountInput = document.getElementById('gcCustomAmount');
+  const amountBtns = document.querySelectorAll('.gc-amount-btn');
+  const customAmountInput = document.getElementById('gcCustomAmount');
 
-    amountBtns.forEach(btn => {
-        const val = btn.getAttribute('data-value');
-        if (val !== 'custom' && parseInt(val) === window.selectedGcAmount) {
-            btn.classList.add('btn-solid');
-            btn.classList.remove('btn-outline');
-        }
+  amountBtns.forEach(btn => {
+    const val = btn.getAttribute('data-value');
+    if (val !== 'custom' && parseInt(val) === window.selectedGcAmount) {
+      btn.classList.add('btn-solid');
+      btn.classList.remove('btn-outline');
+    }
 
-        btn.onclick = () => {
-            amountBtns.forEach(b => {
-                b.classList.remove('btn-solid');
-                b.classList.add('btn-outline');
-            });
-            btn.classList.add('btn-solid');
-            btn.classList.remove('btn-outline');
+    btn.onclick = () => {
+      amountBtns.forEach(b => {
+        b.classList.remove('btn-solid');
+        b.classList.add('btn-outline');
+      });
+      btn.classList.add('btn-solid');
+      btn.classList.remove('btn-outline');
 
-            if (val === 'custom') {
-                customAmountInput.style.display = 'block';
-                window.selectedGcAmount = 'custom';
-            } else {
-                customAmountInput.style.display = 'none';
-                window.selectedGcAmount = parseInt(val);
-            }
-        };
-    });
-
-    gcForm.onsubmit = async (e) => {
-        e.preventDefault();
-        if (!currentUser) return;
-
-        let amount = window.selectedGcAmount;
-        if (window.selectedGcAmount === 'custom') {
-            amount = parseInt(customAmountInput.value);
-        }
-
-        if (!amount || amount < 10) {
-            alert("Minimum gift card value is $10.");
-            return;
-        }
-
-        const recipientEmail = document.getElementById('gcRecipientEmail').value;
-        const message = document.getElementById('gcMessage').value;
-        const purchaseBtn = document.getElementById('gcPurchaseBtn');
-
-        purchaseBtn.disabled = true;
-        purchaseBtn.textContent = 'PROCESSING SIMULATED PAY...';
-
-        try {
-            const code = 'GC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-            await addDoc(collection(db, "giftcards"), {
-                userId: currentUser.uid,
-                buyerEmail: currentUser.email,
-                recipientEmail: recipientEmail,
-                message: message,
-                amount: amount,
-                code: code,
-                status: "Active",
-                createdAt: new Date().toISOString()
-            });
-
-            alert(`Simulated Purchase Complete!\nGift Card Code: ${code}\nAssigned to: ${recipientEmail}`);
-            gcForm.reset();
-            customAmountInput.style.display = 'none';
-            window.selectedGcAmount = 50;
-            amountBtns.forEach(b => {
-                b.classList.remove('btn-solid');
-                b.classList.add('btn-outline');
-                if (b.getAttribute('data-value') === '50') {
-                    b.classList.add('btn-solid');
-                    b.classList.remove('btn-outline');
-                }
-            });
-            window.loadClientGiftCards();
-        } catch (err) {
-            console.error(err);
-            alert("Error purchasing card: " + err.message);
-        } finally {
-            purchaseBtn.disabled = false;
-            purchaseBtn.textContent = 'PURCHASE (SIMULATED PAY)';
-        }
+      if (val === 'custom') {
+        customAmountInput.style.display = 'block';
+        window.selectedGcAmount = 'custom';
+      } else {
+        customAmountInput.style.display = 'none';
+        window.selectedGcAmount = parseInt(val);
+      }
     };
-}
+  });
 
-window.loadClientGiftCards = async function() {
+  gcForm.onsubmit = async (e) => {
+    e.preventDefault();
     if (!currentUser) return;
-    const gcList = document.getElementById('giftcardsList');
-    if (!gcList) return;
+
+    let amount = window.selectedGcAmount;
+    if (window.selectedGcAmount === 'custom') {
+      amount = parseInt(customAmountInput.value);
+    }
+
+    if (!amount || amount < 10) {
+      alert("Minimum gift card value is $10.");
+      return;
+    }
+
+    const recipientEmail = document.getElementById('gcRecipientEmail').value;
+    const message = document.getElementById('gcMessage').value;
+    const purchaseBtn = document.getElementById('gcPurchaseBtn');
+
+    purchaseBtn.disabled = true;
+    purchaseBtn.textContent = 'PROCESSING SIMULATED PAY...';
 
     try {
-        const q = query(collection(db, "giftcards"), where("userId", "==", currentUser.uid));
-        const snap = await getDocs(q);
-        if (snap.empty) {
-            gcList.innerHTML = `<p style="color: var(--text-secondary);">No purchased gift cards yet.</p>`;
-            return;
-        }
+      const code = 'GC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+      await addDoc(collection(db, "giftcards"), {
+        userId: currentUser.uid,
+        buyerEmail: currentUser.email,
+        recipientEmail: recipientEmail,
+        message: message,
+        amount: amount,
+        code: code,
+        status: "Active",
+        createdAt: new Date().toISOString()
+      });
 
-        let html = '';
-        snap.forEach(d => {
-            const gc = d.data();
-            html += `
+      alert(`Simulated Purchase Complete!\nGift Card Code: ${code}\nAssigned to: ${recipientEmail}`);
+      gcForm.reset();
+      customAmountInput.style.display = 'none';
+      window.selectedGcAmount = 50;
+      amountBtns.forEach(b => {
+        b.classList.remove('btn-solid');
+        b.classList.add('btn-outline');
+        if (b.getAttribute('data-value') === '50') {
+          b.classList.add('btn-solid');
+          b.classList.remove('btn-outline');
+        }
+      });
+      window.loadClientGiftCards();
+    } catch (err) {
+      console.error(err);
+      alert("Error purchasing card: " + err.message);
+    } finally {
+      purchaseBtn.disabled = false;
+      purchaseBtn.textContent = 'PURCHASE (SIMULATED PAY)';
+    }
+  };
+}
+
+window.loadClientGiftCards = async function () {
+  if (!currentUser) return;
+  const gcList = document.getElementById('giftcardsList');
+  if (!gcList) return;
+
+  try {
+    const q = query(collection(db, "giftcards"), where("userId", "==", currentUser.uid));
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      gcList.innerHTML = `<p style="color: var(--text-secondary);">No purchased gift cards yet.</p>`;
+      return;
+    }
+
+    let html = '';
+    snap.forEach(d => {
+      const gc = d.data();
+      html += `
                 <div class="giftcard-card">
                     <div class="giftcard-value">$${gc.amount}</div>
                     <div class="giftcard-code">${gc.code}</div>
@@ -3095,89 +3106,89 @@ window.loadClientGiftCards = async function() {
                     </div>
                 </div>
             `;
-        });
-        gcList.innerHTML = html;
-    } catch (e) {
-        console.error(e);
-        gcList.innerHTML = `<p style="color: var(--text-secondary);">Error loading gift cards.</p>`;
-    }
+    });
+    gcList.innerHTML = html;
+  } catch (e) {
+    console.error(e);
+    gcList.innerHTML = `<p style="color: var(--text-secondary);">Error loading gift cards.</p>`;
+  }
 }
 
 // Shop Products Website & Portal
 window.dbProducts = [];
 
-window.loadClientShopProducts = async function() {
-    // Portal used a missing #portalShopGrid — keep catalogue in sync for CMS/admin
-    window.dbProducts = defaultShopProducts.map(p => ({ ...p }));
-    try {
-        const snap = await getDocs(collection(db, "products"));
-        const cmsProducts = [];
-        snap.forEach(d => cmsProducts.push({ id: d.id, ...d.data() }));
-        if (shopHasCuratedProducts(cmsProducts) && cmsProducts.length >= 8) {
-            window.dbProducts = cmsProducts;
-        } else if (cmsProducts.length > 0 && !shopHasCuratedProducts(cmsProducts)) {
-            // Old CMS placeholders — keep curated defaults for customer-facing shop
-            window.dbProducts = defaultShopProducts.map(p => ({ ...p }));
-        }
-        if (typeof window.renderCMSProducts === "function") {
-            window.renderCMSProducts();
-        }
-    } catch (e) {
-        console.error(e);
+window.loadClientShopProducts = async function () {
+  // Portal used a missing #portalShopGrid — keep catalogue in sync for CMS/admin
+  window.dbProducts = defaultShopProducts.map(p => ({ ...p }));
+  try {
+    const snap = await getDocs(collection(db, "products"));
+    const cmsProducts = [];
+    snap.forEach(d => cmsProducts.push({ id: d.id, ...d.data() }));
+    if (shopHasCuratedProducts(cmsProducts) && cmsProducts.length >= 8) {
+      window.dbProducts = cmsProducts;
+    } else if (cmsProducts.length > 0 && !shopHasCuratedProducts(cmsProducts)) {
+      // Old CMS placeholders — keep curated defaults for customer-facing shop
+      window.dbProducts = defaultShopProducts.map(p => ({ ...p }));
     }
+    if (typeof window.renderCMSProducts === "function") {
+      window.renderCMSProducts();
+    }
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 // Legacy alias — public shop uses cart, not simulated buy
-window.buyProductSimulated = function(prodId) {
-    if (window.addToCart(prodId, 1)) {
-        window.openCartDrawer();
-    } else {
-        alert("Product not found. Please refresh and try again.");
-    }
+window.buyProductSimulated = function (prodId) {
+  if (window.addToCart(prodId, 1)) {
+    window.openCartDrawer();
+  } else {
+    alert("Product not found. Please refresh and try again.");
+  }
 }
 
-window.loadShopWebsite = async function() {
-    const shopGrid = document.getElementById('shopGrid');
-    if (!shopGrid) return;
+window.loadShopWebsite = async function () {
+  const shopGrid = document.getElementById('shopGrid');
+  if (!shopGrid) return;
 
-    // Show curated local shop immediately (never blank / never login wall)
+  // Show curated local shop immediately (never blank / never login wall)
+  renderShopGrid(defaultShopProducts);
+  const errEl = document.getElementById("shopLoadError");
+  if (errEl) errEl.hidden = true;
+
+  try {
+    const snap = await getDocs(collection(db, "products"));
+    const cmsProducts = [];
+    snap.forEach(d => cmsProducts.push({ id: d.id, ...d.data() }));
+    window.dbProducts = cmsProducts.length ? cmsProducts : defaultShopProducts.map(p => ({ ...p }));
+
+    // Prefer curated product packshots when CMS still has old placeholders
+    if (shopHasCuratedProducts(cmsProducts) && cmsProducts.length >= 8) {
+      renderShopGrid(cmsProducts);
+    } else if (cmsProducts.length === 0) {
+      // Best-effort seed of local products into Firestore for portal pickup flow
+      try {
+        for (const p of defaultShopProducts) {
+          await setDoc(doc(db, "products", p.id), {
+            name: p.name,
+            price: p.price,
+            image: p.image,
+            description: p.description
+          }, { merge: true });
+        }
+      } catch (seedErr) {
+        console.warn("Could not seed shop products to Firestore:", seedErr);
+      }
+      renderShopGrid(defaultShopProducts);
+    } else {
+      renderShopGrid(defaultShopProducts);
+    }
+  } catch (e) {
+    console.error(e);
     renderShopGrid(defaultShopProducts);
     const errEl = document.getElementById("shopLoadError");
-    if (errEl) errEl.hidden = true;
-
-    try {
-        const snap = await getDocs(collection(db, "products"));
-        const cmsProducts = [];
-        snap.forEach(d => cmsProducts.push({ id: d.id, ...d.data() }));
-        window.dbProducts = cmsProducts.length ? cmsProducts : defaultShopProducts.map(p => ({ ...p }));
-
-        // Prefer curated product packshots when CMS still has old placeholders
-        if (shopHasCuratedProducts(cmsProducts) && cmsProducts.length >= 8) {
-            renderShopGrid(cmsProducts);
-        } else if (cmsProducts.length === 0) {
-            // Best-effort seed of local products into Firestore for portal pickup flow
-            try {
-                for (const p of defaultShopProducts) {
-                    await setDoc(doc(db, "products", p.id), {
-                        name: p.name,
-                        price: p.price,
-                        image: p.image,
-                        description: p.description
-                    }, { merge: true });
-                }
-            } catch (seedErr) {
-                console.warn("Could not seed shop products to Firestore:", seedErr);
-            }
-            renderShopGrid(defaultShopProducts);
-        } else {
-            renderShopGrid(defaultShopProducts);
-        }
-    } catch (e) {
-        console.error(e);
-        renderShopGrid(defaultShopProducts);
-        const errEl = document.getElementById("shopLoadError");
-        if (errEl) errEl.hidden = false;
-    }
+    if (errEl) errEl.hidden = false;
+  }
 }
 
 // Blog Articles Website
@@ -3186,246 +3197,246 @@ window.__localBlogPosts = null;
 
 /** Prefer real studio photos; replace legacy seeded AI/stock paths */
 function resolveBlogImage(blog) {
-    const title = (blog.title || "").toLowerCase();
-    const img = blog.image || "";
-    const isLegacyFake =
-        !img ||
-        img.includes("tattoo_workspace_") ||
-        img.includes("tattoo_artist_") ||
-        img.includes("tattoo_front_desk_") ||
-        img.includes("unsplash") ||
-        img.includes("placeholder");
+  const title = (blog.title || "").toLowerCase();
+  const img = blog.image || "";
+  const isLegacyFake =
+    !img ||
+    img.includes("tattoo_workspace_") ||
+    img.includes("tattoo_artist_") ||
+    img.includes("tattoo_front_desk_") ||
+    img.includes("unsplash") ||
+    img.includes("placeholder");
 
-    if (title.includes("placement") || title.includes("perfect spot")) {
-        return "assets/brand/blog-placement.jpg";
-    }
-    if (title.includes("aftercare") || title.includes("heal")) {
-        return "assets/brand/blog-aftercare.jpg";
-    }
-    if (title.includes("first tattoo")) {
-        return "assets/brand/studio-parlour.jpg";
-    }
-    if (title.includes("realism")) {
-        return "assets/portfolio/realism/realism_tiger-portrait.jpg";
-    }
-    if (title.includes("fine line")) {
-        return "assets/portfolio/fineline/fineline_butterfly-florals.jpg";
-    }
-    if (title.includes("cover")) {
-        return "assets/portfolio/custom/custom_neotrad-serpent.jpg";
-    }
-    if (title.includes("piercing")) {
-        return "assets/brand/aftercare-essentials.jpg";
-    }
-    if (!isLegacyFake) return img;
+  if (title.includes("placement") || title.includes("perfect spot")) {
+    return "assets/brand/blog-placement.jpg";
+  }
+  if (title.includes("aftercare") || title.includes("heal")) {
+    return "assets/brand/blog-aftercare.jpg";
+  }
+  if (title.includes("first tattoo")) {
     return "assets/brand/studio-parlour.jpg";
+  }
+  if (title.includes("realism")) {
+    return "assets/portfolio/realism/realism_tiger-portrait.jpg";
+  }
+  if (title.includes("fine line")) {
+    return "assets/portfolio/fineline/fineline_butterfly-florals.jpg";
+  }
+  if (title.includes("cover")) {
+    return "assets/portfolio/custom/custom_neotrad-serpent.jpg";
+  }
+  if (title.includes("piercing")) {
+    return "assets/brand/aftercare-essentials.jpg";
+  }
+  if (!isLegacyFake) return img;
+  return "assets/brand/studio-parlour.jpg";
 }
 
 function blogSlug(blog) {
-    if (blog.slug) return String(blog.slug);
-    if (blog.id && !String(blog.id).startsWith("local-") && String(blog.id).includes("-")) {
-        return String(blog.id);
-    }
-    return String(blog.title || "post")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "")
-        .slice(0, 80) || "post";
+  if (blog.slug) return String(blog.slug);
+  if (blog.id && !String(blog.id).startsWith("local-") && String(blog.id).includes("-")) {
+    return String(blog.id);
+  }
+  return String(blog.title || "post")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 80) || "post";
 }
 
 function blogShareUrl(blog) {
-    const slug = blogSlug(blog);
-    // Prefer static OG pages when we have a matching local slug
-    const known = (window.__localBlogPosts || []).some((p) => p.slug === slug || p.id === blog.id);
-    if (known || String(blog.id || "").includes("-")) {
-        return `${SITE_ORIGIN}/blog/${slug}.html`;
-    }
-    return `${SITE_ORIGIN}/#blog`;
+  const slug = blogSlug(blog);
+  // Prefer static OG pages when we have a matching local slug
+  const known = (window.__localBlogPosts || []).some((p) => p.slug === slug || p.id === blog.id);
+  if (known || String(blog.id || "").includes("-")) {
+    return `${SITE_ORIGIN}/blog/${slug}.html`;
+  }
+  return `${SITE_ORIGIN}/#blog`;
 }
 
 function setSocialMeta({ title, description, image, url }) {
-    document.title = title;
-    const titleEl = document.getElementById("seoTitle");
-    if (titleEl) titleEl.textContent = title;
-    const descMeta = document.getElementById("seoDesc");
-    if (descMeta) descMeta.setAttribute("content", description);
-    const isPng = image && /\.png(\?|$)/i.test(image);
-    const pairs = [
-        ['meta[property="og:title"]', title],
-        ['meta[property="og:description"]', description],
-        ['meta[property="og:image"]', image],
-        ['meta[property="og:image:secure_url"]', image],
-        ['meta[property="og:image:type"]', isPng ? "image/png" : "image/jpeg"],
-        ['meta[property="og:url"]', url],
-        ['meta[name="twitter:title"]', title],
-        ['meta[name="twitter:description"]', description],
-        ['meta[name="twitter:image"]', image],
-    ];
-    pairs.forEach(([sel, val]) => {
-        const el = document.querySelector(sel);
-        if (el && val) el.setAttribute("content", val);
-    });
-    const canon = document.querySelector('link[rel="canonical"]');
-    if (canon && url) canon.setAttribute("href", url);
+  document.title = title;
+  const titleEl = document.getElementById("seoTitle");
+  if (titleEl) titleEl.textContent = title;
+  const descMeta = document.getElementById("seoDesc");
+  if (descMeta) descMeta.setAttribute("content", description);
+  const isPng = image && /\.png(\?|$)/i.test(image);
+  const pairs = [
+    ['meta[property="og:title"]', title],
+    ['meta[property="og:description"]', description],
+    ['meta[property="og:image"]', image],
+    ['meta[property="og:image:secure_url"]', image],
+    ['meta[property="og:image:type"]', isPng ? "image/png" : "image/jpeg"],
+    ['meta[property="og:url"]', url],
+    ['meta[name="twitter:title"]', title],
+    ['meta[name="twitter:description"]', description],
+    ['meta[name="twitter:image"]', image],
+  ];
+  pairs.forEach(([sel, val]) => {
+    const el = document.querySelector(sel);
+    if (el && val) el.setAttribute("content", val);
+  });
+  const canon = document.querySelector('link[rel="canonical"]');
+  if (canon && url) canon.setAttribute("href", url);
 }
 
 function shareLinksFor(url, title) {
-    const u = encodeURIComponent(url);
-    const t = encodeURIComponent(title);
-    return {
-        facebook: `https://www.facebook.com/sharer/sharer.php?u=${u}`,
-        twitter: `https://twitter.com/intent/tweet?text=${t}&url=${u}`,
-        whatsapp: `https://api.whatsapp.com/send?text=${t}%20${u}`,
-        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${u}`,
-        email: `mailto:?subject=${t}&body=${t}%20${u}`,
-    };
+  const u = encodeURIComponent(url);
+  const t = encodeURIComponent(title);
+  return {
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${u}`,
+    twitter: `https://twitter.com/intent/tweet?text=${t}&url=${u}`,
+    whatsapp: `https://api.whatsapp.com/send?text=${t}%20${u}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${u}`,
+    email: `mailto:?subject=${t}&body=${t}%20${u}`,
+  };
 }
 
 window.openBlogArticle = function openBlogArticle(blogId) {
-    const blog = (window.dbBlogs || []).find((b) => b.id === blogId || b.slug === blogId);
-    if (!blog) return;
-    const modal = document.getElementById("blogArticleModal");
-    if (!modal) {
-        // Fallback: open static page
-        window.location.href = blogShareUrl(blog).replace(SITE_ORIGIN, "") || `blog/${blogSlug(blog)}.html`;
-        return;
-    }
-    const image = resolveBlogImage(blog);
-    const absImage = image.startsWith("http") ? image : `${SITE_ORIGIN}/${image}`;
-    const shareUrl = blogShareUrl(blog);
-    const title = blog.title || "Diamond Tip Tattoo Blog";
-    const desc = blog.seoDescription || blog.excerpt || String(blog.content || "").slice(0, 155);
-    setSocialMeta({
-        title: blog.seoTitle || `${title} | Diamond Tip Tattoo`,
-        description: desc,
-        image: absImage,
-        url: shareUrl,
-    });
+  const blog = (window.dbBlogs || []).find((b) => b.id === blogId || b.slug === blogId);
+  if (!blog) return;
+  const modal = document.getElementById("blogArticleModal");
+  if (!modal) {
+    // Fallback: open static page
+    window.location.href = blogShareUrl(blog).replace(SITE_ORIGIN, "") || `blog/${blogSlug(blog)}.html`;
+    return;
+  }
+  const image = resolveBlogImage(blog);
+  const absImage = image.startsWith("http") ? image : `${SITE_ORIGIN}/${image}`;
+  const shareUrl = blogShareUrl(blog);
+  const title = blog.title || "Diamond Tip Tattoo Blog";
+  const desc = blog.seoDescription || blog.excerpt || String(blog.content || "").slice(0, 155);
+  setSocialMeta({
+    title: blog.seoTitle || `${title} | Diamond Tip Tattoo`,
+    description: desc,
+    image: absImage,
+    url: shareUrl,
+  });
 
-    const dateStr = new Date(blog.createdAt || Date.now()).toLocaleDateString(undefined, {
-        month: "long", day: "numeric", year: "numeric",
-    });
-    const bodyHtml = String(blog.content || "")
-        .split(/\n\n+/)
-        .map((p) => `<p>${p.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`)
-        .join("");
-    const shares = shareLinksFor(shareUrl, title);
+  const dateStr = new Date(blog.createdAt || Date.now()).toLocaleDateString(undefined, {
+    month: "long", day: "numeric", year: "numeric",
+  });
+  const bodyHtml = String(blog.content || "")
+    .split(/\n\n+/)
+    .map((p) => `<p>${p.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`)
+    .join("");
+  const shares = shareLinksFor(shareUrl, title);
 
-    modal.querySelector("#blogArticleTitle").textContent = title;
-    modal.querySelector("#blogArticleMeta").textContent = `${dateStr} · By ${blog.author || "Diamond Tip"}`;
-    const imgEl = modal.querySelector("#blogArticleImage");
-    imgEl.src = image;
-    imgEl.alt = title;
-    modal.querySelector("#blogArticleBody").innerHTML = bodyHtml;
-    modal.querySelector("#blogShareFacebook").href = shares.facebook;
-    modal.querySelector("#blogShareTwitter").href = shares.twitter;
-    modal.querySelector("#blogShareWhatsApp").href = shares.whatsapp;
-    modal.querySelector("#blogShareLinkedIn").href = shares.linkedin;
-    modal.querySelector("#blogShareEmail").href = shares.email;
-    modal.querySelector("#blogShareNative").onclick = async () => {
-        try {
-            if (navigator.share) {
-                await navigator.share({ title, text: desc, url: shareUrl });
-            } else {
-                await navigator.clipboard.writeText(shareUrl);
-                alert("Link copied — paste it anywhere to share.");
-            }
-        } catch (_) { /* cancelled */ }
-    };
-    modal.querySelector("#blogCopyLink").onclick = async () => {
-        try {
-            await navigator.clipboard.writeText(shareUrl);
-            const btn = modal.querySelector("#blogCopyLink");
-            const prev = btn.textContent;
-            btn.textContent = "Copied!";
-            setTimeout(() => { btn.textContent = prev; }, 1600);
-        } catch (_) {
-            prompt("Copy this link:", shareUrl);
-        }
-    };
-    const fullLink = modal.querySelector("#blogFullPageLink");
-    if (fullLink) fullLink.href = `blog/${blogSlug(blog)}.html`;
-
-    modal.style.display = "flex";
-    modal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
+  modal.querySelector("#blogArticleTitle").textContent = title;
+  modal.querySelector("#blogArticleMeta").textContent = `${dateStr} · By ${blog.author || "Diamond Tip"}`;
+  const imgEl = modal.querySelector("#blogArticleImage");
+  imgEl.src = image;
+  imgEl.alt = title;
+  modal.querySelector("#blogArticleBody").innerHTML = bodyHtml;
+  modal.querySelector("#blogShareFacebook").href = shares.facebook;
+  modal.querySelector("#blogShareTwitter").href = shares.twitter;
+  modal.querySelector("#blogShareWhatsApp").href = shares.whatsapp;
+  modal.querySelector("#blogShareLinkedIn").href = shares.linkedin;
+  modal.querySelector("#blogShareEmail").href = shares.email;
+  modal.querySelector("#blogShareNative").onclick = async () => {
     try {
-        trackEvent("blog_open", { id: blog.id, title });
-    } catch (_) {}
+      if (navigator.share) {
+        await navigator.share({ title, text: desc, url: shareUrl });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        alert("Link copied — paste it anywhere to share.");
+      }
+    } catch (_) { /* cancelled */ }
+  };
+  modal.querySelector("#blogCopyLink").onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      const btn = modal.querySelector("#blogCopyLink");
+      const prev = btn.textContent;
+      btn.textContent = "Copied!";
+      setTimeout(() => { btn.textContent = prev; }, 1600);
+    } catch (_) {
+      prompt("Copy this link:", shareUrl);
+    }
+  };
+  const fullLink = modal.querySelector("#blogFullPageLink");
+  if (fullLink) fullLink.href = `blog/${blogSlug(blog)}.html`;
+
+  modal.style.display = "flex";
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  try {
+    trackEvent("blog_open", { id: blog.id, title });
+  } catch (_) { }
 };
 
 window.closeBlogArticle = function closeBlogArticle() {
-    const modal = document.getElementById("blogArticleModal");
-    if (!modal) return;
-    modal.style.display = "none";
-    modal.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
-    // Restore home SEO
-    if (typeof updateSEOMeta === "function") updateSEOMeta("#blog");
+  const modal = document.getElementById("blogArticleModal");
+  if (!modal) return;
+  modal.style.display = "none";
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  // Restore home SEO
+  if (typeof updateSEOMeta === "function") updateSEOMeta("#blog");
 };
 
 async function loadLocalBlogPosts() {
-    if (window.__localBlogPosts) return window.__localBlogPosts;
-    try {
-        const res = await fetch("blog/posts.json", { cache: "no-cache" });
-        if (!res.ok) throw new Error("no posts.json");
-        window.__localBlogPosts = await res.json();
-    } catch (e) {
-        window.__localBlogPosts = [];
-    }
-    return window.__localBlogPosts;
+  if (window.__localBlogPosts) return window.__localBlogPosts;
+  try {
+    const res = await fetch("blog/posts.json", { cache: "no-cache" });
+    if (!res.ok) throw new Error("no posts.json");
+    window.__localBlogPosts = await res.json();
+  } catch (e) {
+    window.__localBlogPosts = [];
+  }
+  return window.__localBlogPosts;
 }
 
-window.loadBlogWebsite = async function() {
-    const blogGrid = document.getElementById('blogGrid');
-    if (!blogGrid) return;
+window.loadBlogWebsite = async function () {
+  const blogGrid = document.getElementById('blogGrid');
+  if (!blogGrid) return;
 
-    const localPosts = await loadLocalBlogPosts();
-    const fallbackBlogs = (localPosts.length ? localPosts : [
-        {
-            id: "aftercare-heal-perfectly",
-            slug: "aftercare-heal-perfectly",
-            title: "Aftercare: How to Heal Your Tattoo Perfectly",
-            author: "Steven Benn",
-            image: "assets/brand/blog-aftercare.jpg",
-            content: "Taking care of your new tattoo is just as important as the tattooing process itself.",
-            createdAt: new Date().toISOString()
-        }
-    ]).map((p) => ({ ...p, id: p.id || p.slug }));
+  const localPosts = await loadLocalBlogPosts();
+  const fallbackBlogs = (localPosts.length ? localPosts : [
+    {
+      id: "aftercare-heal-perfectly",
+      slug: "aftercare-heal-perfectly",
+      title: "Aftercare: How to Heal Your Tattoo Perfectly",
+      author: "Steven Benn",
+      image: "assets/brand/blog-aftercare.jpg",
+      content: "Taking care of your new tattoo is just as important as the tattooing process itself.",
+      createdAt: new Date().toISOString()
+    }
+  ]).map((p) => ({ ...p, id: p.id || p.slug }));
 
-    const renderBlogs = (blogs) => {
-        // Merge: local SEO posts first, then any unique Firestore posts
-        const byKey = new Map();
-        fallbackBlogs.forEach((b) => byKey.set(blogSlug(b), b));
-        (blogs || []).forEach((b) => {
-            const key = blogSlug(b);
-            if (!byKey.has(key)) byKey.set(key, b);
-            else {
-                // prefer longer content
-                const existing = byKey.get(key);
-                if ((b.content || "").length > (existing.content || "").length) {
-                    byKey.set(key, { ...existing, ...b, slug: key });
-                }
-            }
-        });
-        const merged = Array.from(byKey.values()).sort(
-            (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
-        );
-        window.dbBlogs = merged;
-        if (!merged.length) {
-            blogGrid.innerHTML = `<p style="color: var(--text-secondary);">Check back soon for updates and stories from Diamond Tip.</p>`;
-            return;
+  const renderBlogs = (blogs) => {
+    // Merge: local SEO posts first, then any unique Firestore posts
+    const byKey = new Map();
+    fallbackBlogs.forEach((b) => byKey.set(blogSlug(b), b));
+    (blogs || []).forEach((b) => {
+      const key = blogSlug(b);
+      if (!byKey.has(key)) byKey.set(key, b);
+      else {
+        // prefer longer content
+        const existing = byKey.get(key);
+        if ((b.content || "").length > (existing.content || "").length) {
+          byKey.set(key, { ...existing, ...b, slug: key });
         }
-        blogGrid.innerHTML = merged.map((blog) => {
-            const dateStr = new Date(blog.createdAt || Date.now()).toLocaleDateString(undefined, {
-                month: "short", day: "numeric", year: "numeric"
-            });
-            const image = resolveBlogImage(blog);
-            const safeTitle = String(blog.title || "").replace(/"/g, "&quot;").replace(/`/g, "'");
-            const excerpt = String(blog.excerpt || blog.content || "").substring(0, 130);
-            const slug = blogSlug(blog);
-            const idAttr = String(blog.id || slug).replace(/'/g, "\\'");
-            return `
+      }
+    });
+    const merged = Array.from(byKey.values()).sort(
+      (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+    );
+    window.dbBlogs = merged;
+    if (!merged.length) {
+      blogGrid.innerHTML = `<p style="color: var(--text-secondary);">Check back soon for updates and stories from Diamond Tip.</p>`;
+      return;
+    }
+    blogGrid.innerHTML = merged.map((blog) => {
+      const dateStr = new Date(blog.createdAt || Date.now()).toLocaleDateString(undefined, {
+        month: "short", day: "numeric", year: "numeric"
+      });
+      const image = resolveBlogImage(blog);
+      const safeTitle = String(blog.title || "").replace(/"/g, "&quot;").replace(/`/g, "'");
+      const excerpt = String(blog.excerpt || blog.content || "").substring(0, 130);
+      const slug = blogSlug(blog);
+      const idAttr = String(blog.id || slug).replace(/'/g, "\\'");
+      return `
                 <article class="blog-card" data-blog-id="${idAttr}">
                     <a href="blog/${slug}.html" class="blog-card-image-link" data-blog-open="${idAttr}">
                         <img src="${image}" alt="${safeTitle}" width="640" height="400" loading="lazy"
@@ -3440,70 +3451,70 @@ window.loadBlogWebsite = async function() {
                         </div>
                     </div>
                 </article>`;
-        }).join("");
+    }).join("");
 
-        blogGrid.querySelectorAll("[data-blog-open]").forEach((el) => {
-            el.addEventListener("click", (e) => {
-                // Allow cmd/ctrl open static page; otherwise open modal for in-site read
-                if (e.metaKey || e.ctrlKey) return;
-                e.preventDefault();
-                window.openBlogArticle(el.getAttribute("data-blog-open"));
-            });
-        });
-    };
+    blogGrid.querySelectorAll("[data-blog-open]").forEach((el) => {
+      el.addEventListener("click", (e) => {
+        // Allow cmd/ctrl open static page; otherwise open modal for in-site read
+        if (e.metaKey || e.ctrlKey) return;
+        e.preventDefault();
+        window.openBlogArticle(el.getAttribute("data-blog-open"));
+      });
+    });
+  };
 
-    renderBlogs(fallbackBlogs);
+  renderBlogs(fallbackBlogs);
 
-    try {
-        const snap = await getDocs(query(collection(db, "blogs"), orderBy("createdAt", "desc")));
-        if (snap.empty) return;
+  try {
+    const snap = await getDocs(query(collection(db, "blogs"), orderBy("createdAt", "desc")));
+    if (snap.empty) return;
 
-        const blogs = [];
-        const updates = [];
-        snap.forEach((d) => {
-            const blog = { id: d.id, ...d.data() };
-            const resolved = resolveBlogImage(blog);
-            if (blog.image !== resolved && (
-                !blog.image ||
-                String(blog.image).includes("tattoo_workspace_") ||
-                String(blog.image).includes("tattoo_artist_") ||
-                String(blog.image).includes("tattoo_front_desk_")
-            )) {
-                updates.push(setDoc(doc(db, "blogs", d.id), { image: resolved }, { merge: true }).catch(() => {}));
-                blog.image = resolved;
-            }
-            blogs.push(blog);
-        });
-        if (updates.length) Promise.all(updates);
-        if (blogs.length) renderBlogs(blogs);
-    } catch (e) {
-        console.error(e);
-    }
+    const blogs = [];
+    const updates = [];
+    snap.forEach((d) => {
+      const blog = { id: d.id, ...d.data() };
+      const resolved = resolveBlogImage(blog);
+      if (blog.image !== resolved && (
+        !blog.image ||
+        String(blog.image).includes("tattoo_workspace_") ||
+        String(blog.image).includes("tattoo_artist_") ||
+        String(blog.image).includes("tattoo_front_desk_")
+      )) {
+        updates.push(setDoc(doc(db, "blogs", d.id), { image: resolved }, { merge: true }).catch(() => { }));
+        blog.image = resolved;
+      }
+      blogs.push(blog);
+    });
+    if (updates.length) Promise.all(updates);
+    if (blogs.length) renderBlogs(blogs);
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 // Facebook Page Plugin SDK (timeline embed)
 window.initFacebookFeed = function initFacebookFeed() {
-    if (window.__fbSdkLoading) return;
-    window.__fbSdkLoading = true;
-    window.fbAsyncInit = function () {
-        try {
-            // eslint-disable-next-line no-undef
-            FB.init({ xfbml: true, version: "v19.0" });
-        } catch (e) {
-            console.warn("FB init failed", e);
-        }
-    };
-    if (!document.getElementById("facebook-jssdk")) {
-        const js = document.createElement("script");
-        js.id = "facebook-jssdk";
-        js.async = true;
-        js.defer = true;
-        js.crossOrigin = "anonymous";
-        js.src = "https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v19.0";
-        document.body.appendChild(js);
-    } else if (window.FB && typeof window.FB.XFBML !== "undefined") {
-        try { window.FB.XFBML.parse(); } catch (_) { /* ignore */ }
+  if (window.__fbSdkLoading) return;
+  window.__fbSdkLoading = true;
+  window.fbAsyncInit = function () {
+    try {
+      // eslint-disable-next-line no-undef
+      FB.init({ xfbml: true, version: "v19.0" });
+    } catch (e) {
+      console.warn("FB init failed", e);
     }
+  };
+  if (!document.getElementById("facebook-jssdk")) {
+    const js = document.createElement("script");
+    js.id = "facebook-jssdk";
+    js.async = true;
+    js.defer = true;
+    js.crossOrigin = "anonymous";
+    js.src = "https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v19.0";
+    document.body.appendChild(js);
+  } else if (window.FB && typeof window.FB.XFBML !== "undefined") {
+    try { window.FB.XFBML.parse(); } catch (_) { /* ignore */ }
+  }
 };
 
 // Live Chat real-time sync (Client-side)
@@ -3512,141 +3523,141 @@ window.chatSessionId = null;
 window.chatSessionName = null;
 window.chatSessionEmail = null;
 
-window.setupLiveChat = function() {
-    const chatToggle = document.getElementById('chatToggleBtn');
-    const chatWin = document.getElementById('chatWindow');
-    const chatClose = document.getElementById('chatCloseBtn');
+window.setupLiveChat = function () {
+  const chatToggle = document.getElementById('chatToggleBtn');
+  const chatWin = document.getElementById('chatWindow');
+  const chatClose = document.getElementById('chatCloseBtn');
 
-    if (!chatToggle) return;
+  if (!chatToggle) return;
 
-    chatToggle.onclick = () => {
-        chatWin.classList.toggle('open');
-        if (chatWin.classList.contains('open')) {
-            initChatSession();
-        }
-    };
-
-    chatClose.onclick = () => {
-        chatWin.classList.remove('open');
-    };
-
-    const chatStartBtn = document.getElementById('chatStartBtn');
-    if (chatStartBtn) {
-        chatStartBtn.onclick = () => {
-            const name = document.getElementById('chatGuestName').value;
-            const email = document.getElementById('chatGuestEmail').value;
-            if (!name || !email) {
-                alert("Please enter your name and email to start.");
-                return;
-            }
-            window.chatSessionId = 'guest_' + Math.random().toString(36).substr(2, 9);
-            window.chatSessionName = name;
-            window.chatSessionEmail = email;
-            localStorage.setItem('dt_chat_session_id', window.chatSessionId);
-            localStorage.setItem('dt_chat_session_name', name);
-            localStorage.setItem('dt_chat_session_email', email);
-            startChatLiveSync();
-        };
+  chatToggle.onclick = () => {
+    chatWin.classList.toggle('open');
+    if (chatWin.classList.contains('open')) {
+      initChatSession();
     }
+  };
 
-    const chatSendBtn = document.getElementById('chatSendBtn');
-    const chatInput = document.getElementById('chatMessageInput');
-    if (chatSendBtn && chatInput) {
-        const sendMsg = () => {
-            const text = chatInput.value.trim();
-            if (!text) return;
-            sendChatMessageToServer(text);
-            chatInput.value = '';
-        };
-        chatSendBtn.onclick = sendMsg;
-        chatInput.onkeypress = (e) => {
-            if (e.key === 'Enter') sendMsg();
-        };
-    }
+  chatClose.onclick = () => {
+    chatWin.classList.remove('open');
+  };
+
+  const chatStartBtn = document.getElementById('chatStartBtn');
+  if (chatStartBtn) {
+    chatStartBtn.onclick = () => {
+      const name = document.getElementById('chatGuestName').value;
+      const email = document.getElementById('chatGuestEmail').value;
+      if (!name || !email) {
+        alert("Please enter your name and email to start.");
+        return;
+      }
+      window.chatSessionId = 'guest_' + Math.random().toString(36).substr(2, 9);
+      window.chatSessionName = name;
+      window.chatSessionEmail = email;
+      localStorage.setItem('dt_chat_session_id', window.chatSessionId);
+      localStorage.setItem('dt_chat_session_name', name);
+      localStorage.setItem('dt_chat_session_email', email);
+      startChatLiveSync();
+    };
+  }
+
+  const chatSendBtn = document.getElementById('chatSendBtn');
+  const chatInput = document.getElementById('chatMessageInput');
+  if (chatSendBtn && chatInput) {
+    const sendMsg = () => {
+      const text = chatInput.value.trim();
+      if (!text) return;
+      sendChatMessageToServer(text);
+      chatInput.value = '';
+    };
+    chatSendBtn.onclick = sendMsg;
+    chatInput.onkeypress = (e) => {
+      if (e.key === 'Enter') sendMsg();
+    };
+  }
 }
 
 function initChatSession() {
-    if (currentUser) {
-        window.chatSessionId = currentUser.uid;
-        window.chatSessionName = currentUser.email.split('@')[0];
-        window.chatSessionEmail = currentUser.email;
-        startChatLiveSync();
+  if (currentUser) {
+    window.chatSessionId = currentUser.uid;
+    window.chatSessionName = currentUser.email.split('@')[0];
+    window.chatSessionEmail = currentUser.email;
+    startChatLiveSync();
+  } else {
+    const cachedId = localStorage.getItem('dt_chat_session_id');
+    if (cachedId) {
+      window.chatSessionId = cachedId;
+      window.chatSessionName = localStorage.getItem('dt_chat_session_name');
+      window.chatSessionEmail = localStorage.getItem('dt_chat_session_email');
+      startChatLiveSync();
     } else {
-        const cachedId = localStorage.getItem('dt_chat_session_id');
-        if (cachedId) {
-            window.chatSessionId = cachedId;
-            window.chatSessionName = localStorage.getItem('dt_chat_session_name');
-            window.chatSessionEmail = localStorage.getItem('dt_chat_session_email');
-            startChatLiveSync();
-        } else {
-            document.getElementById('chatPreAuth').style.display = 'flex';
-            document.getElementById('chatMessages').style.display = 'none';
-            document.getElementById('chatInputArea').style.display = 'none';
-        }
+      document.getElementById('chatPreAuth').style.display = 'flex';
+      document.getElementById('chatMessages').style.display = 'none';
+      document.getElementById('chatInputArea').style.display = 'none';
     }
+  }
 }
 
 function startChatLiveSync() {
-    document.getElementById('chatPreAuth').style.display = 'none';
-    document.getElementById('chatMessages').style.display = 'flex';
-    document.getElementById('chatInputArea').style.display = 'flex';
+  document.getElementById('chatPreAuth').style.display = 'none';
+  document.getElementById('chatMessages').style.display = 'flex';
+  document.getElementById('chatInputArea').style.display = 'flex';
 
-    if (window.chatUnsubscribe) window.chatUnsubscribe();
+  if (window.chatUnsubscribe) window.chatUnsubscribe();
 
-    window.chatUnsubscribe = onSnapshot(doc(db, "chats", window.chatSessionId), (docSnap) => {
-        const messagesDiv = document.getElementById('chatMessages');
-        if (!docSnap.exists()) {
-            messagesDiv.innerHTML = `<p style="color: var(--text-secondary); text-align: center; margin-top: 1rem; font-size: 0.8rem;">Chat with Diamond Tip Tattoo live!</p>`;
-            return;
-        }
+  window.chatUnsubscribe = onSnapshot(doc(db, "chats", window.chatSessionId), (docSnap) => {
+    const messagesDiv = document.getElementById('chatMessages');
+    if (!docSnap.exists()) {
+      messagesDiv.innerHTML = `<p style="color: var(--text-secondary); text-align: center; margin-top: 1rem; font-size: 0.8rem;">Chat with Diamond Tip Tattoo live!</p>`;
+      return;
+    }
 
-        const data = docSnap.data();
-        const msgs = data.messages || [];
-        if (msgs.length === 0) {
-            messagesDiv.innerHTML = `<p style="color: var(--text-secondary); text-align: center; margin-top: 1rem; font-size: 0.8rem;">Chat with Diamond Tip Tattoo live!</p>`;
-            return;
-        }
+    const data = docSnap.data();
+    const msgs = data.messages || [];
+    if (msgs.length === 0) {
+      messagesDiv.innerHTML = `<p style="color: var(--text-secondary); text-align: center; margin-top: 1rem; font-size: 0.8rem;">Chat with Diamond Tip Tattoo live!</p>`;
+      return;
+    }
 
-        messagesDiv.innerHTML = msgs.map(m => {
-            const isClient = m.sender === 'client';
-            const time = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            return `
+    messagesDiv.innerHTML = msgs.map(m => {
+      const isClient = m.sender === 'client';
+      const time = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return `
                 <div class="chat-msg ${isClient ? 'client' : 'admin'}">
                     ${m.text}
                     <span class="chat-msg-time">${time}</span>
                 </div>
             `;
-        }).join('');
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    });
+    }).join('');
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  });
 }
 
 async function sendChatMessageToServer(text) {
-    try {
-        const chatRef = doc(db, "chats", window.chatSessionId);
-        const chatSnap = await getDoc(chatRef);
-        let messages = [];
-        if (chatSnap.exists()) {
-            messages = chatSnap.data().messages || [];
-        }
-
-        messages.push({
-            text: text,
-            sender: "client",
-            timestamp: new Date().toISOString(),
-            senderName: window.chatSessionName
-        });
-
-        await setDoc(chatRef, {
-            clientName: window.chatSessionName,
-            clientEmail: window.chatSessionEmail,
-            lastMessageAt: new Date().toISOString(),
-            messages: messages
-        }, { merge: true });
-
-    } catch (e) {
-        console.error(e);
+  try {
+    const chatRef = doc(db, "chats", window.chatSessionId);
+    const chatSnap = await getDoc(chatRef);
+    let messages = [];
+    if (chatSnap.exists()) {
+      messages = chatSnap.data().messages || [];
     }
+
+    messages.push({
+      text: text,
+      sender: "client",
+      timestamp: new Date().toISOString(),
+      senderName: window.chatSessionName
+    });
+
+    await setDoc(chatRef, {
+      clientName: window.chatSessionName,
+      clientEmail: window.chatSessionEmail,
+      lastMessageAt: new Date().toISOString(),
+      messages: messages
+    }, { merge: true });
+
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 // Chat CRM Admin Dashboard
@@ -3654,22 +3665,22 @@ window.adminChatUnsubscribe = null;
 window.activeAdminChatId = null;
 window.activeAdminChatMessages = [];
 
-window.loadChatCrm = async function() {
-    const threadsDiv = document.getElementById('chatCrmThreads');
-    if (!threadsDiv) return;
+window.loadChatCrm = async function () {
+  const threadsDiv = document.getElementById('chatCrmThreads');
+  if (!threadsDiv) return;
 
-    try {
-        const snap = await getDocs(query(collection(db, "chats"), orderBy("lastMessageAt", "desc")));
-        if (snap.empty) {
-            threadsDiv.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.85rem;">No active chat threads.</p>`;
-            return;
-        }
+  try {
+    const snap = await getDocs(query(collection(db, "chats"), orderBy("lastMessageAt", "desc")));
+    if (snap.empty) {
+      threadsDiv.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.85rem;">No active chat threads.</p>`;
+      return;
+    }
 
-        let html = '';
-        snap.forEach(d => {
-            const chat = d.data();
-            const activeClass = (d.id === window.activeAdminChatId) ? 'active' : '';
-            html += `
+    let html = '';
+    snap.forEach(d => {
+      const chat = d.data();
+      const activeClass = (d.id === window.activeAdminChatId) ? 'active' : '';
+      html += `
                 <div class="chat-thread-item ${activeClass}" onclick="selectAdminChatThread('${d.id}')">
                     <strong>${chat.clientName || 'Guest'}</strong>
                     <div style="font-size: 0.75rem; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
@@ -3678,106 +3689,106 @@ window.loadChatCrm = async function() {
                     </div>
                 </div>
             `;
-        });
-        threadsDiv.innerHTML = html;
-    } catch (e) {
-        console.error(e);
-    }
+    });
+    threadsDiv.innerHTML = html;
+  } catch (e) {
+    console.error(e);
+  }
 }
 
-window.selectAdminChatThread = function(chatId) {
-    if (window.adminChatUnsubscribe) window.adminChatUnsubscribe();
-    window.activeAdminChatId = chatId;
+window.selectAdminChatThread = function (chatId) {
+  if (window.adminChatUnsubscribe) window.adminChatUnsubscribe();
+  window.activeAdminChatId = chatId;
 
-    window.loadChatCrm();
+  window.loadChatCrm();
 
-    document.getElementById('chatCrmInputArea').style.display = 'flex';
+  document.getElementById('chatCrmInputArea').style.display = 'flex';
 
-    window.adminChatUnsubscribe = onSnapshot(doc(db, "chats", chatId), (docSnap) => {
-        const messagesDiv = document.getElementById('chatCrmMessages');
-        const headerDiv = document.getElementById('chatCrmHeader');
-        
-        if (!docSnap.exists()) return;
-        const data = docSnap.data();
-        headerDiv.innerHTML = `Chatting with: ${data.clientName} (${data.clientEmail})`;
+  window.adminChatUnsubscribe = onSnapshot(doc(db, "chats", chatId), (docSnap) => {
+    const messagesDiv = document.getElementById('chatCrmMessages');
+    const headerDiv = document.getElementById('chatCrmHeader');
 
-        window.activeAdminChatMessages = data.messages || [];
+    if (!docSnap.exists()) return;
+    const data = docSnap.data();
+    headerDiv.innerHTML = `Chatting with: ${data.clientName} (${data.clientEmail})`;
 
-        messagesDiv.innerHTML = window.activeAdminChatMessages.map(m => {
-            const isClient = m.sender === 'client';
-            const time = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            return `
+    window.activeAdminChatMessages = data.messages || [];
+
+    messagesDiv.innerHTML = window.activeAdminChatMessages.map(m => {
+      const isClient = m.sender === 'client';
+      const time = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return `
                 <div class="chat-msg ${isClient ? 'admin' : 'client'}">
                     <strong>${isClient ? 'Client' : 'Admin'}:</strong> ${m.text}
                     <span class="chat-msg-time">${time}</span>
                 </div>
             `;
-        }).join('');
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    });
+    }).join('');
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  });
 }
 
-window.sendAdminReply = async function() {
-    const input = document.getElementById('chatCrmMessageInput');
-    const text = input.value.trim();
-    if (!text || !window.activeAdminChatId) return;
+window.sendAdminReply = async function () {
+  const input = document.getElementById('chatCrmMessageInput');
+  const text = input.value.trim();
+  if (!text || !window.activeAdminChatId) return;
 
-    try {
-        window.activeAdminChatMessages.push({
-            text: text,
-            sender: "admin",
-            timestamp: new Date().toISOString(),
-            senderName: "Admin"
-        });
+  try {
+    window.activeAdminChatMessages.push({
+      text: text,
+      sender: "admin",
+      timestamp: new Date().toISOString(),
+      senderName: "Admin"
+    });
 
-        await setDoc(doc(db, "chats", window.activeAdminChatId), {
-            lastMessageAt: new Date().toISOString(),
-            messages: window.activeAdminChatMessages
-        }, { merge: true });
+    await setDoc(doc(db, "chats", window.activeAdminChatId), {
+      lastMessageAt: new Date().toISOString(),
+      messages: window.activeAdminChatMessages
+    }, { merge: true });
 
-        input.value = '';
-    } catch (e) {
-        console.error(e);
-    }
+    input.value = '';
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 // Client Database Admin view
 window.dbClients = [];
 
-window.loadClientDatabase = async function() {
-    const clientList = document.getElementById('clientDbList');
-    if (!clientList) return;
+window.loadClientDatabase = async function () {
+  const clientList = document.getElementById('clientDbList');
+  if (!clientList) return;
 
-    try {
-        const snap = await getDocs(collection(db, "clients"));
-        window.dbClients = [];
-        snap.forEach(d => {
-            window.dbClients.push({ id: d.id, ...d.data() });
-        });
+  try {
+    const snap = await getDocs(collection(db, "clients"));
+    window.dbClients = [];
+    snap.forEach(d => {
+      window.dbClients.push({ id: d.id, ...d.data() });
+    });
 
-        renderClientDbList(window.dbClients);
-        
-        const clientSearch = document.getElementById('clientSearchInput');
-        if (clientSearch) {
-            clientSearch.oninput = () => {
-                const val = clientSearch.value.toLowerCase();
-                const filtered = window.dbClients.filter(c => c.email.toLowerCase().includes(val));
-                renderClientDbList(filtered);
-            };
-        }
-    } catch (e) {
-        console.error(e);
+    renderClientDbList(window.dbClients);
+
+    const clientSearch = document.getElementById('clientSearchInput');
+    if (clientSearch) {
+      clientSearch.oninput = () => {
+        const val = clientSearch.value.toLowerCase();
+        const filtered = window.dbClients.filter(c => c.email.toLowerCase().includes(val));
+        renderClientDbList(filtered);
+      };
     }
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 function renderClientDbList(clientsList) {
-    const clientList = document.getElementById('clientDbList');
-    if (clientsList.length === 0) {
-        clientList.innerHTML = `<p style="color: var(--text-secondary);">No clients found.</p>`;
-        return;
-    }
+  const clientList = document.getElementById('clientDbList');
+  if (clientsList.length === 0) {
+    clientList.innerHTML = `<p style="color: var(--text-secondary);">No clients found.</p>`;
+    return;
+  }
 
-    clientList.innerHTML = clientsList.map(c => `
+  clientList.innerHTML = clientsList.map(c => `
         <div class="client-db-item" onclick="selectClientForDbView('${c.id}')">
             <div>
                 <strong style="color: #fff; font-size: 0.9rem;">${c.email}</strong>
@@ -3788,26 +3799,26 @@ function renderClientDbList(clientsList) {
     `).join('');
 }
 
-window.selectClientForDbView = async function(clientId) {
-    const detailPanel = document.getElementById('selectedClientContent');
-    const client = window.dbClients.find(c => c.id === clientId);
-    if (!client || !detailPanel) return;
+window.selectClientForDbView = async function (clientId) {
+  const detailPanel = document.getElementById('selectedClientContent');
+  const client = window.dbClients.find(c => c.id === clientId);
+  if (!client || !detailPanel) return;
 
-    let bookingsHtml = '<li>No bookings</li>';
-    try {
-        const bSnap = await getDocs(query(collection(db, "bookings"), where("email", "==", client.email)));
-        if (!bSnap.empty) {
-            bookingsHtml = '';
-            bSnap.forEach(bd => {
-                const b = bd.data();
-                bookingsHtml += `<li>${b.preferredDate || 'No Date'} - <strong>${b.status}</strong> (${b.style})</li>`;
-            });
-        }
-    } catch (err) {
-        console.error(err);
+  let bookingsHtml = '<li>No bookings</li>';
+  try {
+    const bSnap = await getDocs(query(collection(db, "bookings"), where("email", "==", client.email)));
+    if (!bSnap.empty) {
+      bookingsHtml = '';
+      bSnap.forEach(bd => {
+        const b = bd.data();
+        bookingsHtml += `<li>${b.preferredDate || 'No Date'} - <strong>${b.status}</strong> (${b.style})</li>`;
+      });
     }
+  } catch (err) {
+    console.error(err);
+  }
 
-    detailPanel.innerHTML = `
+  detailPanel.innerHTML = `
         <div style="border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
             <strong style="font-size: 0.85rem; color: var(--text-secondary); display: block;">Email:</strong>
             <span style="font-size: 1.1rem; color: #fff;">${client.email}</span>
@@ -3834,32 +3845,32 @@ window.selectClientForDbView = async function(clientId) {
     `;
 }
 
-window.saveAdminClientNotes = async function(clientId) {
-    const notes = document.getElementById('adminClientNotes').value;
-    try {
-        await setDoc(doc(db, "clients", clientId), {
-            adminNotes: notes
-        }, { merge: true });
-        alert("Internal admin notes saved!");
-        const index = window.dbClients.findIndex(c => c.id === clientId);
-        if (index > -1) window.dbClients[index].adminNotes = notes;
-    } catch (e) {
-        console.error(e);
-        alert("Failed to save admin notes: " + e.message);
-    }
+window.saveAdminClientNotes = async function (clientId) {
+  const notes = document.getElementById('adminClientNotes').value;
+  try {
+    await setDoc(doc(db, "clients", clientId), {
+      adminNotes: notes
+    }, { merge: true });
+    alert("Internal admin notes saved!");
+    const index = window.dbClients.findIndex(c => c.id === clientId);
+    if (index > -1) window.dbClients[index].adminNotes = notes;
+  } catch (e) {
+    console.error(e);
+    alert("Failed to save admin notes: " + e.message);
+  }
 }
 
 // Blog CMS Actions
-window.renderCMSBlogs = function() {
-    const listDiv = document.getElementById('cmsBlogList');
-    if (!listDiv) return;
+window.renderCMSBlogs = function () {
+  const listDiv = document.getElementById('cmsBlogList');
+  if (!listDiv) return;
 
-    if (window.dbBlogs.length === 0) {
-        listDiv.innerHTML = `<p style="color: var(--text-secondary);">No blog articles found.</p>`;
-        return;
-    }
+  if (window.dbBlogs.length === 0) {
+    listDiv.innerHTML = `<p style="color: var(--text-secondary);">No blog articles found.</p>`;
+    return;
+  }
 
-    listDiv.innerHTML = window.dbBlogs.map(blog => `
+  listDiv.innerHTML = window.dbBlogs.map(blog => `
         <div class="cms-faq-item box-inner">
             <div class="faq-details">
                 <h4>${blog.title}</h4>
@@ -3872,108 +3883,108 @@ window.renderCMSBlogs = function() {
 
 window.activeBlogId = null;
 
-window.openBlogModal = function(blogId = null) {
-    const titleInput = document.getElementById('blogTitleInput');
-    const authorInput = document.getElementById('blogAuthorInput');
-    const imageInput = document.getElementById('blogImageInput');
-    const contentInput = document.getElementById('blogContentInput');
-    const deleteBtn = document.getElementById('deleteBlogBtn');
-    const blogIdInput = document.getElementById('blogIdInput');
-    const title = document.getElementById('blogModalTitle');
+window.openBlogModal = function (blogId = null) {
+  const titleInput = document.getElementById('blogTitleInput');
+  const authorInput = document.getElementById('blogAuthorInput');
+  const imageInput = document.getElementById('blogImageInput');
+  const contentInput = document.getElementById('blogContentInput');
+  const deleteBtn = document.getElementById('deleteBlogBtn');
+  const blogIdInput = document.getElementById('blogIdInput');
+  const title = document.getElementById('blogModalTitle');
 
-    if (blogId) {
-        const blog = window.dbBlogs.find(b => b.id === blogId);
-        if (!blog) return;
+  if (blogId) {
+    const blog = window.dbBlogs.find(b => b.id === blogId);
+    if (!blog) return;
 
-        window.activeBlogId = blogId;
-        blogIdInput.value = blogId;
-        titleInput.value = blog.title;
-        authorInput.value = blog.author;
-        imageInput.value = blog.image || '';
-        contentInput.value = blog.content;
-        deleteBtn.style.display = 'block';
-        title.textContent = 'Edit Blog Post';
-    } else {
-        window.activeBlogId = null;
-        blogIdInput.value = '';
-        titleInput.value = '';
-        authorInput.value = 'Steven Benn';
-        imageInput.value = '';
-        contentInput.value = '';
-        deleteBtn.style.display = 'none';
-        title.textContent = 'Add Blog Post';
-    }
-
-    document.getElementById('blogModal').style.display = 'flex';
-}
-
-window.closeBlogModal = function() {
-    document.getElementById('blogModal').style.display = 'none';
+    window.activeBlogId = blogId;
+    blogIdInput.value = blogId;
+    titleInput.value = blog.title;
+    authorInput.value = blog.author;
+    imageInput.value = blog.image || '';
+    contentInput.value = blog.content;
+    deleteBtn.style.display = 'block';
+    title.textContent = 'Edit Blog Post';
+  } else {
     window.activeBlogId = null;
+    blogIdInput.value = '';
+    titleInput.value = '';
+    authorInput.value = 'Steven Benn';
+    imageInput.value = '';
+    contentInput.value = '';
+    deleteBtn.style.display = 'none';
+    title.textContent = 'Add Blog Post';
+  }
+
+  document.getElementById('blogModal').style.display = 'flex';
 }
 
-window.saveBlogItem = async function() {
-    const title = document.getElementById('blogTitleInput').value;
-    const author = document.getElementById('blogAuthorInput').value;
-    const image = document.getElementById('blogImageInput').value || 'assets/tattoo_workspace_1781911831357.png';
-    const content = document.getElementById('blogContentInput').value;
-
-    if (!title || !content) {
-        alert("Title and content are required.");
-        return;
-    }
-
-    try {
-        if (window.activeBlogId) {
-            await setDoc(doc(db, "blogs", window.activeBlogId), {
-                title, author, image, content,
-                createdAt: new Date().toISOString()
-            }, { merge: true });
-        } else {
-            const newId = `blog_${Date.now()}`;
-            await setDoc(doc(db, "blogs", newId), {
-                title, author, image, content,
-                createdAt: new Date().toISOString()
-            });
-        }
-
-        alert("Blog post saved!");
-        window.closeBlogModal();
-        await fetchCMSDataCache();
-        window.renderCMSBlogs();
-        window.loadBlogWebsite();
-    } catch (e) {
-        console.error(e);
-    }
+window.closeBlogModal = function () {
+  document.getElementById('blogModal').style.display = 'none';
+  window.activeBlogId = null;
 }
 
-window.deleteBlogItem = async function() {
-    if (!window.activeBlogId) return;
-    if (!confirm("Delete this blog post?")) return;
+window.saveBlogItem = async function () {
+  const title = document.getElementById('blogTitleInput').value;
+  const author = document.getElementById('blogAuthorInput').value;
+  const image = document.getElementById('blogImageInput').value || 'assets/tattoo_workspace_1781911831357.png';
+  const content = document.getElementById('blogContentInput').value;
 
-    try {
-        await deleteDoc(doc(db, "blogs", window.activeBlogId));
-        alert("Blog post deleted!");
-        window.closeBlogModal();
-        await fetchCMSDataCache();
-        window.renderCMSBlogs();
-        window.loadBlogWebsite();
-    } catch (e) {
-        console.error(e);
+  if (!title || !content) {
+    alert("Title and content are required.");
+    return;
+  }
+
+  try {
+    if (window.activeBlogId) {
+      await setDoc(doc(db, "blogs", window.activeBlogId), {
+        title, author, image, content,
+        createdAt: new Date().toISOString()
+      }, { merge: true });
+    } else {
+      const newId = `blog_${Date.now()}`;
+      await setDoc(doc(db, "blogs", newId), {
+        title, author, image, content,
+        createdAt: new Date().toISOString()
+      });
     }
+
+    alert("Blog post saved!");
+    window.closeBlogModal();
+    await fetchCMSDataCache();
+    window.renderCMSBlogs();
+    window.loadBlogWebsite();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+window.deleteBlogItem = async function () {
+  if (!window.activeBlogId) return;
+  if (!confirm("Delete this blog post?")) return;
+
+  try {
+    await deleteDoc(doc(db, "blogs", window.activeBlogId));
+    alert("Blog post deleted!");
+    window.closeBlogModal();
+    await fetchCMSDataCache();
+    window.renderCMSBlogs();
+    window.loadBlogWebsite();
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 // Product CMS Actions
-window.renderCMSProducts = function() {
-    const listDiv = document.getElementById('cmsProductList');
-    if (!listDiv) return;
+window.renderCMSProducts = function () {
+  const listDiv = document.getElementById('cmsProductList');
+  if (!listDiv) return;
 
-    if (window.dbProducts.length === 0) {
-        listDiv.innerHTML = `<p style="color: var(--text-secondary);">No products found.</p>`;
-        return;
-    }
+  if (window.dbProducts.length === 0) {
+    listDiv.innerHTML = `<p style="color: var(--text-secondary);">No products found.</p>`;
+    return;
+  }
 
-    listDiv.innerHTML = window.dbProducts.map(prod => `
+  listDiv.innerHTML = window.dbProducts.map(prod => `
         <div class="cms-faq-item box-inner">
             <div class="faq-details">
                 <h4>${prod.name}</h4>
@@ -3986,515 +3997,515 @@ window.renderCMSProducts = function() {
 
 window.activeProductId = null;
 
-window.openProductModal = function(prodId = null) {
-    const nameInput = document.getElementById('productNameInput');
-    const priceInput = document.getElementById('productPriceInput');
-    const imageInput = document.getElementById('productImageInput');
-    const descInput = document.getElementById('productDescInput');
-    const deleteBtn = document.getElementById('deleteProductBtn');
-    const productIdInput = document.getElementById('productIdInput');
-    const title = document.getElementById('productModalTitle');
+window.openProductModal = function (prodId = null) {
+  const nameInput = document.getElementById('productNameInput');
+  const priceInput = document.getElementById('productPriceInput');
+  const imageInput = document.getElementById('productImageInput');
+  const descInput = document.getElementById('productDescInput');
+  const deleteBtn = document.getElementById('deleteProductBtn');
+  const productIdInput = document.getElementById('productIdInput');
+  const title = document.getElementById('productModalTitle');
 
-    if (prodId) {
-        const prod = window.dbProducts.find(p => p.id === prodId);
-        if (!prod) return;
+  if (prodId) {
+    const prod = window.dbProducts.find(p => p.id === prodId);
+    if (!prod) return;
 
-        window.activeProductId = prodId;
-        productIdInput.value = prodId;
-        nameInput.value = prod.name;
-        priceInput.value = prod.price;
-        imageInput.value = prod.image || '';
-        descInput.value = prod.description;
-        deleteBtn.style.display = 'block';
-        title.textContent = 'Edit Product';
-    } else {
-        window.activeProductId = null;
-        productIdInput.value = '';
-        nameInput.value = '';
-        priceInput.value = '';
-        imageInput.value = '';
-        descInput.value = '';
-        deleteBtn.style.display = 'none';
-        title.textContent = 'Add Product';
-    }
-
-    document.getElementById('productModal').style.display = 'flex';
-}
-
-window.closeProductModal = function() {
-    document.getElementById('productModal').style.display = 'none';
+    window.activeProductId = prodId;
+    productIdInput.value = prodId;
+    nameInput.value = prod.name;
+    priceInput.value = prod.price;
+    imageInput.value = prod.image || '';
+    descInput.value = prod.description;
+    deleteBtn.style.display = 'block';
+    title.textContent = 'Edit Product';
+  } else {
     window.activeProductId = null;
+    productIdInput.value = '';
+    nameInput.value = '';
+    priceInput.value = '';
+    imageInput.value = '';
+    descInput.value = '';
+    deleteBtn.style.display = 'none';
+    title.textContent = 'Add Product';
+  }
+
+  document.getElementById('productModal').style.display = 'flex';
 }
 
-window.saveProductItem = async function() {
-    const name = document.getElementById('productNameInput').value;
-    const price = parseFloat(document.getElementById('productPriceInput').value);
-    const image = document.getElementById('productImageInput').value || 'assets/tattoo_front_desk_1781911857115.png';
-    const description = document.getElementById('productDescInput').value;
-
-    if (!name || isNaN(price) || !description) {
-        alert("Please fill all required fields.");
-        return;
-    }
-
-    try {
-        if (window.activeProductId) {
-            await setDoc(doc(db, "products", window.activeProductId), {
-                name, price, image, description
-            }, { merge: true });
-        } else {
-            const newId = `product_${Date.now()}`;
-            await setDoc(doc(db, "products", newId), {
-                name, price, image, description
-            });
-        }
-
-        alert("Product saved!");
-        window.closeProductModal();
-        await window.loadClientShopProducts();
-        window.renderCMSProducts();
-        window.loadShopWebsite();
-    } catch (e) {
-        console.error(e);
-    }
+window.closeProductModal = function () {
+  document.getElementById('productModal').style.display = 'none';
+  window.activeProductId = null;
 }
 
-window.deleteProductItem = async function() {
-    if (!window.activeProductId) return;
-    if (!confirm("Delete this product?")) return;
+window.saveProductItem = async function () {
+  const name = document.getElementById('productNameInput').value;
+  const price = parseFloat(document.getElementById('productPriceInput').value);
+  const image = document.getElementById('productImageInput').value || 'assets/tattoo_front_desk_1781911857115.png';
+  const description = document.getElementById('productDescInput').value;
 
-    try {
-        await deleteDoc(doc(db, "products", window.activeProductId));
-        alert("Product deleted!");
-        window.closeProductModal();
-        await window.loadClientShopProducts();
-        window.renderCMSProducts();
-        window.loadShopWebsite();
-    } catch (e) {
-        console.error(e);
+  if (!name || isNaN(price) || !description) {
+    alert("Please fill all required fields.");
+    return;
+  }
+
+  try {
+    if (window.activeProductId) {
+      await setDoc(doc(db, "products", window.activeProductId), {
+        name, price, image, description
+      }, { merge: true });
+    } else {
+      const newId = `product_${Date.now()}`;
+      await setDoc(doc(db, "products", newId), {
+        name, price, image, description
+      });
     }
+
+    alert("Product saved!");
+    window.closeProductModal();
+    await window.loadClientShopProducts();
+    window.renderCMSProducts();
+    window.loadShopWebsite();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+window.deleteProductItem = async function () {
+  if (!window.activeProductId) return;
+  if (!confirm("Delete this product?")) return;
+
+  try {
+    await deleteDoc(doc(db, "products", window.activeProductId));
+    alert("Product deleted!");
+    window.closeProductModal();
+    await window.loadClientShopProducts();
+    window.renderCMSProducts();
+    window.loadShopWebsite();
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 // SEO Meta Config
-window.loadSeoSettings = async function() {
-    const pageSelect = document.getElementById('seoPageSelect');
-    const titleInput = document.getElementById('seoTitleInput');
-    const descInput = document.getElementById('seoDescInput');
-    const keywordsInput = document.getElementById('seoKeywordsInput');
+window.loadSeoSettings = async function () {
+  const pageSelect = document.getElementById('seoPageSelect');
+  const titleInput = document.getElementById('seoTitleInput');
+  const descInput = document.getElementById('seoDescInput');
+  const keywordsInput = document.getElementById('seoKeywordsInput');
 
-    if (!pageSelect || !titleInput) return;
+  if (!pageSelect || !titleInput) return;
 
-    const pageKey = pageSelect.value;
-    let titleText = "Diamond Tip Tattoo";
-    let descText = "Private tattoo studio for custom work.";
-    let keywordsText = "tattoo, Dapto";
+  const pageKey = pageSelect.value;
+  let titleText = "Diamond Tip Tattoo";
+  let descText = "Private tattoo studio for custom work.";
+  let keywordsText = "tattoo, Dapto";
 
-    if (window.dbSeo[pageKey]) {
-        titleText = window.dbSeo[pageKey].title || titleText;
-        descText = window.dbSeo[pageKey].description || descText;
-        keywordsText = window.dbSeo[pageKey].keywords || keywordsText;
-    }
+  if (window.dbSeo[pageKey]) {
+    titleText = window.dbSeo[pageKey].title || titleText;
+    descText = window.dbSeo[pageKey].description || descText;
+    keywordsText = window.dbSeo[pageKey].keywords || keywordsText;
+  }
 
-    titleInput.value = titleText;
-    descInput.value = descText;
-    keywordsInput.value = keywordsText;
+  titleInput.value = titleText;
+  descInput.value = descText;
+  keywordsInput.value = keywordsText;
 }
 
-window.saveSeoItem = async function(e) {
-    if (e) e.preventDefault();
-    const pageSelect = document.getElementById('seoPageSelect');
-    const titleInput = document.getElementById('seoTitleInput');
-    const descInput = document.getElementById('seoDescInput');
-    const keywordsInput = document.getElementById('seoKeywordsInput');
-    const feedback = document.getElementById('seoFeedback');
+window.saveSeoItem = async function (e) {
+  if (e) e.preventDefault();
+  const pageSelect = document.getElementById('seoPageSelect');
+  const titleInput = document.getElementById('seoTitleInput');
+  const descInput = document.getElementById('seoDescInput');
+  const keywordsInput = document.getElementById('seoKeywordsInput');
+  const feedback = document.getElementById('seoFeedback');
 
-    if (!pageSelect || !titleInput || !feedback) return;
+  if (!pageSelect || !titleInput || !feedback) return;
 
-    const pageKey = pageSelect.value;
-    window.dbSeo[pageKey] = {
-        title: titleInput.value,
-        description: descInput.value,
-        keywords: keywordsInput.value
-    };
+  const pageKey = pageSelect.value;
+  window.dbSeo[pageKey] = {
+    title: titleInput.value,
+    description: descInput.value,
+    keywords: keywordsInput.value
+  };
 
-    try {
-        await setDoc(doc(db, "content", "seo"), window.dbSeo);
-        feedback.textContent = "SEO Settings Saved!";
-        setTimeout(() => { feedback.textContent = ""; }, 3000);
-        updateSEOMeta(window.location.hash || '#home');
-    } catch (err) {
-        console.error(err);
-        alert(err.message);
-    }
+  try {
+    await setDoc(doc(db, "content", "seo"), window.dbSeo);
+    feedback.textContent = "SEO Settings Saved!";
+    setTimeout(() => { feedback.textContent = ""; }, 3000);
+    updateSEOMeta(window.location.hash || '#home');
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
 }
 
-window.fetchCMSDataCache = async function() {
-    try {
-        const bSnap = await getDocs(collection(db, "blogs"));
-        window.dbBlogs = [];
-        bSnap.forEach(d => {
-            window.dbBlogs.push({ id: d.id, ...d.data() });
-        });
+window.fetchCMSDataCache = async function () {
+  try {
+    const bSnap = await getDocs(collection(db, "blogs"));
+    window.dbBlogs = [];
+    bSnap.forEach(d => {
+      window.dbBlogs.push({ id: d.id, ...d.data() });
+    });
 
-        const pSnap = await getDocs(collection(db, "products"));
-        window.dbProducts = [];
-        pSnap.forEach(d => {
-            window.dbProducts.push({ id: d.id, ...d.data() });
-        });
+    const pSnap = await getDocs(collection(db, "products"));
+    window.dbProducts = [];
+    pSnap.forEach(d => {
+      window.dbProducts.push({ id: d.id, ...d.data() });
+    });
 
-        const sSnap = await getDoc(doc(db, "content", "seo"));
-        if (sSnap.exists()) {
-            window.dbSeo = sSnap.data();
-        }
-    } catch (e) {
-        console.error(e);
+    const sSnap = await getDoc(doc(db, "content", "seo"));
+    if (sSnap.exists()) {
+      window.dbSeo = sSnap.data();
     }
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 // PUBLIC APPOINTMENT SCHEDULER WIDGET
-window.initPublicBookingCalendar = function() {
-    const prevBtn = document.getElementById('pubPrevMonthBtn');
-    const nextBtn = document.getElementById('pubNextMonthBtn');
-    
-    if (prevBtn) {
-        prevBtn.onclick = (e) => {
-            e.preventDefault();
-            pubCalendarDate.setMonth(pubCalendarDate.getMonth() - 1);
-            renderPublicBookingCalendar();
-        };
-    }
-    if (nextBtn) {
-        nextBtn.onclick = (e) => {
-            e.preventDefault();
-            pubCalendarDate.setMonth(pubCalendarDate.getMonth() + 1);
-            renderPublicBookingCalendar();
-        };
-    }
-    
-    renderPublicBookingCalendar();
+window.initPublicBookingCalendar = function () {
+  const prevBtn = document.getElementById('pubPrevMonthBtn');
+  const nextBtn = document.getElementById('pubNextMonthBtn');
+
+  if (prevBtn) {
+    prevBtn.onclick = (e) => {
+      e.preventDefault();
+      pubCalendarDate.setMonth(pubCalendarDate.getMonth() - 1);
+      renderPublicBookingCalendar();
+    };
+  }
+  if (nextBtn) {
+    nextBtn.onclick = (e) => {
+      e.preventDefault();
+      pubCalendarDate.setMonth(pubCalendarDate.getMonth() + 1);
+      renderPublicBookingCalendar();
+    };
+  }
+
+  renderPublicBookingCalendar();
 };
 
-window.renderPublicBookingCalendar = function() {
-    const monthYearLabel = document.getElementById('pubCalendarMonthYear');
-    const daysGrid = document.getElementById('pubCalendarDaysGrid');
-    if (!monthYearLabel || !daysGrid) return;
-    
-    const year = pubCalendarDate.getFullYear();
-    const month = pubCalendarDate.getMonth();
-    
-    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    monthYearLabel.textContent = `${months[month]} ${year}`;
-    
-    const firstDayIndex = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
-    let gridHtml = '';
-    
-    // Empty cells before start of month
-    for (let i = 0; i < firstDayIndex; i++) {
-        gridHtml += `<div class="pub-day-cell empty"></div>`;
+window.renderPublicBookingCalendar = function () {
+  const monthYearLabel = document.getElementById('pubCalendarMonthYear');
+  const daysGrid = document.getElementById('pubCalendarDaysGrid');
+  if (!monthYearLabel || !daysGrid) return;
+
+  const year = pubCalendarDate.getFullYear();
+  const month = pubCalendarDate.getMonth();
+
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  monthYearLabel.textContent = `${months[month]} ${year}`;
+
+  const firstDayIndex = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  let gridHtml = '';
+
+  // Empty cells before start of month
+  for (let i = 0; i < firstDayIndex; i++) {
+    gridHtml += `<div class="pub-day-cell empty"></div>`;
+  }
+
+  // Today boundary calculation
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const currentDayDate = new Date(year, month, day);
+    const dayOfWeek = currentDayDate.getDay(); // 0 = Sun, 1 = Mon, etc.
+    const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    let cellClasses = 'pub-day-cell';
+    let isClosed = (dayOfWeek === 0 || dayOfWeek === 1); // Sunday & Monday closed
+    let isPast = (currentDayDate < today);
+    let isSelected = (selectedPubDate === dateString);
+    let isToday = (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day);
+
+    if (isToday) cellClasses += ' today';
+    if (isSelected) cellClasses += ' selected';
+
+    if (isPast) {
+      cellClasses += ' disabled';
+      gridHtml += `<div class="${cellClasses}" title="Past date">${day}</div>`;
+    } else if (isClosed) {
+      cellClasses += ' closed';
+      gridHtml += `<div class="${cellClasses}" title="Studio closed on Sunday & Monday">${day}</div>`;
+    } else {
+      gridHtml += `<div class="${cellClasses}" onclick="selectPublicCalendarDate('${dateString}')">${day}</div>`;
     }
-    
-    // Today boundary calculation
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    
-    for (let day = 1; day <= daysInMonth; day++) {
-        const currentDayDate = new Date(year, month, day);
-        const dayOfWeek = currentDayDate.getDay(); // 0 = Sun, 1 = Mon, etc.
-        const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        
-        let cellClasses = 'pub-day-cell';
-        let isClosed = (dayOfWeek === 0 || dayOfWeek === 1); // Sunday & Monday closed
-        let isPast = (currentDayDate < today);
-        let isSelected = (selectedPubDate === dateString);
-        let isToday = (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day);
-        
-        if (isToday) cellClasses += ' today';
-        if (isSelected) cellClasses += ' selected';
-        
-        if (isPast) {
-            cellClasses += ' disabled';
-            gridHtml += `<div class="${cellClasses}" title="Past date">${day}</div>`;
-        } else if (isClosed) {
-            cellClasses += ' closed';
-            gridHtml += `<div class="${cellClasses}" title="Studio closed on Sunday & Monday">${day}</div>`;
-        } else {
-            gridHtml += `<div class="${cellClasses}" onclick="selectPublicCalendarDate('${dateString}')">${day}</div>`;
-        }
-    }
-    
-    daysGrid.innerHTML = gridHtml;
+  }
+
+  daysGrid.innerHTML = gridHtml;
 };
 
-window.selectPublicCalendarDate = function(dateString) {
-    selectedPubDate = dateString;
-    selectedPubTime = null;
-    
-    // Reset hidden fields
-    document.getElementById('bookingDate').value = dateString;
-    document.getElementById('bookingTime').value = '';
-    
-    // Render the grid to reflect selection
-    renderPublicBookingCalendar();
-    
-    // Display slots container
-    const container = document.getElementById('pubTimeSlotsContainer');
-    const dateLabel = document.getElementById('pubSelectedDateLabel');
-    if (container && dateLabel) {
-        container.style.display = 'block';
-        const dateObj = new Date(dateString + 'T00:00:00');
-        dateLabel.textContent = dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
-    }
-    
-    renderPublicTimeSlots(dateString);
+window.selectPublicCalendarDate = function (dateString) {
+  selectedPubDate = dateString;
+  selectedPubTime = null;
+
+  // Reset hidden fields
+  document.getElementById('bookingDate').value = dateString;
+  document.getElementById('bookingTime').value = '';
+
+  // Render the grid to reflect selection
+  renderPublicBookingCalendar();
+
+  // Display slots container
+  const container = document.getElementById('pubTimeSlotsContainer');
+  const dateLabel = document.getElementById('pubSelectedDateLabel');
+  if (container && dateLabel) {
+    container.style.display = 'block';
+    const dateObj = new Date(dateString + 'T00:00:00');
+    dateLabel.textContent = dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+  }
+
+  renderPublicTimeSlots(dateString);
 };
 
-window.renderPublicTimeSlots = async function(dateString) {
-    const slotsGrid = document.getElementById('pubTimeSlotsGrid');
-    if (!slotsGrid) return;
-    
-    slotsGrid.innerHTML = `
+window.renderPublicTimeSlots = async function (dateString) {
+  const slotsGrid = document.getElementById('pubTimeSlotsGrid');
+  if (!slotsGrid) return;
+
+  slotsGrid.innerHTML = `
         <div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem;">
             <div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
             <span style="font-size: 0.85rem; color: var(--text-secondary);">Checking availability...</span>
         </div>
     `;
-    
-    // Morning consults only — studio does not take late / afternoon appointment slots online
-    const slots = [
-        "9:00 AM",
-        "9:30 AM",
-        "10:00 AM",
-        "10:30 AM",
-        "11:00 AM",
-        "11:30 AM",
-        "12:00 PM"
-    ];
-    
-    try {
-        // Query database to see what's booked for this day
-        const q = query(collection(db, "bookings"), where("date", "==", dateString));
-        const snapshot = await getDocs(q);
-        const bookedTimes = [];
-        snapshot.forEach(docSnap => {
-            const data = docSnap.data();
-            if (data.status !== "Cancelled") {
-                bookedTimes.push(data.time);
-            }
-        });
-        
-        let gridHtml = '';
-        slots.forEach(slot => {
-            const isBooked = bookedTimes.includes(slot);
-            if (isBooked) {
-                gridHtml += `<button type="button" class="time-slot-btn booked" disabled>${slot} (Booked)</button>`;
-            } else {
-                const isSelected = (selectedPubTime === slot);
-                gridHtml += `<button type="button" class="time-slot-btn ${isSelected ? 'selected' : ''}" onclick="selectPublicTimeSlot('${slot}')">${slot}</button>`;
-            }
-        });
-        
-        slotsGrid.innerHTML = gridHtml;
-    } catch (err) {
-        console.error("Error loading time slots:", err);
-        slotsGrid.innerHTML = `<p style="grid-column: 1 / -1; color: var(--accent); font-size: 0.85rem;">Failed to check slot availability. Please try again.</p>`;
-    }
+
+  // Morning consults only — studio does not take late / afternoon appointment slots online
+  const slots = [
+    "9:00 AM",
+    "9:30 AM",
+    "10:00 AM",
+    "10:30 AM",
+    "11:00 AM",
+    "11:30 AM",
+    "12:00 PM"
+  ];
+
+  try {
+    // Query database to see what's booked for this day
+    const q = query(collection(db, "bookings"), where("date", "==", dateString));
+    const snapshot = await getDocs(q);
+    const bookedTimes = [];
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      if (data.status !== "Cancelled") {
+        bookedTimes.push(data.time);
+      }
+    });
+
+    let gridHtml = '';
+    slots.forEach(slot => {
+      const isBooked = bookedTimes.includes(slot);
+      if (isBooked) {
+        gridHtml += `<button type="button" class="time-slot-btn booked" disabled>${slot} (Booked)</button>`;
+      } else {
+        const isSelected = (selectedPubTime === slot);
+        gridHtml += `<button type="button" class="time-slot-btn ${isSelected ? 'selected' : ''}" onclick="selectPublicTimeSlot('${slot}')">${slot}</button>`;
+      }
+    });
+
+    slotsGrid.innerHTML = gridHtml;
+  } catch (err) {
+    console.error("Error loading time slots:", err);
+    slotsGrid.innerHTML = `<p style="grid-column: 1 / -1; color: var(--accent); font-size: 0.85rem;">Failed to check slot availability. Please try again.</p>`;
+  }
 };
 
-window.selectPublicTimeSlot = function(timeString) {
-    selectedPubTime = timeString;
-    document.getElementById('bookingTime').value = timeString;
-    
-    // Highlight selected button
-    const buttons = document.querySelectorAll('#pubTimeSlotsGrid .time-slot-btn');
-    buttons.forEach(btn => {
-        if (btn.classList.contains('booked')) return;
-        if (btn.textContent.trim() === timeString) {
-            btn.classList.add('selected');
-        } else {
-            btn.classList.remove('selected');
-        }
-    });
+window.selectPublicTimeSlot = function (timeString) {
+  selectedPubTime = timeString;
+  document.getElementById('bookingTime').value = timeString;
+
+  // Highlight selected button
+  const buttons = document.querySelectorAll('#pubTimeSlotsGrid .time-slot-btn');
+  buttons.forEach(btn => {
+    if (btn.classList.contains('booked')) return;
+    if (btn.textContent.trim() === timeString) {
+      btn.classList.add('selected');
+    } else {
+      btn.classList.remove('selected');
+    }
+  });
 };
 
 // GEMINI TATTOO VARIATION STUDIO
-window.initAiTattooStudio = function() {
-    const aiDropZone = document.getElementById('aiDropZone');
-    const aiImageFile = document.getElementById('aiImageFile');
-    const removeAiFileBtn = document.getElementById('removeAiFileBtn');
-    const generateAiBtn = document.getElementById('generateAiVariationBtn');
-    
-    if (aiDropZone && aiImageFile) {
-        // Dropzone drag/drop events
-        aiDropZone.ondragover = (e) => {
-            e.preventDefault();
-            aiDropZone.style.borderColor = 'var(--accent)';
+window.initAiTattooStudio = function () {
+  const aiDropZone = document.getElementById('aiDropZone');
+  const aiImageFile = document.getElementById('aiImageFile');
+  const removeAiFileBtn = document.getElementById('removeAiFileBtn');
+  const generateAiBtn = document.getElementById('generateAiVariationBtn');
+
+  if (aiDropZone && aiImageFile) {
+    // Dropzone drag/drop events
+    aiDropZone.ondragover = (e) => {
+      e.preventDefault();
+      aiDropZone.style.borderColor = 'var(--accent)';
+    };
+    aiDropZone.ondragleave = () => {
+      aiDropZone.style.borderColor = 'var(--border)';
+    };
+    aiDropZone.ondrop = (e) => {
+      e.preventDefault();
+      aiDropZone.style.borderColor = 'var(--border)';
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleAiStudioFileUpload(e.dataTransfer.files[0]);
+      }
+    };
+
+    aiDropZone.onclick = (e) => {
+      if (e.target !== removeAiFileBtn && !removeAiFileBtn.contains(e.target)) {
+        aiImageFile.click();
+      }
+    };
+
+    aiImageFile.onchange = (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleAiStudioFileUpload(e.target.files[0]);
+      }
+    };
+  }
+
+  if (removeAiFileBtn) {
+    removeAiFileBtn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      clearAiStudioFile();
+    };
+  }
+
+  if (generateAiBtn) {
+    generateAiBtn.onclick = async (e) => {
+      e.preventDefault();
+      await generateTattooVariationTextToImage();
+    };
+  }
+
+  // Download action
+  const downloadBtn = document.getElementById('downloadAiResultBtn');
+  if (downloadBtn) {
+    downloadBtn.onclick = async (e) => {
+      e.preventDefault();
+      if (!aiGeneratedTattooUrl) return;
+      try {
+        const res = await fetch(aiGeneratedTattooUrl);
+        const blob = await res.blob();
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `diamond_tip_tattoo_variation_${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (err) {
+        console.error("Failed to download image:", err);
+        alert("Download failed. You can right-click the image and select 'Save image as...'");
+      }
+    };
+  }
+
+  // Use for Booking action
+  const useForBookingBtn = document.getElementById('useAiResultForBookingBtn');
+  if (useForBookingBtn) {
+    useForBookingBtn.onclick = (e) => {
+      e.preventDefault();
+      if (!aiGeneratedTattooUrl) return;
+
+      // Attach image to booking global reference
+      const container = document.getElementById('aiBookingAttachmentContainer');
+      const img = document.getElementById('aiBookingAttachmentImg');
+      const promptDesc = document.getElementById('aiBookingAttachmentPrompt');
+      const removeBtn = document.getElementById('removeAiAttachmentBtn');
+
+      if (container && img && promptDesc) {
+        img.src = aiGeneratedTattooUrl;
+        promptDesc.textContent = aiGeneratedTattooPrompt;
+        container.style.display = 'block';
+
+        // Show standard feedback
+        alert("Redesigned artwork is now attached to your consultation form. Please scroll down to complete your details and pick a date/time!");
+
+        // Hide portal and jump to booking section
+        exitPortal();
+        const bookingSection = document.getElementById('book');
+        if (bookingSection) {
+          bookingSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        removeBtn.onclick = (ev) => {
+          ev.preventDefault();
+          aiGeneratedTattooUrl = null;
+          aiGeneratedTattooPrompt = null;
+          container.style.display = 'none';
         };
-        aiDropZone.ondragleave = () => {
-            aiDropZone.style.borderColor = 'var(--border)';
-        };
-        aiDropZone.ondrop = (e) => {
-            e.preventDefault();
-            aiDropZone.style.borderColor = 'var(--border)';
-            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                handleAiStudioFileUpload(e.dataTransfer.files[0]);
-            }
-        };
-        
-        aiDropZone.onclick = (e) => {
-            if (e.target !== removeAiFileBtn && !removeAiFileBtn.contains(e.target)) {
-                aiImageFile.click();
-            }
-        };
-        
-        aiImageFile.onchange = (e) => {
-            if (e.target.files && e.target.files[0]) {
-                handleAiStudioFileUpload(e.target.files[0]);
-            }
-        };
-    }
-    
-    if (removeAiFileBtn) {
-        removeAiFileBtn.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            clearAiStudioFile();
-        };
-    }
-    
-    if (generateAiBtn) {
-        generateAiBtn.onclick = async (e) => {
-            e.preventDefault();
-            await generateTattooVariationTextToImage();
-        };
-    }
-    
-    // Download action
-    const downloadBtn = document.getElementById('downloadAiResultBtn');
-    if (downloadBtn) {
-        downloadBtn.onclick = async (e) => {
-            e.preventDefault();
-            if (!aiGeneratedTattooUrl) return;
-            try {
-                const res = await fetch(aiGeneratedTattooUrl);
-                const blob = await res.blob();
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `diamond_tip_tattoo_variation_${Date.now()}.png`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            } catch (err) {
-                console.error("Failed to download image:", err);
-                alert("Download failed. You can right-click the image and select 'Save image as...'");
-            }
-        };
-    }
-    
-    // Use for Booking action
-    const useForBookingBtn = document.getElementById('useAiResultForBookingBtn');
-    if (useForBookingBtn) {
-        useForBookingBtn.onclick = (e) => {
-            e.preventDefault();
-            if (!aiGeneratedTattooUrl) return;
-            
-            // Attach image to booking global reference
-            const container = document.getElementById('aiBookingAttachmentContainer');
-            const img = document.getElementById('aiBookingAttachmentImg');
-            const promptDesc = document.getElementById('aiBookingAttachmentPrompt');
-            const removeBtn = document.getElementById('removeAiAttachmentBtn');
-            
-            if (container && img && promptDesc) {
-                img.src = aiGeneratedTattooUrl;
-                promptDesc.textContent = aiGeneratedTattooPrompt;
-                container.style.display = 'block';
-                
-                // Show standard feedback
-                alert("Redesigned artwork is now attached to your consultation form. Please scroll down to complete your details and pick a date/time!");
-                
-                // Hide portal and jump to booking section
-                exitPortal();
-                const bookingSection = document.getElementById('book');
-                if (bookingSection) {
-                    bookingSection.scrollIntoView({ behavior: 'smooth' });
-                }
-                
-                removeBtn.onclick = (ev) => {
-                    ev.preventDefault();
-                    aiGeneratedTattooUrl = null;
-                    aiGeneratedTattooPrompt = null;
-                    container.style.display = 'none';
-                };
-            }
-        };
-    }
+      }
+    };
+  }
 };
 
 function handleAiStudioFileUpload(file) {
-    if (!file.type.startsWith('image/')) {
-        alert("Please upload a valid image file (JPG, PNG, or WebP).");
-        return;
-    }
-    
-    aiUploadedFile = file;
-    
-    const preview = document.getElementById('aiFilePreview');
-    const previewImg = document.getElementById('aiFilePreviewImage');
-    
-    if (preview && previewImg) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            previewImg.src = e.target.result;
-            preview.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    }
+  if (!file.type.startsWith('image/')) {
+    alert("Please upload a valid image file (JPG, PNG, or WebP).");
+    return;
+  }
+
+  aiUploadedFile = file;
+
+  const preview = document.getElementById('aiFilePreview');
+  const previewImg = document.getElementById('aiFilePreviewImage');
+
+  if (preview && previewImg) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImg.src = e.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  }
 }
 
 function clearAiStudioFile() {
-    aiUploadedFile = null;
-    const fileInput = document.getElementById('aiImageFile');
-    if (fileInput) fileInput.value = '';
-    
-    const preview = document.getElementById('aiFilePreview');
-    const previewImg = document.getElementById('aiFilePreviewImage');
-    if (preview && previewImg) {
-        previewImg.src = '';
-        preview.style.display = 'none';
-    }
+  aiUploadedFile = null;
+  const fileInput = document.getElementById('aiImageFile');
+  if (fileInput) fileInput.value = '';
+
+  const preview = document.getElementById('aiFilePreview');
+  const previewImg = document.getElementById('aiFilePreviewImage');
+  if (preview && previewImg) {
+    previewImg.src = '';
+    preview.style.display = 'none';
+  }
 }
 
 async function generateTattooVariationTextToImage() {
-    if (!aiUploadedFile) {
-        alert("Please upload a base tattoo design or sketch first.");
-        return;
-    }
-    
-    const instructions = document.getElementById('aiInstructions').value.trim();
-    if (!instructions) {
-        alert("Please describe what modifications or variations you'd like.");
-        return;
-    }
-    
-    const placeholder = document.getElementById('aiOutputPlaceholder');
-    const loading = document.getElementById('aiOutputLoading');
-    const resultDiv = document.getElementById('aiOutputResult');
-    const statusText = document.getElementById('aiLoadingStatus');
-    
-    if (placeholder && loading && resultDiv && statusText) {
-        placeholder.style.display = 'none';
-        resultDiv.style.display = 'none';
-        loading.style.display = 'flex';
-        statusText.textContent = "Analyzing design with AI...";
-    }
-    
-    try {
-        // 1. Process base64
-        const imagePart = await fileToGenerativePart(aiUploadedFile);
-        
-        // 2. Query Gemini
-        const promptText = `You are an expert tattoo designer and prompt engineer.
+  if (!aiUploadedFile) {
+    alert("Please upload a base tattoo design or sketch first.");
+    return;
+  }
+
+  const instructions = document.getElementById('aiInstructions').value.trim();
+  if (!instructions) {
+    alert("Please describe what modifications or variations you'd like.");
+    return;
+  }
+
+  const placeholder = document.getElementById('aiOutputPlaceholder');
+  const loading = document.getElementById('aiOutputLoading');
+  const resultDiv = document.getElementById('aiOutputResult');
+  const statusText = document.getElementById('aiLoadingStatus');
+
+  if (placeholder && loading && resultDiv && statusText) {
+    placeholder.style.display = 'none';
+    resultDiv.style.display = 'none';
+    loading.style.display = 'flex';
+    statusText.textContent = "Analyzing design with AI...";
+  }
+
+  try {
+    // 1. Process base64
+    const imagePart = await fileToGenerativePart(aiUploadedFile);
+
+    // 2. Query Gemini
+    const promptText = `You are an expert tattoo designer and prompt engineer.
 The user has uploaded a base tattoo design image and requested the following modifications:
 "${instructions}"
 
@@ -4502,53 +4513,53 @@ Analyze the image and the requested changes. Generate a detailed, highly descrip
 
 Your response must contain ONLY the raw text-to-image prompt. Do not include any explanations, markdown code blocks, intro, or outro. Just the prompt itself.`;
 
-        const result = await geminiModel.generateContent([promptText, imagePart]);
-        const responseText = await result.response.text();
-        
-        let optimizedPrompt = responseText.trim();
-        // Strip markdown code block formatting if present
-        if (optimizedPrompt.startsWith('```')) {
-            optimizedPrompt = optimizedPrompt.replace(/^```[a-zA-Z]*\n/, '').replace(/\n```$/, '');
-        }
-        optimizedPrompt = optimizedPrompt.trim();
-        
-        if (loading && statusText) {
-            statusText.textContent = "Rendering redesigned artwork...";
-        }
-        
-        // 3. Generate image using Pollinations.ai
-        const seed = Math.floor(Math.random() * 100000);
-        const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(optimizedPrompt)}?width=1024&height=1024&nologo=true&private=true&enhance=false&seed=${seed}`;
-        
-        // 4. Preload image in browser
-        const imgElement = document.getElementById('aiResultImage');
-        const promptElement = document.getElementById('aiResultPrompt');
-        
-        if (imgElement && promptElement) {
-            imgElement.src = imageUrl;
-            promptElement.textContent = optimizedPrompt;
-            
-            await new Promise((resolve, reject) => {
-                imgElement.onload = () => resolve();
-                imgElement.onerror = () => reject(new Error("Failed to load image from generator"));
-            });
-            
-            aiGeneratedTattooUrl = imageUrl;
-            aiGeneratedTattooPrompt = instructions;
-            
-            if (loading && resultDiv) {
-                loading.style.display = 'none';
-                resultDiv.style.display = 'flex';
-            }
-        }
-    } catch (err) {
-        console.error("AI Redesign failed:", err);
-        alert("AI variation generation failed: " + err.message);
-        if (loading && placeholder) {
-            loading.style.display = 'none';
-            placeholder.style.display = 'flex';
-        }
+    const result = await geminiModel.generateContent([promptText, imagePart]);
+    const responseText = await result.response.text();
+
+    let optimizedPrompt = responseText.trim();
+    // Strip markdown code block formatting if present
+    if (optimizedPrompt.startsWith('```')) {
+      optimizedPrompt = optimizedPrompt.replace(/^```[a-zA-Z]*\n/, '').replace(/\n```$/, '');
     }
+    optimizedPrompt = optimizedPrompt.trim();
+
+    if (loading && statusText) {
+      statusText.textContent = "Rendering redesigned artwork...";
+    }
+
+    // 3. Generate image using Pollinations.ai
+    const seed = Math.floor(Math.random() * 100000);
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(optimizedPrompt)}?width=1024&height=1024&nologo=true&private=true&enhance=false&seed=${seed}`;
+
+    // 4. Preload image in browser
+    const imgElement = document.getElementById('aiResultImage');
+    const promptElement = document.getElementById('aiResultPrompt');
+
+    if (imgElement && promptElement) {
+      imgElement.src = imageUrl;
+      promptElement.textContent = optimizedPrompt;
+
+      await new Promise((resolve, reject) => {
+        imgElement.onload = () => resolve();
+        imgElement.onerror = () => reject(new Error("Failed to load image from generator"));
+      });
+
+      aiGeneratedTattooUrl = imageUrl;
+      aiGeneratedTattooPrompt = instructions;
+
+      if (loading && resultDiv) {
+        loading.style.display = 'none';
+        resultDiv.style.display = 'flex';
+      }
+    }
+  } catch (err) {
+    console.error("AI Redesign failed:", err);
+    alert("AI variation generation failed: " + err.message);
+    if (loading && placeholder) {
+      loading.style.display = 'none';
+      placeholder.style.display = 'flex';
+    }
+  }
 }
 
 // =============================================
@@ -4611,6 +4622,94 @@ const STUDIO_MESSENGER_URL = "https://m.me/diamondtiptattoo";
 const STUDIO_MESSENGER_PAGE = "https://www.facebook.com/diamondtiptattoo";
 /** Super-admin inboxes for form / booking notifications */
 const STUDIO_NOTIFY_EMAILS = SUPER_ADMIN_EMAILS;
+
+/** m.me deep link with ref (Meta referral → our webhook auto-reply) */
+function studioMessengerUrlWithRef(ref) {
+  const base = STUDIO_MESSENGER_URL.replace(/\?.*$/, "");
+  if (!ref) return base;
+  const safe = String(ref).replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 200);
+  return `${base}?ref=${encodeURIComponent(safe)}`;
+}
+
+/**
+ * Vercel serverless form webhooks (GitHub → Vercel deploy).
+ * Origin from (in order): window.__DTT_FORM_API_BASE, <meta name="dtt-form-api">, same origin.
+ * When the static site stays on Firebase, set the meta to your Vercel URL, e.g.
+ *   <meta name="dtt-form-api" content="https://diamond-tip-tattoo.vercel.app">
+ */
+function getFormApiBase() {
+  try {
+    if (typeof window !== "undefined" && window.__DTT_FORM_API_BASE) {
+      return String(window.__DTT_FORM_API_BASE).replace(/\/$/, "");
+    }
+    const meta = document.querySelector('meta[name="dtt-form-api"]');
+    const fromMeta = (meta?.getAttribute("content") || "").trim();
+    if (fromMeta) return fromMeta.replace(/\/$/, "");
+  } catch (_) { /* ignore */ }
+  return "";
+}
+
+function getFormWebhookSecret() {
+  try {
+    if (typeof window !== "undefined" && window.__DTT_FORM_SECRET) {
+      return String(window.__DTT_FORM_SECRET);
+    }
+    const meta = document.querySelector('meta[name="dtt-form-secret"]');
+    return (meta?.getAttribute("content") || "").trim();
+  } catch (_) {
+    return "";
+  }
+}
+
+/**
+ * POST form payload to Vercel /api/forms/{kind}
+ * @param {"booking"|"order"} kind
+ * @param {object} payload
+ * @returns {Promise<{ok:boolean, skipped?:boolean, status?:number, data?:any, error?:string}>}
+ */
+async function postFormWebhook(kind, payload) {
+  const base = getFormApiBase();
+  // Relative path works when the site itself is hosted on Vercel
+  const url = `${base}/api/forms/${kind}`;
+  const headers = {
+    "Content-Type": "application/json",
+    Accept: "application/json"
+  };
+  const secret = getFormWebhookSecret();
+  if (secret) headers["X-Form-Secret"] = secret;
+
+  // Honeypot field (must stay empty for real users)
+  const body = { ...payload, website: "" };
+
+  try {
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), 12000) : null;
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+      signal: controller?.signal
+    });
+    if (timer) clearTimeout(timer);
+    let data = null;
+    try {
+      data = await res.json();
+    } catch (_) {
+      data = null;
+    }
+    if (!res.ok) {
+      console.warn(`Form webhook ${kind} failed:`, res.status, data);
+      return { ok: false, status: res.status, data, error: data?.error || res.statusText };
+    }
+    return { ok: true, status: res.status, data };
+  } catch (e) {
+    // Missing Vercel deploy / CORS / offline — do not block the client UX
+    console.warn(`Form webhook ${kind} unreachable:`, e?.message || e);
+    return { ok: false, skipped: true, error: e?.message || String(e) };
+  }
+}
+
+window.postFormWebhook = postFormWebhook;
 
 /** Last form message prepared for Messenger (booking / shop / other) */
 window.__lastMessengerFormText = "";
@@ -4693,12 +4792,15 @@ async function copyTextToClipboard(text) {
 
 /**
  * Send form data to Facebook Messenger (Page: diamondtiptattoo).
- * Meta does not allow silent POSTs into Messenger without a bot + Page token.
- * We copy the full message (incl. email) and open the Page Messenger chat so
- * the client (or studio) can paste/send in one step.
+ *
+ * Two layers:
+ * 1) Server (Vercel + Page token) pushes the form to studio PSIDs automatically.
+ * 2) Client still opens m.me so the *customer* can chat the Page; we copy the
+ *    summary so they can paste if the bot isn't live yet. Use ?ref= for Meta
+ *    referral tracking + auto-reply once the webhook is connected.
  *
  * @param {string} text - full form summary including email
- * @param {{ win?: Window|null, open?: boolean }} opts
+ * @param {{ win?: Window|null, open?: boolean, ref?: string }} opts
  */
 async function sendFormDataToMessenger(text, opts = {}) {
   const message = String(text || "").trim();
@@ -4709,13 +4811,14 @@ async function sendFormDataToMessenger(text, opts = {}) {
   const openChat = opts.open !== false;
   let win = opts.win || window.__pendingMessengerWindow;
   window.__pendingMessengerWindow = null;
+  const chatUrl = studioMessengerUrlWithRef(opts.ref || "");
 
   if (openChat) {
     try {
       if (win && !win.closed) {
-        win.location.href = STUDIO_MESSENGER_URL;
+        win.location.href = chatUrl;
       } else {
-        win = window.open(STUDIO_MESSENGER_URL, "_blank", "noopener,noreferrer");
+        win = window.open(chatUrl, "_blank", "noopener,noreferrer");
       }
     } catch (_) {
       win = null;
@@ -4727,12 +4830,13 @@ async function sendFormDataToMessenger(text, opts = {}) {
       window.trackEvent("form_to_messenger", {
         copied,
         opened: !!(win && !win.closed),
-        chars: message.length
+        chars: message.length,
+        ref: opts.ref || null
       });
     }
   } catch (_) { /* ignore */ }
 
-  return { copied, opened: !!(win && !win.closed), url: STUDIO_MESSENGER_URL };
+  return { copied, opened: !!(win && !win.closed), url: chatUrl };
 }
 
 window.sendFormDataToMessenger = sendFormDataToMessenger;
@@ -4768,12 +4872,17 @@ async function notifyStudioOfBooking(bookingData, opts = {}) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")}</pre>`;
 
-  // 0) Facebook Messenger handoff — primary path for studio inbox
+  // 0) Facebook Messenger handoff — customer chat + ref for bot auto-reply
+  //    Studio notification is also pushed server-side via Vercel form webhook → Graph API
   let messengerResult = { copied: false, opened: false };
+  const messengerRef = bookingData.tryOn || bookingData.tryOnPreviewUrl
+    ? `tryon_${bookingData.id || Date.now()}`
+    : `booking_${bookingData.id || Date.now()}`;
   try {
     messengerResult = await sendFormDataToMessenger(text, {
       win: opts.messengerWin || window.__pendingMessengerWindow,
-      open: opts.openMessenger !== false
+      open: opts.openMessenger !== false,
+      ref: messengerRef
     });
     updateMessengerSuccessUI({ copied: messengerResult.copied, text });
   } catch (e) {
@@ -4840,6 +4949,28 @@ async function notifyStudioOfBooking(bookingData, opts = {}) {
     });
   } catch (e) {
     console.warn("FormSubmit notify failed:", e);
+  }
+
+  // 4) Vercel form webhook — try-on + regular booking (Zapier/Make/Discord/Resend)
+  try {
+    await postFormWebhook("booking", {
+      ...bookingData,
+      // Prefer Storage URLs; strip oversized inline data URLs
+      referenceImages: (bookingData.referenceImages || []).filter(
+        (u) => typeof u === "string" && !u.startsWith("data:")
+      ),
+      tryOnPreviewUrl:
+        bookingData.tryOnPreviewUrl &&
+          !String(bookingData.tryOnPreviewUrl).startsWith("data:")
+          ? bookingData.tryOnPreviewUrl
+          : bookingData.tryOn?.previewUrl &&
+            !String(bookingData.tryOn.previewUrl).startsWith("data:")
+            ? bookingData.tryOn.previewUrl
+            : null,
+      messenger: STUDIO_MESSENGER_URL
+    });
+  } catch (e) {
+    console.warn("Vercel booking webhook failed:", e);
   }
 
   return messengerResult;
@@ -5796,108 +5927,108 @@ window.initTryonHomeDemo = function initTryonHomeDemo() {
 // SCROLL JOURNEY UX — progress, parallax motifs
 // =============================================
 window.initScrollJourneyUX = function initScrollJourneyUX() {
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const isMobile = window.matchMedia("(max-width: 820px)").matches || window.matchMedia("(pointer: coarse)").matches;
-    const progressFill = document.querySelector(".scroll-progress-fill");
-    const motifs = Array.from(document.querySelectorAll(".journey-motif"));
-    const journeySections = Array.from(document.querySelectorAll(".journey-section[data-journey]"));
-    let ticking = false;
-    let lastTheme = "";
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const isMobile = window.matchMedia("(max-width: 820px)").matches || window.matchMedia("(pointer: coarse)").matches;
+  const progressFill = document.querySelector(".scroll-progress-fill");
+  const motifs = Array.from(document.querySelectorAll(".journey-motif"));
+  const journeySections = Array.from(document.querySelectorAll(".journey-section[data-journey]"));
+  let ticking = false;
+  let lastTheme = "";
 
-    // Stagger delay for dynamically injected portfolio/shop cards
-    const applyStagger = (container) => {
-        if (!container) return;
-        Array.from(container.children).forEach((child, i) => {
-            // Tighter stagger on mobile so cards don't feel delayed / empty
-            const step = isMobile ? 0.03 : 0.05;
-            child.style.transitionDelay = `${Math.min(i * step, isMobile ? 0.25 : 0.45)}s`;
-        });
-    };
-    applyStagger(document.getElementById("portfolioGrid"));
-    applyStagger(document.getElementById("shopGrid"));
-    applyStagger(document.getElementById("specialtiesGrid"));
-    applyStagger(document.getElementById("artistsGrid"));
-
-    // Re-apply when grids re-render
-    const mo = new MutationObserver((mutations) => {
-        mutations.forEach((m) => {
-            if (m.target && m.target.id) {
-                applyStagger(m.target);
-                // ensure newly injected cards animate in if section already visible
-                const section = m.target.closest(".section, .fade-in, .slide-up");
-                if (section && (section.classList.contains("visible") || section.classList.contains("is-inview"))) {
-                    m.target.querySelectorAll(":scope > *").forEach((el) => {
-                        el.style.opacity = "1";
-                        el.style.transform = "none";
-                    });
-                }
-            }
-        });
+  // Stagger delay for dynamically injected portfolio/shop cards
+  const applyStagger = (container) => {
+    if (!container) return;
+    Array.from(container.children).forEach((child, i) => {
+      // Tighter stagger on mobile so cards don't feel delayed / empty
+      const step = isMobile ? 0.03 : 0.05;
+      child.style.transitionDelay = `${Math.min(i * step, isMobile ? 0.25 : 0.45)}s`;
     });
-    ["portfolioGrid", "shopGrid", "specialtiesGrid", "artistsGrid", "blogGrid"].forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) mo.observe(el, { childList: true });
+  };
+  applyStagger(document.getElementById("portfolioGrid"));
+  applyStagger(document.getElementById("shopGrid"));
+  applyStagger(document.getElementById("specialtiesGrid"));
+  applyStagger(document.getElementById("artistsGrid"));
+
+  // Re-apply when grids re-render
+  const mo = new MutationObserver((mutations) => {
+    mutations.forEach((m) => {
+      if (m.target && m.target.id) {
+        applyStagger(m.target);
+        // ensure newly injected cards animate in if section already visible
+        const section = m.target.closest(".section, .fade-in, .slide-up");
+        if (section && (section.classList.contains("visible") || section.classList.contains("is-inview"))) {
+          m.target.querySelectorAll(":scope > *").forEach((el) => {
+            el.style.opacity = "1";
+            el.style.transform = "none";
+          });
+        }
+      }
+    });
+  });
+  ["portfolioGrid", "shopGrid", "specialtiesGrid", "artistsGrid", "blogGrid"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) mo.observe(el, { childList: true });
+  });
+
+  const update = () => {
+    ticking = false;
+    const scrollY = window.scrollY || window.pageYOffset;
+    const docH = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const pct = Math.min(100, Math.max(0, (scrollY / docH) * 100));
+
+    if (progressFill) {
+      progressFill.style.width = pct + "%";
+    }
+
+    // Activate motifs gradually along scroll depth
+    motifs.forEach((motif, i) => {
+      const threshold = (i / Math.max(1, motifs.length - 1)) * 85;
+      if (pct >= threshold - 5) motif.classList.add("is-active");
+      // Skip continuous wobble/parallax on mobile & reduced-motion — feels janky
+      if (!reduceMotion && !isMobile) {
+        const speed = parseFloat(motif.dataset.parallax || "0.1");
+        const y = scrollY * speed;
+        const wobble = Math.sin((scrollY + i * 40) * 0.004) * 6;
+        motif.style.transform = `translate3d(0, ${y * 0.15 + wobble}px, 0) rotate(${wobble * 0.4}deg)`;
+      }
     });
 
-    const update = () => {
-        ticking = false;
-        const scrollY = window.scrollY || window.pageYOffset;
-        const docH = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-        const pct = Math.min(100, Math.max(0, (scrollY / docH) * 100));
+    // Theme body class from most visible journey section
+    let best = null;
+    let bestScore = 0;
+    const vh = window.innerHeight || 1;
+    journeySections.forEach((sec) => {
+      const r = sec.getBoundingClientRect();
+      const visible = Math.min(r.bottom, vh) - Math.max(r.top, 0);
+      if (visible > bestScore) {
+        bestScore = visible;
+        best = sec;
+      }
+    });
+    const theme = best?.dataset?.journey || "";
+    if (theme !== lastTheme) {
+      document.body.classList.remove(
+        "journey-theme-roses",
+        "journey-theme-skulls",
+        "journey-theme-guns",
+        "journey-theme-smoke",
+        "journey-theme-diamonds"
+      );
+      if (theme) document.body.classList.add(`journey-theme-${theme}`);
+      lastTheme = theme;
+    }
+  };
 
-        if (progressFill) {
-            progressFill.style.width = pct + "%";
-        }
+  const onScroll = () => {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  };
 
-        // Activate motifs gradually along scroll depth
-        motifs.forEach((motif, i) => {
-            const threshold = (i / Math.max(1, motifs.length - 1)) * 85;
-            if (pct >= threshold - 5) motif.classList.add("is-active");
-            // Skip continuous wobble/parallax on mobile & reduced-motion — feels janky
-            if (!reduceMotion && !isMobile) {
-                const speed = parseFloat(motif.dataset.parallax || "0.1");
-                const y = scrollY * speed;
-                const wobble = Math.sin((scrollY + i * 40) * 0.004) * 6;
-                motif.style.transform = `translate3d(0, ${y * 0.15 + wobble}px, 0) rotate(${wobble * 0.4}deg)`;
-            }
-        });
-
-        // Theme body class from most visible journey section
-        let best = null;
-        let bestScore = 0;
-        const vh = window.innerHeight || 1;
-        journeySections.forEach((sec) => {
-            const r = sec.getBoundingClientRect();
-            const visible = Math.min(r.bottom, vh) - Math.max(r.top, 0);
-            if (visible > bestScore) {
-                bestScore = visible;
-                best = sec;
-            }
-        });
-        const theme = best?.dataset?.journey || "";
-        if (theme !== lastTheme) {
-            document.body.classList.remove(
-                "journey-theme-roses",
-                "journey-theme-skulls",
-                "journey-theme-guns",
-                "journey-theme-smoke",
-                "journey-theme-diamonds"
-            );
-            if (theme) document.body.classList.add(`journey-theme-${theme}`);
-            lastTheme = theme;
-        }
-    };
-
-    const onScroll = () => {
-        if (!ticking) {
-            ticking = true;
-            requestAnimationFrame(update);
-        }
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
-    update();
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll, { passive: true });
+  update();
 };
 
 // =============================================
@@ -5905,7 +6036,7 @@ window.initScrollJourneyUX = function initScrollJourneyUX() {
 // Analytics hooks, sticky CTA, artist preselect, legal modals
 // =============================================
 
-/** Fire GA4 + Meta events when scripts are present (safe no-ops otherwise) */
+/** Fire GA4 + Meta + Vercel Analytics events when scripts are present (safe no-ops otherwise) */
 window.trackEvent = function trackEvent(name, params = {}) {
   try {
     if (typeof window.gtag === "function") {
@@ -5920,6 +6051,22 @@ window.trackEvent = function trackEvent(name, params = {}) {
       } else {
         window.fbq("trackCustom", name, params);
       }
+    }
+    // Vercel Web Analytics custom events (from @vercel/analytics inject)
+    if (typeof window.vercelTrack === "function") {
+      const flat = {};
+      for (const [k, v] of Object.entries(params || {})) {
+        if (v == null) continue;
+        // Vercel only accepts string | number | boolean | null
+        if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
+          flat[k] = v;
+        } else {
+          flat[k] = String(v);
+        }
+      }
+      window.vercelTrack(name, Object.keys(flat).length ? flat : undefined);
+    } else if (typeof window.va === "function") {
+      window.va("event", { name, data: params });
     }
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ event: name, ...params });
