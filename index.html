@@ -58,7 +58,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="index.css?v=20260829-info">
     <!-- TattooParlor + AggregateRating schema (Google Business: 4.6★ · 64 reviews) -->
     <script type="application/ld+json">
     {
@@ -214,10 +214,12 @@
     }
     </script>
     <meta name="facebook-domain-verification" content="" id="fbDomainVerify">
-    <!-- Vercel form webhooks: leave empty when site + API share origin; set full origin if static stays on Firebase (e.g. https://your-project.vercel.app) -->
-    <meta name="dtt-form-api" content="">
+    <!-- Firebase static site → Vercel API (Messenger notify + form webhooks). Same-origin if the site itself is on Vercel. -->
+    <meta name="dtt-form-api" content="https://diamond-tip-tattoo.vercel.app">
     <!-- Optional: same value as Vercel FORM_WEBHOOK_SECRET (only if you enable that env var) -->
     <meta name="dtt-form-secret" content="">
+    <!-- Paste Meta App ID from developers.facebook.com → App → Settings → Basic -->
+    <meta name="facebook-app-id" content="">
 </head>
 
 <body class="page-ready">
@@ -1020,8 +1022,9 @@
                 <div class="form-footer">
                     <button type="submit" id="bookingSubmitBtn" class="btn btn-solid"
                         data-track="cta_form_submit">REQUEST FREE CONSULTATION</button>
-                    <span class="privacy-note">Your details (including email) go to our CRM and are prepared for
-                        <strong>Facebook Messenger</strong> to the studio page. See our
+                    <span class="privacy-note">Your details go to our CRM and to the studio on
+                        <strong>Facebook Messenger</strong>. After you submit, Messenger opens so you can chat the
+                        Page. See our
                         <a href="legal/privacy-policy.html" class="inline-legal">Privacy Policy</a>.</span>
                 </div>
                 <p class="booking-reassure">Prefer to talk first? Call <a href="tel:+61242614311">(02) 4261 4311</a> ·
@@ -1278,87 +1281,98 @@
             offline.</p>
     </section>
 
-    <section id="info" class="section bottom-info slide-up">
-        <div class="info-col box" id="faq">
-            <h3>FAQ</h3>
-            <p class="faq-intro">Straight answers to the questions that usually stop people from booking.</p>
-            <div class="accordion" id="faqAccordion">
-                <div class="acc-item">
-                    <button class="acc-btn" type="button">How do I book? <span>+</span></button>
-                    <div class="acc-content">
-                        <p>Use the <a href="#book">consultation form</a> — pick a preferred date/time, style and artist.
-                            It’s free and doesn’t lock you in. We reply in 1–2 business days.</p>
+    <section id="info" class="section slide-up">
+        <div class="bottom-info">
+            <div class="info-col box" id="faq">
+                <h3>FAQ</h3>
+                <p class="faq-intro">Straight answers to the questions that usually stop people from booking.</p>
+                <div class="accordion" id="faqAccordion">
+                    <div class="acc-item">
+                        <button class="acc-btn" type="button">How do I book? <span>+</span></button>
+                        <div class="acc-content">
+                            <p>Use the <a href="#book">consultation form</a> — pick a preferred date/time, style and
+                                artist.
+                                It’s free and doesn’t lock you in. We reply in 1–2 business days.</p>
+                        </div>
                     </div>
-                </div>
-                <div class="acc-item">
-                    <button class="acc-btn" type="button">How much will it cost? <span>+</span></button>
-                    <div class="acc-content">
-                        <p>Price depends on size, detail, placement and time. We give a clear estimate after
-                            consultation — before you pay a deposit or book a session. Small pieces start differently to
-                            full sleeves; we’ll be honest if something is outside your budget.</p>
+                    <div class="acc-item">
+                        <button class="acc-btn" type="button">How much will it cost? <span>+</span></button>
+                        <div class="acc-content">
+                            <p>Price depends on size, detail, placement and time. We give a clear estimate after
+                                consultation — before you pay a deposit or book a session. Small pieces start
+                                differently to
+                                full sleeves; we’ll be honest if something is outside your budget.</p>
+                        </div>
                     </div>
-                </div>
-                <div class="acc-item">
-                    <button class="acc-btn" type="button">Do I need a deposit? <span>+</span></button>
-                    <div class="acc-content">
-                        <p>Enquiries are free. A deposit is only requested once a design and session date are confirmed,
-                            to hold your booking. Details are confirmed in writing.</p>
+                    <div class="acc-item">
+                        <button class="acc-btn" type="button">Do I need a deposit? <span>+</span></button>
+                        <div class="acc-content">
+                            <p>Enquiries are free. A deposit is only requested once a design and session date are
+                                confirmed,
+                                to hold your booking. Details are confirmed in writing.</p>
+                        </div>
                     </div>
-                </div>
-                <div class="acc-item">
-                    <button class="acc-btn" type="button">How long will my tattoo take? <span>+</span></button>
-                    <div class="acc-content">
-                        <p>Small pieces can be under an hour; larger custom work may need multiple sessions. We’ll map a
-                            realistic plan in your consultation.</p>
+                    <div class="acc-item">
+                        <button class="acc-btn" type="button">How long will my tattoo take? <span>+</span></button>
+                        <div class="acc-content">
+                            <p>Small pieces can be under an hour; larger custom work may need multiple sessions. We’ll
+                                map a
+                                realistic plan in your consultation.</p>
+                        </div>
                     </div>
-                </div>
-                <div class="acc-item">
-                    <button class="acc-btn" type="button">Do you offer touch-ups? <span>+</span></button>
-                    <div class="acc-content">
-                        <p>Yes — complimentary touch-ups within 6 months when aftercare has been followed. Healing
-                            support is part of the process.</p>
+                    <div class="acc-item">
+                        <button class="acc-btn" type="button">Do you offer touch-ups? <span>+</span></button>
+                        <div class="acc-content">
+                            <p>Yes — complimentary touch-ups within 6 months when aftercare has been followed. Healing
+                                support is part of the process.</p>
+                        </div>
                     </div>
-                </div>
-                <div class="acc-item">
-                    <button class="acc-btn" type="button">Is the studio private? <span>+</span></button>
-                    <div class="acc-content">
-                        <p>Yes. Appointment only, discreet entrance, no walk-in crowds. Ideal if you value privacy or
-                            are new to tattoos.</p>
+                    <div class="acc-item">
+                        <button class="acc-btn" type="button">Is the studio private? <span>+</span></button>
+                        <div class="acc-content">
+                            <p>Yes. Appointment only, discreet entrance, no walk-in crowds. Ideal if you value privacy
+                                or
+                                are new to tattoos.</p>
+                        </div>
                     </div>
-                </div>
-                <div class="acc-item">
-                    <button class="acc-btn" type="button">Where are you and is parking easy? <span>+</span></button>
-                    <div class="acc-content">
-                        <p>Shop 5/37–39 Baan Baan St, Dapto NSW 2530 — near Dapto Mall. Street and nearby parking
-                            available. Serving Dapto, Wollongong, Shellharbour and the Illawarra.</p>
+                    <div class="acc-item">
+                        <button class="acc-btn" type="button">Where are you and is parking easy? <span>+</span></button>
+                        <div class="acc-content">
+                            <p>Shop 5/37–39 Baan Baan St, Dapto NSW 2530 — near Dapto Mall. Street and nearby parking
+                                available. Serving Dapto, Wollongong, Shellharbour and the Illawarra.</p>
+                        </div>
                     </div>
-                </div>
-                <div class="acc-item">
-                    <button class="acc-btn" type="button">What if I’m nervous / first tattoo? <span>+</span></button>
-                    <div class="acc-content">
-                        <p>Totally normal. We walk you through every step, take breaks if needed, and never rush. Start
-                            with a free consultation — no pressure to book the day.</p>
+                    <div class="acc-item">
+                        <button class="acc-btn" type="button">What if I’m nervous / first tattoo?
+                            <span>+</span></button>
+                        <div class="acc-content">
+                            <p>Totally normal. We walk you through every step, take breaks if needed, and never rush.
+                                Start
+                                with a free consultation — no pressure to book the day.</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="info-col box aftercare-box"
-            style="background-image: linear-gradient(rgba(10,10,10,0.78), rgba(10,10,10,0.88)), url('assets/brand/aftercare-essentials.jpg'); background-size: cover; background-position: center;">
-            <h3>AFTERCARE</h3>
-            <p>Proper aftercare ensures<br>your tattoo heals perfectly.</p>
-            <button type="button" class="explore aftercare-open-btn" id="openAftercareBtn">VIEW AFTERCARE GUIDE
-                &rarr;</button>
-            <a href="#shop" class="explore" style="display:block;margin-top:0.75rem;">Shop aftercare supplies &rarr;</a>
-        </div>
+            <div class="info-col box aftercare-box"
+                style="background-image: linear-gradient(rgba(10,10,10,0.78), rgba(10,10,10,0.88)), url('assets/brand/aftercare-essentials.jpg'); background-size: cover; background-position: center;">
+                <h3>AFTERCARE</h3>
+                <p>Proper aftercare ensures<br>your tattoo heals perfectly.</p>
+                <button type="button" class="explore aftercare-open-btn" id="openAftercareBtn">VIEW AFTERCARE GUIDE
+                    &rarr;</button>
+                <a href="#shop" class="explore" style="display:block;margin-top:0.75rem;">Shop aftercare supplies
+                    &rarr;</a>
+            </div>
 
-        <div class="info-col box studio-box"
-            style="background-image: linear-gradient(rgba(10,10,10,0.72), rgba(10,10,10,0.88)), url('assets/brand/studio-parlour.jpg'); background-size: cover; background-position: center;">
-            <h3>STUDIO</h3>
-            <p>Shop 5/37–39 Baan Baan St<br>Dapto NSW 2530</p>
-            <p class="mt-1">By appointment only<br>Tue – Sat · mornings</p>
-            <p class="note mt-1">Private entrance. Discreet service.</p>
-            <a href="tel:+61242614311" class="explore mt-1" data-track="cta_studio_call">Call (02) 4261 4311 &rarr;</a>
+            <div class="info-col box studio-box"
+                style="background-image: linear-gradient(rgba(10,10,10,0.72), rgba(10,10,10,0.88)), url('assets/brand/studio-parlour.jpg'); background-size: cover; background-position: center;">
+                <h3>STUDIO</h3>
+                <p>Shop 5/37–39 Baan Baan St<br>Dapto NSW 2530</p>
+                <p class="mt-1">By appointment only<br>Tue – Sat · mornings</p>
+                <p class="note mt-1">Private entrance. Discreet service.</p>
+                <a href="tel:+61242614311" class="explore mt-1" data-track="cta_studio_call">Call (02) 4261 4311
+                    &rarr;</a>
+            </div>
         </div>
     </section>
 

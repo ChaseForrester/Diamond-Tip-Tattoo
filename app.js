@@ -3496,10 +3496,16 @@ window.loadBlogWebsite = async function () {
 window.initFacebookFeed = function initFacebookFeed() {
   if (window.__fbSdkLoading) return;
   window.__fbSdkLoading = true;
+  const appId = (
+    document.querySelector('meta[name="facebook-app-id"], meta[property="fb:app_id"]')
+      ?.getAttribute("content") || ""
+  ).trim();
   window.fbAsyncInit = function () {
     try {
+      const opts = { xfbml: true, version: "v21.0" };
+      if (appId) opts.appId = appId;
       // eslint-disable-next-line no-undef
-      FB.init({ xfbml: true, version: "v19.0" });
+      FB.init(opts);
     } catch (e) {
       console.warn("FB init failed", e);
     }
@@ -3510,7 +3516,10 @@ window.initFacebookFeed = function initFacebookFeed() {
     js.async = true;
     js.defer = true;
     js.crossOrigin = "anonymous";
-    js.src = "https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v19.0";
+    const qs = appId
+      ? `#xfbml=1&version=v21.0&appId=${encodeURIComponent(appId)}`
+      : "#xfbml=1&version=v21.0";
+    js.src = `https://connect.facebook.net/en_GB/sdk.js${qs}`;
     document.body.appendChild(js);
   } else if (window.FB && typeof window.FB.XFBML !== "undefined") {
     try { window.FB.XFBML.parse(); } catch (_) { /* ignore */ }
@@ -4637,6 +4646,8 @@ function studioMessengerUrlWithRef(ref) {
  * When the static site stays on Firebase, set the meta to your Vercel URL, e.g.
  *   <meta name="dtt-form-api" content="https://diamond-tip-tattoo.vercel.app">
  */
+const DEFAULT_FORM_API_BASE = "https://diamond-tip-tattoo.vercel.app";
+
 function getFormApiBase() {
   try {
     if (typeof window !== "undefined" && window.__DTT_FORM_API_BASE) {
@@ -4646,7 +4657,15 @@ function getFormApiBase() {
     const fromMeta = (meta?.getAttribute("content") || "").trim();
     if (fromMeta) return fromMeta.replace(/\/$/, "");
   } catch (_) { /* ignore */ }
-  return "";
+
+  try {
+    const host = (typeof window !== "undefined" && window.location && window.location.hostname) || "";
+    // Already on Vercel (or local with /api proxied) — same-origin functions
+    if (/\.vercel\.app$/i.test(host)) return "";
+  } catch (_) { /* ignore */ }
+
+  // Firebase / custom-domain static host → Vercel API so Messenger notify can run
+  return DEFAULT_FORM_API_BASE;
 }
 
 function getFormWebhookSecret() {

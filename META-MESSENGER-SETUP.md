@@ -1,85 +1,247 @@
-# Diamond Tip Tattoo — Connect Facebook Messenger to website forms
+# Connect Facebook Messenger to the booking form
 
-This matches the Meta screens you saved as PDFs:
+You already have a **Meta App ID**. The website form is wired. These clicks finish the connection so a booking lands in the Diamond Tip Tattoo Page inbox.
 
-- **Create an app** → use cases list  
-- **Customize use case → Messenger from Meta** (webhooks + API setup)
+**Live API (already deployed)**
 
-Code is already ready on Vercel routes:
+| What | URL |
+|------|-----|
+| Status (safe JSON, no secrets) | https://diamond-tip-tattoo.vercel.app/api/meta/status |
+| Webhook (paste this in Meta) | https://diamond-tip-tattoo.vercel.app/api/meta/webhook |
+| Booking form handler | `POST` https://diamond-tip-tattoo.vercel.app/api/forms/booking |
+| Shop order handler | `POST` https://diamond-tip-tattoo.vercel.app/api/forms/order |
+| Public site | https://diamond-tip-tattoo.web.app/ |
 
-| Endpoint | Purpose |
-|----------|---------|
-| `GET/POST /api/meta/webhook` | Meta webhook (verify + inbound messages) |
-| `GET /api/meta/status` | Safe checklist of env vars |
-| `POST /api/forms/booking` | Booking + try-on → Messenger notify |
-| `POST /api/forms/order` | Shop order → Messenger notify |
+Current API status when last checked: **verify token is set**, **Page access token missing**, **studio notify PSIDs missing**. That is why the form does not yet message the Page automatically.
 
 ---
 
-## How it works (simple)
+## What happens after this is done
 
 ```
-Customer fills website form
+Customer fills BOOK YOUR PRIVATE SESSION
         │
-        ├─► Firestore (CRM)  [already works]
+        ├─► Firestore CRM (already works)
         ├─► Vercel /api/forms/booking
-        │         └─► Graph API → messages YOU on Messenger (studio PSID)
-        └─► Opens m.me/diamondtiptattoo?ref=booking_xxx
-                  └─► Customer chats Page; bot auto-replies; you see it in Inbox
+        │         └─► Graph API messages YOU on Messenger
+        └─► Opens m.me/diamondtiptattoo?ref=booking_…
+                  └─► Customer chats the Page; bot auto-replies; you see it in Inbox
 ```
 
-Meta **cannot** silently invent a Messenger chat from a form alone.  
-We do both: **server push to studio** + **customer m.me handoff**.
+The App ID alone cannot send messages. Meta also needs:
+
+1. The **Messenger use case** on that app  
+2. A **webhook** pointing at our Vercel URL  
+3. The **Page connected** + a **Page access token**  
+4. Your **PSID** (you must message the Page once)
 
 ---
 
-## Before you click anything
+## Step 1 — Open the app you already created
 
-1. You need **admin** access on the Facebook **Page** (Diamond Tip Tattoo), not only a personal profile.
-2. Use the same Facebook account that manages the Page at [developers.facebook.com](https://developers.facebook.com).
-3. Deploy this repo to **Vercel** so these URLs exist (replace with your project):
+1. Go to [developers.facebook.com/apps](https://developers.facebook.com/apps) while logged into the Facebook account that **admins the Diamond Tip Tattoo Page**.
+2. Click the app that has your App ID.
+3. Left sidebar: **Use cases**.
+4. If you do **not** already see **Messenger from Meta** / **Engage with customers on Messenger**:
+   - Click **Add use case**
+   - Choose **Engage with customers on Messenger from Meta**  
+     *(wording may be “Respond to messages sent to your business’ Facebook Page”)*
+   - Do **not** pick Ads, Facebook Login-only, or WhatsApp for this job.
+5. Open **Messenger from Meta → Customize → Messenger API Settings**.
 
-```text
-https://YOUR-PROJECT.vercel.app/api/meta/webhook
-https://YOUR-PROJECT.vercel.app/api/meta/status
-```
+Paste the App ID into the website (optional, used by the Facebook SDK):
 
----
-
-## Step 0 — Deploy API first (do this once)
-
-1. Import `ChaseForrester/Diamond-Tip-Tattoo` into Vercel (or push if already linked).
-2. After deploy, open:
-
-```text
-https://YOUR-PROJECT.vercel.app/api/meta/status
-```
-
-You should see JSON. Tokens will say `MISSING` until Step 4.
-
-3. In the website `index.html`, set:
+In `index.html`:
 
 ```html
-<meta name="dtt-form-api" content="https://YOUR-PROJECT.vercel.app">
+<meta name="facebook-app-id" content="YOUR_APP_ID_HERE">
 ```
-
-so forms hit Vercel while the static site stays on Firebase.
 
 ---
 
-## Step 1 — Create / open the Meta app (your PDF: “Create an app”)
+## Step 2 — Add the site domains in the app
 
-1. Go to [developers.facebook.com/apps](https://developers.facebook.com/apps).
-2. **Create app** (or open **Diamond Tip Tattoo** if it already exists).
-3. App type / portfolio: use your **business portfolio** if asked.
-4. On **Add use cases** (your screenshots):
+Still in the app:
 
-### Select this use case
+1. **Settings → Basic**
+2. Copy **App ID** (you have this) and **App secret** (click Show — you will put this in Vercel in Step 4).
+3. **Add platform → Website** if none exists.
+4. Site URL:
 
-**Engage with customers on Messenger from Meta**  
-*(wording may be: “Respond to messages sent to your business’ Facebook Page”)*
+```text
+https://diamond-tip-tattoo.web.app/
+```
 
-### Do NOT pick (for this job)
+5. **Settings → Basic → App domains** add:
+
+```text
+diamond-tip-tattoo.web.app
+diamond-tip-tattoo.vercel.app
+```
+
+6. Save changes.
+
+---
+
+## Step 3 — Configure the webhook (Meta screen “1. Configure webhooks”)
+
+1. Messenger API Settings → **Configure webhooks** / **Add callback URL**.
+2. Fill:
+
+| Field | Value |
+|------|--------|
+| **Callback URL** | `https://diamond-tip-tattoo.vercel.app/api/meta/webhook` |
+| **Verify token** | Must match Vercel `META_VERIFY_TOKEN` |
+
+Recommended verify token (already the default in code; Vercel already has one set):
+
+```text
+diamond_tip_messenger_verify_2026
+```
+
+3. **Before** clicking Verify in Meta, confirm Vercel:
+
+   Vercel → Diamond Tip project → **Settings → Environment Variables**
+
+   | Name | Value |
+   |------|--------|
+   | `META_VERIFY_TOKEN` | same string as the Meta verify token |
+
+   Production **and** Preview. Redeploy if you change it.
+
+4. Back in Meta, click **Verify and save**.
+   - Success → saved.
+   - Fail → open https://diamond-tip-tattoo.vercel.app/api/meta/status and check `META_VERIFY_TOKEN` is `"set"`. No trailing slash on the callback URL.
+
+5. **Subscribe to webhook fields:**
+
+   - [x] `messages`
+   - [x] `messaging_postbacks`
+   - [x] `messaging_optins`
+   - [x] `messaging_referrals`
+   - [x] `message_deliveries` (optional)
+
+   Save.
+
+---
+
+## Step 4 — Connect the Page and generate the token
+
+Still under Messenger API Settings:
+
+1. **Add / connect Page** → **Diamond Tip Tattoo** (must be a Page, not a personal profile).
+2. Accept permissions (manage/respond to messages).
+3. **Generate** token for that Page. Copy the long string.
+4. Copy **App secret**: Settings → Basic → App secret → Show.
+5. Put these in Vercel → Environment Variables (Production + Preview):
+
+   | Name | Value |
+   |------|--------|
+   | `META_PAGE_ACCESS_TOKEN` | *(paste Page token)* |
+   | `META_APP_SECRET` | *(paste App secret)* |
+   | `META_PAGE_ID` | *(optional — Page ID if shown)* |
+   | `META_APP_ID` | *(optional — your numeric App ID)* |
+
+6. Redeploy Vercel.
+
+7. Refresh:
+
+```text
+https://diamond-tip-tattoo.vercel.app/api/meta/status
+```
+
+`META_PAGE_ACCESS_TOKEN` should read `set (xxxxxx…yyyy)`.
+
+---
+
+## Step 5 — Register yourself so forms can message you
+
+Meta will not let the Page message people who have never talked to it.
+
+1. On your phone, open Messenger and message the Page, or open https://m.me/diamondtiptattoo
+2. Send exactly:
+
+```text
+notify me
+```
+
+3. If the webhook is live, the bot replies with **your PSID** (a long number).
+4. Or check **Vercel → Project → Logs** for:
+
+```json
+{"event":"messenger_inbound","psid":"1234567890"}
+```
+
+5. Vercel env:
+
+   | Name | Value |
+   |------|--------|
+   | `MESSENGER_NOTIFY_PSIDS` | `1234567890` |
+
+   Several people (Steven, Scotty, you):
+
+   ```text
+   111111,222222,333333
+   ```
+
+   Each person must message the Page once (or send `notify me`).
+
+6. **App roles** (dev mode): App → **Roles** → add Admins / Developers / Testers for anyone who must receive bot messages. They accept the invite.
+
+7. Redeploy.
+
+`/api/meta/status` should show `"configured": true`.
+
+---
+
+## Step 6 — Allowlist the website for messaging
+
+In the app:
+
+1. Messenger API Settings (or **Settings → Advanced** / **App domains** as Meta currently labels it).
+2. Add the site origin if there is a **Whitelisted domains** field:
+
+```text
+https://diamond-tip-tattoo.web.app
+https://diamond-tip-tattoo.vercel.app
+```
+
+3. Page **Settings → Messaging**: messaging is **On**.
+
+---
+
+## Step 7 — Test the booking form
+
+The site already posts the form to Vercel (`<meta name="dtt-form-api">` points at `https://diamond-tip-tattoo.vercel.app`).
+
+1. Open https://diamond-tip-tattoo.web.app/#book (after this change is deployed to Firebase).
+2. Submit a **test** consultation (your real email so you can recognise it).
+3. You should get:
+   - A Messenger message on the Page thread with the form details (name, email, idea, date).
+   - A browser window/tab to `m.me/diamondtiptattoo?ref=booking_…`
+   - An auto-reply to the customer once they start that chat.
+4. Check **Facebook Page Inbox** / Meta Business Suite.
+5. Confirm the booking still appears in the studio CRM portal.
+
+---
+
+## Checklist
+
+- [ ] App opened; **Messenger from Meta** use case added
+- [ ] App ID pasted into `index.html` `<meta name="facebook-app-id">`
+- [ ] Website + app domains saved
+- [ ] Webhook URL verified: `https://diamond-tip-tattoo.vercel.app/api/meta/webhook`
+- [ ] Subscribed: messages, postbacks, referrals
+- [ ] Page connected; Page token generated
+- [ ] Vercel env: `META_VERIFY_TOKEN`, `META_PAGE_ACCESS_TOKEN`, `META_APP_SECRET`
+- [ ] Messaged Page `notify me` → got PSID
+- [ ] Vercel env: `MESSENGER_NOTIFY_PSIDS`
+- [ ] `/api/meta/status` → `"configured": true`
+- [ ] Test booking appears in Messenger
+
+---
+
+## What not to pick in “Add use cases”
 
 | Skip | Why |
 |------|-----|
@@ -87,218 +249,6 @@ so forms hit Vercel while the static site stays on Firebase.
 | Facebook Login only | Logins, not Page messaging |
 | WhatsApp | Different product |
 | Create an app without a use case | Harder later |
-| Other / old experience | Going away |
-
-5. Click **Next** / **Continue** until the app is created and you land on **Use cases → Customize**.
-
----
-
-## Step 2 — Customize Messenger use case (your PDF: Use cases)
-
-Left sidebar should show something like:
-
-- Messenger from Meta  
-- Permissions and features  
-- **Messenger API Settings**  
-- API integration helper  
-- Instagram settings  
-
-Open **Messenger API Settings** (or **Messenger Platform** welcome panel).
-
-You will see roughly:
-
-1. **Configure webhooks**  
-2. **Generate access tokens** (connect a Facebook Page)  
-3. Optional: build-a-bot / sample  
-
-Do them in order below.
-
----
-
-## Step 3 — Configure webhooks (Meta screen “1. Configure webhooks”)
-
-1. Click **Configure webhooks** / **Add callback URL**.
-2. Fill:
-
-| Field | Value |
-|-------|--------|
-| **Callback URL** | `https://YOUR-PROJECT.vercel.app/api/meta/webhook` |
-| **Verify token** | Same string you will put in Vercel as `META_VERIFY_TOKEN` |
-
-**Recommended verify token** (you can invent your own):
-
-```text
-diamond_tip_messenger_verify_2026
-```
-
-3. **Before** clicking Verify in Meta, set in Vercel → Project → Settings → Environment Variables:
-
-| Name | Value |
-|------|--------|
-| `META_VERIFY_TOKEN` | `diamond_tip_messenger_verify_2026` (exact same) |
-
-4. Redeploy Vercel (or wait for auto redeploy).
-5. Back in Meta, click **Verify and save**.
-
-- Success → green / saved.  
-- Fail → open `/api/meta/status`, confirm verify token is `set`, check URL has no typo, no trailing slash issues.
-
-6. **Subscribe to webhook fields** (check these):
-
-- [x] `messages`  
-- [x] `messaging_postbacks`  
-- [x] `messaging_optins`  
-- [x] `messaging_referrals`  
-- [x] `message_deliveries` (optional)
-
-Save.
-
----
-
-## Step 4 — Connect the Facebook Page + Page access token
-
-Still under Messenger API settings:
-
-1. **Add / connect Page** → choose **Diamond Tip Tattoo** Page.  
-2. Accept permissions (manage messages, etc.).  
-3. Click **Generate** token for that Page.  
-4. Copy the **Page access token** (long string).  
-5. Put in Vercel env:
-
-| Name | Value |
-|------|--------|
-| `META_PAGE_ACCESS_TOKEN` | *(paste token)* |
-| `META_PAGE_ID` | *(Page ID if shown — optional)* |
-
-6. Also copy **App secret**: App → **Settings → Basic → App secret → Show**.
-
-| Name | Value |
-|------|--------|
-| `META_APP_SECRET` | *(paste)* |
-
-7. Redeploy Vercel.
-
-Open again:
-
-```text
-https://YOUR-PROJECT.vercel.app/api/meta/status
-```
-
-`META_PAGE_ACCESS_TOKEN` should show `set (xxxxxx…yyyy)`.
-
----
-
-## Step 5 — Get your PSID (so forms can message *you*)
-
-Meta only lets the Page message people who have talked to the Page.
-
-1. On your phone, open Messenger and message **your Page** (or open `https://m.me/diamondtiptattoo`).
-2. Send exactly:
-
-```text
-notify me
-```
-
-3. If the webhook is live, the bot replies with **your PSID** (a long number).  
-4. Also check **Vercel → Project → Logs** for a line like:
-
-```json
-{"event":"messenger_inbound","psid":"1234567890",...}
-```
-
-5. Put that number in Vercel:
-
-| Name | Value |
-|------|--------|
-| `MESSENGER_NOTIFY_PSIDS` | `1234567890` |
-
-Multiple people (Steven, Scotty, you):
-
-```text
-111111,222222,333333
-```
-
-Each person must message the Page once (or send `notify me`).
-
-6. Redeploy.
-
-`/api/meta/status` should show `configured: true`.
-
----
-
-## Step 6 — Permissions (your second use-case PDF)
-
-On **Permissions and features**:
-
-### Required for messaging
-
-- Messenger / pages messaging related permissions from the Messenger use case  
-- Usually granted automatically for **dev mode** for app admins/testers  
-
-### During development (important)
-
-In **dev mode**, the bot can only talk to:
-
-- App **admins**  
-- App **developers**  
-- App **testers**  
-
-Add staff: App → **App roles** → Add testers → they accept the invite.
-
-### Going live later (optional)
-
-- App Review for `pages_messaging` if you need to message the general public via automation  
-- For **studio notify + customer started the chat**, you can often stay productive in dev mode while testing with staff accounts  
-
----
-
-## Step 7 — Point the website forms at Vercel
-
-1. Set in `index.html`:
-
-```html
-<meta name="dtt-form-api" content="https://YOUR-PROJECT.vercel.app">
-```
-
-2. Deploy/host the static site (Firebase or Vercel).  
-3. Submit a **test booking** on the live site.  
-4. You should get a Messenger message on the Page thread with the form details.  
-5. Customer m.me window may also open with `?ref=booking_…` (auto-reply).
-
----
-
-## Step 8 — Checklist (print this)
-
-- [ ] Vercel project deployed  
-- [ ] `/api/meta/status` loads  
-- [ ] Use case: **Messenger from Meta** selected  
-- [ ] Webhook URL saved + verified  
-- [ ] Subscribed: messages, postbacks, referrals  
-- [ ] Page connected + token generated  
-- [ ] `META_VERIFY_TOKEN` / `META_PAGE_ACCESS_TOKEN` / `META_APP_SECRET` in Vercel  
-- [ ] Messaged Page `notify me` → got PSID  
-- [ ] `MESSENGER_NOTIFY_PSIDS` set  
-- [ ] `dtt-form-api` meta points at Vercel  
-- [ ] Test booking appears in Messenger  
-
----
-
-## What each PDF screen is asking
-
-### “Create an app / Add use cases”
-
-Pick **Messenger** business messaging — not ads, not Login-only.
-
-### “Customize use case / Messenger API Setup”
-
-1. Webhooks → our `/api/meta/webhook`  
-2. Token → Page access token → Vercel  
-3. Test → message Page / submit form  
-
-### “Permissions and features”
-
-Add only what Messenger setup requests.  
-`email`, `ads_management`, `business_management` are **not required** for form→Messenger.
 
 ---
 
@@ -306,31 +256,29 @@ Add only what Messenger setup requests.
 
 | Symptom | Fix |
 |---------|-----|
-| Webhook verification failed | `META_VERIFY_TOKEN` mismatch or API not deployed |
-| Token set but no messages | Empty `MESSENGER_NOTIFY_PSIDS` or person never messaged Page |
-| `(#10) permission denied` | User not admin/tester of app, or Page not connected |
-| `(#551) person not available` | Outside messaging window; send `notify me` again from that FB account |
-| Forms don’t hit API | Empty `dtt-form-api` meta while site is on Firebase |
-| Works for you, not client | Dev mode — add them as tester or submit App Review |
+| Webhook verification failed | `META_VERIFY_TOKEN` mismatch, or URL typo / trailing slash |
+| Token set but no messages | Empty `MESSENGER_NOTIFY_PSIDS`, or that person never messaged the Page |
+| `(#10) permission denied` | User not admin/tester of the app, or Page not connected |
+| `(#551) person not available` | Outside messaging window — send `notify me` again from that Facebook account |
+| Forms don’t hit API | Site not deployed with `dtt-form-api` pointing at Vercel |
+| Works for you, not staff | Dev mode — add them as tester, or later submit App Review |
 
 ---
 
-## Next prompts you can send me (copy/paste)
+## After each step, paste back here
 
-After each step, paste back what you see:
-
-1. **“Webhook verified — here’s /api/meta/status JSON”**  
-2. **“Got PSID: ________”** (I can confirm env format)  
-3. **“Token generated but Meta shows error: …”** (screenshot/error text)  
-4. **“Test booking submitted — no Messenger message”** (I’ll debug with logs)  
-5. **“Ready for App Review / go live”** (permissions + privacy policy steps)  
-6. **“Also connect Instagram Messaging”** (same app, extra product)  
+1. `Webhook verified` / `Webhook failed: ________`
+2. Status JSON from https://diamond-tip-tattoo.vercel.app/api/meta/status
+3. `Got PSID: ________`
+4. `Token screen error: ________`
+5. `Test form sent — no Messenger message`
+6. `Ready for App Review / go live`
 
 ---
 
-## Security notes
+## Security
 
-- Never commit tokens to GitHub.  
-- Only put secrets in **Vercel Environment Variables**.  
-- Rotate the Page token if it ever leaks.  
+- Never commit tokens to GitHub.
+- Only put secrets in **Vercel Environment Variables**.
+- Rotate the Page token if it ever leaks.
 - Keep `META_APP_SECRET` set so webhook signatures are checked.

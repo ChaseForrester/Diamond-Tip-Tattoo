@@ -22,6 +22,12 @@ module.exports = async function handler(req, res) {
     }
 
     const token = getPageToken();
+    const host = (
+        process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+        process.env.VERCEL_URL ||
+        ""
+    ).replace(/^https?:\/\//, "");
+    const webhookUrl = host ? `https://${host}/api/meta/webhook` : "/api/meta/webhook";
     const payload = {
         ok: true,
         service: "diamond-tip-meta-messenger",
@@ -30,10 +36,12 @@ module.exports = async function handler(req, res) {
             META_PAGE_ACCESS_TOKEN: token ? `set (${token.slice(0, 6)}…${token.slice(-4)})` : "MISSING",
             META_VERIFY_TOKEN: getVerifyToken() ? "set" : "MISSING",
             META_APP_SECRET: getAppSecret() ? "set" : "optional / not set",
+            META_APP_ID: process.env.META_APP_ID ? "set" : "optional — also paste into site meta facebook-app-id",
             MESSENGER_NOTIFY_PSIDS: getNotifyPsids().length
                 ? `${getNotifyPsids().length} PSID(s)`
                 : "MISSING — message Page with “notify me” after webhook works"
         },
+        webhookUrl,
         webhookUrlHint: "/api/meta/webhook",
         nextSteps: messengerConfigured()
             ? ["Submit a test booking on the website", "Confirm studio phone/FB gets the Messenger text"]

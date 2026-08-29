@@ -3,6 +3,7 @@
 Connect website booking / try-on / shop forms → Facebook Messenger  
 **GitHub:** https://github.com/ChaseForrester/Diamond-Tip-Tattoo  
 **Site:** https://diamond-tip-tattoo.web.app/  
+**API:** https://diamond-tip-tattoo.vercel.app/  
 **Guide in repo:** `META-MESSENGER-SETUP.md`  
 **Updated:** 2026-08-09
 
@@ -185,7 +186,7 @@ Copy one of these into chat with Grok after each step:
 
 | Item | Value |
 |------|--------|
-| Vercel project URL | _paste_ |
+| Vercel project URL | https://diamond-tip-tattoo.vercel.app |
 | Meta App ID | _paste_ |
 | Facebook Page ID | _paste_ |
 | Verify token used | `diamond_tip_messenger_verify_2026` |

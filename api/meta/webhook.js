@@ -2,7 +2,7 @@
  * Meta Messenger Platform webhook
  *
  * URL to paste in Meta Developers → Messenger → Configure webhooks:
- *   https://YOUR-PROJECT.vercel.app/api/meta/webhook
+ *   https://diamond-tip-tattoo.vercel.app/api/meta/webhook
  *
  * GET  — subscription verification (hub.mode, hub.verify_token, hub.challenge)
  * POST — inbound messages / postbacks / referrals
