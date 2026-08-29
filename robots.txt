@@ -1,9 +1,30 @@
-# Diamond Tip Tattoo — https://diamond-tip-tattoo.web.app/
+# Diamond Tip Tattoo — https://www.diamondtiptattoo.com.au/
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://diamond-tip-tattoo.web.app/sitemap.xml
+# Answer engines / AI crawlers — public pages only
+User-agent: GPTBot
+Allow: /
 
-# Crawl-delay not needed for static hosting
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Anthropic-AI
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
 Disallow: /404.html
+
+Sitemap: https://www.diamondtiptattoo.com.au/sitemap.xml
+Sitemap: https://diamond-tip-tattoo.web.app/sitemap.xml

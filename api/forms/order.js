@@ -15,7 +15,7 @@ const {
   formatOrderText,
   forwardOutboundWebhook,
   notifyDiscord,
-  notifyResendEmail,
+  notifyStudioEmail,
   json,
   handleOptions
 } = require("../lib/helpers");
@@ -93,6 +93,23 @@ module.exports = async function handler(req, res) {
   };
 
   try {
+    results.email = await notifyStudioEmail({
+      subject,
+      text,
+      replyTo: payload.email,
+      fields: {
+        name: payload.name,
+        email: payload.email,
+        phone: payload.phone || "",
+        orderId: payload.id,
+        total: payload.total
+      }
+    });
+  } catch (e) {
+    results.email = { ok: false, error: e.message };
+  }
+
+  try {
     results.messenger = await notifyStudioMessenger(text, {
       eventType,
       id: payload.id
@@ -111,16 +128,6 @@ module.exports = async function handler(req, res) {
     results.discord = await notifyDiscord(eventType, text, payload);
   } catch (e) {
     results.discord = { ok: false, error: e.message };
-  }
-
-  try {
-    results.email = await notifyResendEmail({
-      subject,
-      text,
-      replyTo: payload.email
-    });
-  } catch (e) {
-    results.email = { ok: false, error: e.message };
   }
 
   const anyConfigured =

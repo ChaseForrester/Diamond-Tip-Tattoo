@@ -30,6 +30,14 @@
     box-sizing: border-box;
 }
 
+.hp-field {
+    position: absolute !important;
+    left: -9999px !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+}
+
 html {
     scroll-behavior: smooth;
 }

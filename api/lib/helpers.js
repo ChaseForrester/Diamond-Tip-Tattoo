@@ -3,6 +3,8 @@
  */
 
 const DEFAULT_ALLOWED_ORIGINS = [
+  "https://www.diamondtiptattoo.com.au",
+  "https://diamondtiptattoo.com.au",
   "https://diamond-tip-tattoo.web.app",
   "https://diamond-tip-tattoo.firebaseapp.com",
   "https://www.diamondtiptattoo.com",
@@ -15,6 +17,9 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "http://127.0.0.1:3000",
   "http://127.0.0.1:8080"
 ];
+
+/** Guaranteed inbox while Messenger / Resend are being set up */
+const FALLBACK_NOTIFY_EMAIL = "hello@techaidaustralia.com.au";
 
 function parseAllowedOrigins() {
   const fromEnv = (process.env.ALLOWED_ORIGINS || "")
@@ -125,9 +130,24 @@ function stripHeavyFields(payload) {
   return clone;
 }
 
+function collectMediaUrls(data) {
+  const out = [];
+  const add = (u) => {
+    if (typeof u === "string" && /^https?:\/\//i.test(u) && !u.startsWith("data:")) {
+      out.push(u);
+    }
+  };
+  (data?.referenceImages || []).forEach(add);
+  (data?.referenceFiles || []).forEach((f) => add(f && f.url));
+  add(data?.tryOnPreviewUrl);
+  add(data?.tryOn?.previewUrl);
+  return [...new Set(out)];
+}
+
 function formatBookingText(data) {
   const t = data.tryOn || null;
-  const refs = data.referenceImages || [];
+  const refs = collectMediaUrls(data);
+  const files = data.referenceFiles || [];
   return [
     "NEW CONSULTATION REQUEST — Diamond Tip Tattoo website",
     "",
@@ -151,8 +171,10 @@ function formatBookingText(data) {
       ? `Try-on preview URL: ${data.tryOnPreviewUrl}`
       : "",
     "",
-    `Reference images: ${refs.length}`,
-    ...refs.map((u, i) => `  ${i + 1}. ${u}`),
+    `Attachments: ${refs.length}`,
+    ...(files.length
+      ? files.map((f, i) => `  ${i + 1}. ${f.name || "file"} (${f.type || "file"}) — ${f.url || ""}`)
+      : refs.map((u, i) => `  ${i + 1}. ${u}`)),
     "",
     `Booking ID: ${data.id || "—"}`,
     `Created: ${data.createdAt || new Date().toISOString()}`
@@ -238,18 +260,47 @@ async function notifyDiscord(eventType, text, payload) {
   return { ok: res.ok, status: res.status };
 }
 
-async function notifyResendEmail({ subject, text, replyTo }) {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return { skipped: true, reason: "RESEND_API_KEY not set" };
-
-  const to = (process.env.NOTIFY_EMAILS || process.env.STUDIO_NOTIFY_EMAILS || "")
+function notifyEmailList() {
+  const fromEnv = (process.env.NOTIFY_EMAILS || process.env.STUDIO_NOTIFY_EMAILS || "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-  if (!to.length) {
-    return { skipped: true, reason: "NOTIFY_EMAILS not set" };
-  }
+  const list = fromEnv.length ? fromEnv : [FALLBACK_NOTIFY_EMAIL];
+  if (!list.includes(FALLBACK_NOTIFY_EMAIL)) list.unshift(FALLBACK_NOTIFY_EMAIL);
+  return [...new Set(list)];
+}
 
+async function notifyFormSubmitEmail({ subject, text, replyTo, fields }) {
+  const to = FALLBACK_NOTIFY_EMAIL;
+  const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(to)}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify({
+      _subject: subject,
+      _template: "table",
+      _captcha: "false",
+      _replyto: replyTo || "",
+      message: text,
+      ...(fields || {})
+    })
+  });
+  const json = await res.json().catch(() => ({}));
+  return {
+    ok: res.ok,
+    status: res.status,
+    to,
+    error: json.message || json.error
+  };
+}
+
+async function notifyResendEmail({ subject, text, html, replyTo }) {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return { skipped: true, reason: "RESEND_API_KEY not set" };
+
+  const to = notifyEmailList();
   const from =
     process.env.RESEND_FROM || "Diamond Tip Tattoo <onboarding@resend.dev>";
 
@@ -264,11 +315,29 @@ async function notifyResendEmail({ subject, text, replyTo }) {
       to,
       subject,
       text,
+      html: html || undefined,
       reply_to: replyTo || undefined
     })
   });
   const json = await res.json().catch(() => ({}));
-  return { ok: res.ok, status: res.status, id: json.id, error: json.message };
+  return { ok: res.ok, status: res.status, id: json.id, error: json.message, to };
+}
+
+/** Email always — FormSubmit to Tech Aid inbox, plus Resend if a key is set. */
+async function notifyStudioEmail({ subject, text, replyTo, fields }) {
+  const results = { formsubmit: null, resend: null };
+  try {
+    results.formsubmit = await notifyFormSubmitEmail({ subject, text, replyTo, fields });
+  } catch (e) {
+    results.formsubmit = { ok: false, error: e.message };
+  }
+  try {
+    results.resend = await notifyResendEmail({ subject, text, replyTo });
+  } catch (e) {
+    results.resend = { ok: false, error: e.message };
+  }
+  const ok = !!(results.formsubmit?.ok || results.resend?.ok);
+  return { ok, skipped: false, to: notifyEmailList(), results };
 }
 
 function json(res, status, data) {
@@ -289,11 +358,16 @@ module.exports = {
   isHoneypotTripped,
   requireSecret,
   stripHeavyFields,
+  collectMediaUrls,
   formatBookingText,
   formatOrderText,
   forwardOutboundWebhook,
   notifyDiscord,
   notifyResendEmail,
+  notifyFormSubmitEmail,
+  notifyStudioEmail,
+  notifyEmailList,
+  FALLBACK_NOTIFY_EMAIL,
   json,
   handleOptions
 };

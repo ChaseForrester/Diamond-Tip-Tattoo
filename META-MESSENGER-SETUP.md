@@ -1,8 +1,58 @@
 # Connect Facebook Messenger to the booking form
 
-You already have a **Meta App ID**. The website form is wired. These clicks finish the connection so a booking lands in the Diamond Tip Tattoo Page inbox.
+**Until you finish the steps below, every booking already emails `hello@techaidaustralia.com.au`** (photos and PDFs as links). Messenger is extra, not the only path.
 
-**Live API (already deployed)**
+## You do this (about 15 minutes)
+
+Do these in order. Use the Facebook account that **admins the Diamond Tip Tattoo Page**.
+
+1. Open [developers.facebook.com/apps](https://developers.facebook.com/apps) → your existing app (the one with your App ID).
+2. **Use cases** → add **Engage with customers on Messenger from Meta** if it is not already there.
+3. Open **Messenger API Settings**.
+4. **Settings → Basic**
+   - Copy **App secret**
+   - Add Website URL `https://www.diamondtiptattoo.com.au/`
+   - App domains: `www.diamondtiptattoo.com.au`, `diamond-tip-tattoo.web.app`, `diamond-tip-tattoo.vercel.app`
+5. Paste your App ID into `index.html` (or send it to me):
+
+```html
+<meta name="facebook-app-id" content="YOUR_APP_ID_HERE">
+```
+
+6. **Configure webhooks**
+
+| Field | Paste this |
+|------|--------|
+| Callback URL | `https://diamond-tip-tattoo.vercel.app/api/meta/webhook` |
+| Verify token | same as Vercel `META_VERIFY_TOKEN` (try `diamond_tip_messenger_verify_2026`) |
+
+Subscribe: `messages`, `messaging_postbacks`, `messaging_optins`, `messaging_referrals`. Click **Verify and save**.
+
+7. **Connect the Diamond Tip Tattoo Page** → **Generate** Page access token.
+8. Vercel → Project → Settings → Environment Variables (Production **and** Preview):
+
+| Name | Value |
+|------|--------|
+| `META_PAGE_ACCESS_TOKEN` | Page token |
+| `META_APP_SECRET` | App secret |
+| `META_VERIFY_TOKEN` | same verify string |
+| `NOTIFY_EMAILS` | `hello@techaidaustralia.com.au,stormychaseforrester@gmail.com` |
+
+Redeploy.
+
+9. On your phone open https://m.me/diamondtiptattoo and send: `notify me`  
+   Copy the **PSID** the bot replies with.
+10. Vercel env `MESSENGER_NOTIFY_PSIDS` = that number. Redeploy.
+11. Check https://diamond-tip-tattoo.vercel.app/api/meta/status — `"configured": true`
+12. Submit a test booking. You should get:
+    - Email at hello@techaidaustralia.com.au (already works)
+    - Messenger message with the form text **plus** image/PDF attachments
+
+**First FormSubmit email:** FormSubmit will send a one-time confirmation to `hello@techaidaustralia.com.au`. Click **Activate** in that email or test bookings will not arrive.
+
+---
+
+**Live API**
 
 | What | URL |
 |------|-----|
@@ -10,7 +60,7 @@ You already have a **Meta App ID**. The website form is wired. These clicks fini
 | Webhook (paste this in Meta) | https://diamond-tip-tattoo.vercel.app/api/meta/webhook |
 | Booking form handler | `POST` https://diamond-tip-tattoo.vercel.app/api/forms/booking |
 | Shop order handler | `POST` https://diamond-tip-tattoo.vercel.app/api/forms/order |
-| Public site | https://diamond-tip-tattoo.web.app/ |
+| Public site | https://www.diamondtiptattoo.com.au/ |
 
 Current API status when last checked: **verify token is set**, **Page access token missing**, **studio notify PSIDs missing**. That is why the form does not yet message the Page automatically.
 

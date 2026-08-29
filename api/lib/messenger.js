@@ -106,6 +106,55 @@ async function sendTextMessage(psid, text, opts = {}) {
     return { ok: true, messageId: json.message_id, recipientId: json.recipient_id };
 }
 
+function guessAttachmentType(url) {
+    const decoded = decodeURIComponent(String(url).split("?")[0]).toLowerCase();
+    if (/\.(pdf|docx?|zip|txt|ai|psd)$/.test(decoded)) return "file";
+    if (/\.(png|jpe?g|gif|webp|heic|heif|bmp)$/.test(decoded)) return "image";
+    return "file";
+}
+
+/** Send an image or file by public URL (Firebase Storage links work). */
+async function sendAttachment(psid, fileUrl, type, opts = {}) {
+    const token = getPageToken();
+    if (!token) {
+        return { ok: false, skipped: true, error: "META_PAGE_ACCESS_TOKEN not set" };
+    }
+    if (!psid || !fileUrl) {
+        return { ok: false, error: "Missing PSID or file URL" };
+    }
+    const attachmentType = type === "image" ? "image" : "file";
+    const body = {
+        recipient: { id: String(psid) },
+        messaging_type: opts.messagingType || "RESPONSE",
+        message: {
+            attachment: {
+                type: attachmentType,
+                payload: { url: String(fileUrl), is_reusable: true }
+            }
+        }
+    };
+    if (opts.tag) {
+        body.messaging_type = "MESSAGE_TAG";
+        body.tag = opts.tag;
+    }
+    const url = `${graphBase()}/me/messages?access_token=${encodeURIComponent(token)}`;
+    const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || json.error) {
+        return {
+            ok: false,
+            status: res.status,
+            error: json.error?.message || res.statusText,
+            code: json.error?.code
+        };
+    }
+    return { ok: true, messageId: json.message_id, type: attachmentType };
+}
+
 /** Send long form summaries as multiple messages if needed */
 async function sendLongText(psid, text, opts = {}) {
     const chunks = chunkText(text);
@@ -148,22 +197,41 @@ async function notifyStudioMessenger(text, meta = {}) {
                 : "📅 NEW BOOKING REQUEST (website)";
 
     const body = `${header}\n\n${text}`.slice(0, 6000);
+    const media = Array.isArray(meta.mediaUrls) ? meta.mediaUrls.filter(Boolean).slice(0, 8) : [];
     const deliveries = [];
 
     for (const psid of psids) {
         // Prefer open 24h window; then Human Agent (7 days); then ACCOUNT_UPDATE
-        let result = await sendLongText(psid, body, { messagingType: "RESPONSE" });
+        let sendOpts = { messagingType: "RESPONSE" };
+        let result = await sendLongText(psid, body, sendOpts);
         if (!result.ok) {
-            result = await sendLongText(psid, body, { tag: "HUMAN_AGENT" });
+            sendOpts = { tag: "HUMAN_AGENT" };
+            result = await sendLongText(psid, body, sendOpts);
         }
         if (!result.ok) {
-            result = await sendLongText(psid, body, { tag: "ACCOUNT_UPDATE" });
+            sendOpts = { tag: "ACCOUNT_UPDATE" };
+            result = await sendLongText(psid, body, sendOpts);
         }
-        deliveries.push({ psid, ...result });
+
+        const attachments = [];
+        if (result.ok && media.length) {
+            for (const fileUrl of media) {
+                // eslint-disable-next-line no-await-in-loop
+                const att = await sendAttachment(
+                    psid,
+                    fileUrl,
+                    guessAttachmentType(fileUrl),
+                    sendOpts
+                );
+                attachments.push({ url: fileUrl, ...att });
+            }
+        }
+
+        deliveries.push({ psid, ...result, attachments });
     }
 
     const ok = deliveries.some((d) => d.ok);
-    return { ok, skipped: false, deliveries };
+    return { ok, skipped: false, deliveries, mediaCount: media.length };
 }
 
 /** Verify Meta webhook subscription handshake (GET) */
@@ -284,7 +352,7 @@ async function processWebhookPayload(body) {
                     reply = [
                         "Welcome to Diamond Tip Tattoo 💎",
                         "",
-                        "Book a free consult: https://diamond-tip-tattoo.web.app/#book",
+                        "Book a free consult: https://www.diamondtiptattoo.com.au/#book",
                         "Or tell us your idea, placement and preferred dates here.",
                         "",
                         "Phone: (02) 4261 4311"
@@ -299,7 +367,7 @@ async function processWebhookPayload(body) {
             if (text && /^(hi|hello|hey|book|help)\b/.test(text)) {
                 const r = await sendTextMessage(
                     senderId,
-                    "Hi! 👋 Diamond Tip Tattoo here. Book online: https://diamond-tip-tattoo.web.app/#book — or describe your tattoo idea and we'll help."
+                    "Hi! 👋 Diamond Tip Tattoo here. Book online: https://www.diamondtiptattoo.com.au/#book — or describe your tattoo idea and we'll help."
                 );
                 actions.push({ type: "greeting_reply", psid: senderId, send: r });
             }
@@ -319,8 +387,10 @@ module.exports = {
     getAppSecret,
     getNotifyPsids,
     sendTextMessage,
+    sendAttachment,
     sendLongText,
     notifyStudioMessenger,
+    guessAttachmentType,
     handleVerifyChallenge,
     verifySignature,
     processWebhookPayload,

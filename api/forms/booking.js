@@ -24,7 +24,8 @@ const {
   formatBookingText,
   forwardOutboundWebhook,
   notifyDiscord,
-  notifyResendEmail,
+  notifyStudioEmail,
+  collectMediaUrls,
   json,
   handleOptions
 } = require("../lib/helpers");
@@ -102,6 +103,7 @@ module.exports = async function handler(req, res) {
     ? `New try-on consultation — ${payload.name}`
     : `New booking request — ${payload.name}${payload.date ? ` (${payload.date} ${payload.time || ""})` : ""}`;
 
+  const mediaUrls = collectMediaUrls(payload);
   const results = {
     messenger: null,
     outbound: null,
@@ -109,12 +111,35 @@ module.exports = async function handler(req, res) {
     email: null
   };
 
-  // Primary: push form details into Facebook Page Messenger (studio PSIDs)
+  // Always email Tech Aid / studio first so leads are never dropped
+  try {
+    results.email = await notifyStudioEmail({
+      subject,
+      text,
+      replyTo: payload.email,
+      fields: {
+        name: payload.name,
+        email: payload.email,
+        phone: payload.phone || "",
+        date: payload.date || "",
+        time: payload.time || "",
+        style: payload.style || "",
+        preferredArtist: payload.preferredArtist || "",
+        bookingId: payload.id,
+        attachments: mediaUrls.join("\n")
+      }
+    });
+  } catch (e) {
+    results.email = { ok: false, error: e.message };
+  }
+
+  // Messenger when Page token + PSIDs are configured (attachments follow the text)
   try {
     results.messenger = await notifyStudioMessenger(text, {
       eventType,
       hasTryOn: payload.hasTryOn,
-      id: payload.id
+      id: payload.id,
+      mediaUrls
     });
   } catch (e) {
     results.messenger = { ok: false, error: e.message };
@@ -130,16 +155,6 @@ module.exports = async function handler(req, res) {
     results.discord = await notifyDiscord(eventType, text, payload);
   } catch (e) {
     results.discord = { ok: false, error: e.message };
-  }
-
-  try {
-    results.email = await notifyResendEmail({
-      subject,
-      text,
-      replyTo: payload.email
-    });
-  } catch (e) {
-    results.email = { ok: false, error: e.message };
   }
 
   const anyConfigured =

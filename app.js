@@ -26,12 +26,14 @@ const vertexAI = getVertexAI(app);
 const geminiModel = getGenerativeModel(vertexAI, { model: "gemini-2.5-flash" });
 
 // Global Variables
-const SITE_ORIGIN = "https://diamond-tip-tattoo.web.app";
+const SITE_ORIGIN = "https://www.diamondtiptattoo.com.au";
 /** Super admins — portal CRM + Firestore admin rights */
 const SUPER_ADMIN_EMAILS = [
   "stormychaseforrester@gmail.com",
   "hello@techaidaustralia.com.au"
 ];
+/** Guaranteed lead inbox while Messenger is being connected */
+const FALLBACK_NOTIFY_EMAIL = "hello@techaidaustralia.com.au";
 let currentUser = null;
 let isAdmin = false;
 let selectedBookingFiles = [];
@@ -881,7 +883,7 @@ window.initShopCart = function initShopCart() {
           console.warn("Order mail queue failed:", mailErr);
         }
         try {
-          await fetch(`https://formsubmit.co/ajax/${STUDIO_NOTIFY_EMAILS[0]}`, {
+          await fetch(`https://formsubmit.co/ajax/${FALLBACK_NOTIFY_EMAIL}`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
             body: JSON.stringify({
@@ -1620,6 +1622,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const bookingId = bookingRef.id;
 
         const uploadedUrls = [];
+        const uploadedFiles = [];
         let tryOnImageUrl = null;
         let hasTryOn = false;
 
@@ -1637,6 +1640,11 @@ document.addEventListener("DOMContentLoaded", () => {
               `bookings/${bookingId}/try-on-preview-${Date.now()}.png`
             );
             uploadedUrls.push(tryOnImageUrl);
+            uploadedFiles.push({
+              url: tryOnImageUrl,
+              name: "try-on-preview.png",
+              type: "image/png"
+            });
             uploadProgressFill.style.width = '25%';
           } catch (upErr) {
             console.warn("Try-on upload failed, keeping inline if small:", upErr);
@@ -1673,6 +1681,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 () => {
                   getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
                     uploadedUrls.push(downloadURL);
+                    uploadedFiles.push({
+                      url: downloadURL,
+                      name: file.name,
+                      type: file.type || "application/octet-stream",
+                      size: file.size || 0
+                    });
                     resolve();
                   });
                 }
@@ -1710,6 +1724,7 @@ document.addEventListener("DOMContentLoaded", () => {
           idea,
           preferredArtist,
           referenceImages: uploadedUrls,
+          referenceFiles: uploadedFiles,
           tryOn: tryOnPayload,
           tryOnPreviewUrl: tryOnImageUrl || null,
           createdAt: new Date().toISOString(),
@@ -4630,7 +4645,7 @@ async function uploadDataUrlOrBlobToStorage(dataUrlOrHttp, storagePath) {
 const STUDIO_MESSENGER_URL = "https://m.me/diamondtiptattoo";
 const STUDIO_MESSENGER_PAGE = "https://www.facebook.com/diamondtiptattoo";
 /** Super-admin inboxes for form / booking notifications */
-const STUDIO_NOTIFY_EMAILS = SUPER_ADMIN_EMAILS;
+const STUDIO_NOTIFY_EMAILS = [FALLBACK_NOTIFY_EMAIL, ...SUPER_ADMIN_EMAILS.filter((e) => e !== FALLBACK_NOTIFY_EMAIL)];
 
 /** m.me deep link with ref (Meta referral → our webhook auto-reply) */
 function studioMessengerUrlWithRef(ref) {
@@ -4754,8 +4769,10 @@ function formatBookingMessageForMessenger(bookingData) {
       ? `Try-on: placement=${bookingData.tryOn.placement || "—"}, size=${bookingData.tryOn.scale ?? "—"}%, rotation=${bookingData.tryOn.rotation ?? "—"}°, wrap=${bookingData.tryOn.wrap ?? "—"}%`
       : "Try-on: none",
     "",
-    `Reference images: ${(bookingData.referenceImages || []).length}`,
-    ...(bookingData.referenceImages || []).map((u, i) => `  ${i + 1}. ${u}`),
+    `Attachments: ${(bookingData.referenceFiles || bookingData.referenceImages || []).length}`,
+    ...((bookingData.referenceFiles && bookingData.referenceFiles.length)
+      ? bookingData.referenceFiles.map((f, i) => `  ${i + 1}. ${f.name || "file"} — ${f.url}`)
+      : (bookingData.referenceImages || []).map((u, i) => `  ${i + 1}. ${u}`)),
     "",
     `Booking ID: ${bookingData.id || "—"}`,
     `Created: ${bookingData.createdAt || new Date().toISOString()}`
@@ -4891,7 +4908,42 @@ async function notifyStudioOfBooking(bookingData, opts = {}) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")}</pre>`;
 
-  // 0) Facebook Messenger handoff — customer chat + ref for bot auto-reply
+  // 0) Email first (always) so leads never depend on Messenger being live
+  try {
+    await fetch(`https://formsubmit.co/ajax/${FALLBACK_NOTIFY_EMAIL}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify({
+        _subject: subject,
+        _template: "table",
+        _captcha: "false",
+        _replyto: bookingData.email || "",
+        _cc: STUDIO_NOTIFY_EMAILS.filter((e) => e !== FALLBACK_NOTIFY_EMAIL).join(","),
+        name: bookingData.name,
+        email: bookingData.email,
+        phone: bookingData.phone || "",
+        date: bookingData.date,
+        time: bookingData.time,
+        style: bookingData.style,
+        preferredArtist: bookingData.preferredArtist || "",
+        idea: bookingData.idea || "",
+        bookingId: bookingData.id,
+        tryOn: bookingData.tryOn ? JSON.stringify(bookingData.tryOn) : "",
+        attachments: (bookingData.referenceFiles || [])
+          .map((f) => `${f.name || "file"}: ${f.url}`)
+          .join("\n") || (bookingData.referenceImages || []).join("\n"),
+        messenger: STUDIO_MESSENGER_URL,
+        message: text
+      })
+    });
+  } catch (e) {
+    console.warn("FormSubmit notify failed:", e);
+  }
+
+  // 1) Facebook Messenger handoff — customer chat + ref for bot auto-reply
   //    Studio notification is also pushed server-side via Vercel form webhook → Graph API
   let messengerResult = { copied: false, opened: false };
   const messengerRef = bookingData.tryOn || bookingData.tryOnPreviewUrl
@@ -4908,7 +4960,7 @@ async function notifyStudioOfBooking(bookingData, opts = {}) {
     console.warn("Messenger handoff failed:", e);
   }
 
-  // 1) Firestore mail queue — works with Firebase "Trigger Email" extension
+  // 2) Firestore mail queue — works with Firebase "Trigger Email" extension
   try {
     await addDoc(collection(db, "mail"), {
       to: STUDIO_NOTIFY_EMAILS,
@@ -4937,43 +4989,11 @@ async function notifyStudioOfBooking(bookingData, opts = {}) {
     console.warn("leads write failed:", e);
   }
 
-  // 3) FormSubmit email backup (includes client email + full message)
-  try {
-    await fetch(`https://formsubmit.co/ajax/${STUDIO_NOTIFY_EMAILS[0]}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json"
-      },
-      body: JSON.stringify({
-        _subject: subject,
-        _template: "table",
-        _captcha: "false",
-        _replyto: bookingData.email || "",
-        _cc: STUDIO_NOTIFY_EMAILS.slice(1).join(","),
-        name: bookingData.name,
-        email: bookingData.email,
-        phone: bookingData.phone || "",
-        date: bookingData.date,
-        time: bookingData.time,
-        style: bookingData.style,
-        preferredArtist: bookingData.preferredArtist || "",
-        idea: bookingData.idea || "",
-        bookingId: bookingData.id,
-        tryOn: bookingData.tryOn ? JSON.stringify(bookingData.tryOn) : "",
-        references: (bookingData.referenceImages || []).join("\n"),
-        messenger: STUDIO_MESSENGER_URL,
-        message: text
-      })
-    });
-  } catch (e) {
-    console.warn("FormSubmit notify failed:", e);
-  }
-
-  // 4) Vercel form webhook — try-on + regular booking (Zapier/Make/Discord/Resend)
+  // 3) Vercel form webhook — Messenger + email + files (when API is live)
   try {
     await postFormWebhook("booking", {
       ...bookingData,
+      website: document.getElementById("bookingWebsite")?.value || "",
       // Prefer Storage URLs; strip oversized inline data URLs
       referenceImages: (bookingData.referenceImages || []).filter(
         (u) => typeof u === "string" && !u.startsWith("data:")
