@@ -6134,6 +6134,7 @@ window.initMarketingUX = function initMarketingUX() {
     window.gtag = function () { window.dataLayer.push(arguments); };
     window.gtag("js", new Date());
     window.gtag("config", measurementId, { anonymize_ip: true });
+    window.gtag("config", "G-5RMJSB40WS");
   }
 
   // CTA / outbound click tracking
