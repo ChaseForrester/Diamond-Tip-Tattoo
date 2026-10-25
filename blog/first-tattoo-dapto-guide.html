@@ -91,5 +91,74 @@
     });
   </script>
   <script defer src="../vercel-analytics.js"></script>
+<!-- Diamond Tip Tattoo: floating "Message us" Messenger button.
+     Paste just before </body>. Pure HTML/CSS, inline SVG, no third-party script.
+     Sits bottom-LEFT so it never overlaps the existing bottom-right .chat-widget-container,
+     and lifts above .sticky-book-bar on screens <=820px (same offset the chat widget uses).
+     Icon: Meta official Messenger primary icon (Facebook Blue #0866ff), February 2025 icon pack
+     from https://about.meta.com/brand/resources/messenger/ — paths and colours unchanged from
+     assets/brand/messenger/Messenger_Icon_Primary_Blue.svg. Fills are attributes so page CSS
+     cannot restyle the mark. -->
+<a class="dt-msg-btn"
+   href="https://m.me/diamondtiptattoo"
+   target="_blank" rel="noopener noreferrer"
+   aria-label="Message Diamond Tip Tattoo on Facebook Messenger (opens in a new tab)"
+   data-track="messenger-float">
+  <svg class="dt-msg-icon" viewBox="0 0 502 502" width="24" height="24" aria-hidden="true" focusable="false">
+    <path fill="#0866ff" d="M501,243.5c0,139.34-109.17,242.5-250,242.5-25.29,0-49.56-3.34-72.37-9.61-4.43-1.23-9.14-.88-13.35.97l-49.62,21.91c-12.98,5.73-27.63-3.5-28.06-17.68l-1.36-44.48c-.17-5.48-2.63-10.6-6.72-14.25C30.87,379.36,1,316.39,1,243.5,1,104.16,110.17,1,251,1s250,103.16,250,242.5Z"/>
+    <path fill="#fff" d="M318.88,313.31l87.04-134.52c8.75-13.52-7.46-29.26-20.72-20.11l-90.86,62.67c-3.06,2.11-7.1,2.17-10.22.15l-80.65-52.18c-6.83-4.42-15.94-2.46-20.35,4.36l-87.05,134.52c-8.75,13.52,7.46,29.26,20.72,20.11l90.88-62.68c3.06-2.11,7.1-2.17,10.22-.15l80.63,52.17c6.83,4.42,15.94,2.46,20.36-4.36Z"/>
+  </svg>
+  <span class="dt-msg-label">Message us</span>
+</a>
+
+<style>
+.dt-msg-btn{
+  position:fixed;
+  left:max(2rem, env(safe-area-inset-left));
+  bottom:2rem;                         /* aligns with .chat-widget-container (bottom:2rem) */
+  z-index:999;                         /* below chat (1000) and its window; above sticky bar (950) */
+  display:inline-flex;align-items:center;gap:.55rem;
+  min-height:48px;padding:0 1.1rem 0 .9rem;
+  background:#151515;                  /* --bg-box */
+  color:#eaeaea;                       /* --text-primary, ~15:1 on #151515 */
+  border:1px solid #e63946;            /* --accent ring ties to brand */
+  border-radius:999px;
+  font:600 .95rem/1 'Inter',sans-serif;letter-spacing:.01em;
+  text-decoration:none;
+  box-shadow:0 4px 15px rgba(0,0,0,.5);
+  -webkit-tap-highlight-color:transparent;
+  animation:dt-msg-in .35s ease-out 2.5s both;   /* gentle fade-up after 2.5s; reserves no layout = no CLS */
+  transition:transform .2s ease,background-color .2s ease,border-color .2s ease;
+}
+.dt-msg-btn:hover{background:#1d1d1d;border-color:#ff4d5a;transform:translateY(-2px)}
+.dt-msg-btn:focus-visible{outline:3px solid #ff4d5a;outline-offset:3px}
+.dt-msg-icon{flex:none;display:block}
+@keyframes dt-msg-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* Phones/tablets: lift above the sticky Book bar, same offset as the chat bubble */
+@media (max-width:820px){
+  .dt-msg-btn{
+    left:max(1rem, env(safe-area-inset-left));
+    bottom:max(4.75rem, calc(env(safe-area-inset-bottom) + 4.25rem));
+    min-height:54px;                   /* matches 54px chat bubble height */
+    padding:0 1rem 0 .85rem;font-size:.9rem;
+  }
+}
+/* Very narrow phones: icon-only circle so it can't crowd the chat bubble; aria-label still names it */
+@media (max-width:360px){
+  .dt-msg-btn{width:54px;padding:0;justify-content:center}
+  .dt-msg-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+}
+/* Hide while the chat window is open on mobile (chat window spans full width there) */
+@media (max-width:820px){
+  body:has(.chat-window.open) .dt-msg-btn{visibility:hidden}
+}
+@media (prefers-reduced-motion:reduce){
+  .dt-msg-btn{animation:none;transition:none}
+  .dt-msg-btn:hover{transform:none}
+}
+@media print{.dt-msg-btn{display:none}}
+</style>
+
 </body>
 </html>
