@@ -14,8 +14,7 @@ const firebaseConfig = {
   storageBucket: "diamond-tip-tattoo.firebasestorage.app",
   apiKey: "AIzaSyDYvhE2qfD1kDl5ba4MC9GwciFTy4Qe7pY",
   authDomain: "diamond-tip-tattoo.firebaseapp.com",
-  messagingSenderId: "596392701743",
-  measurementId: "G-SXX8SXNZHD"
+  messagingSenderId: "596392701743"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -6123,17 +6122,15 @@ window.trackConversion = function trackConversion(name, params = {}) {
 };
 
 window.initMarketingUX = function initMarketingUX() {
-  // Optional GA4 bootstrap if measurement ID exists and gtag not already loaded
-  const measurementId = "G-SXX8SXNZHD";
-  if (measurementId && !window.gtag) {
+  // GA4 page view. Load gtag.js once for the studio property.
+  if (!window.gtag) {
     const s = document.createElement("script");
     s.async = true;
-    s.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+    s.src = "https://www.googletagmanager.com/gtag/js?id=G-5RMJSB40WS";
     document.head.appendChild(s);
     window.dataLayer = window.dataLayer || [];
     window.gtag = function () { window.dataLayer.push(arguments); };
     window.gtag("js", new Date());
-    window.gtag("config", measurementId, { anonymize_ip: true });
     window.gtag("config", "G-5RMJSB40WS");
   }
 
